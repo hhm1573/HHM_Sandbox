@@ -28,7 +28,11 @@ protected:
 	int32 m_MaxFallHeight = 0;
 	int32 m_MaxHorizontalJumpLength = 0;
 
+	float m_Speed_Default = 0.0f; // Tile Per Sec
 	float m_CurrentSpeed = 0.0f; //Tile Per Sec
+
+	float m_MoveDistance_ThisTick = 0.0f;
+	float m_MoveDistance_PostTick = 0.0f;
 
 	TArray<FHHM_PathNodeData>	m_FollowingPath;
 
@@ -40,7 +44,8 @@ public:
 	bool			MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical);
 
 protected:
-	virtual void	FollowPath(void);
+	virtual void	Update_MovementSpeed(float DeltaTime);
+	virtual void	FollowPath(float DeltaTime);
 	
 	
 };

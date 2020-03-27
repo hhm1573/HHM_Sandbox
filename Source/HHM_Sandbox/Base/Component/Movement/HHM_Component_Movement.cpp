@@ -19,6 +19,8 @@ UHHM_Component_Movement::UHHM_Component_Movement() {
 }
 
 void UHHM_Component_Movement::BeginPlay() {
+	Super::BeginPlay();
+
 	m_FollowingPath.Empty();
 }
 
@@ -29,11 +31,15 @@ void UHHM_Component_Movement::TickComponent(float DeltaTime, ELevelTick TickType
 	if (!PawnOwner || !UpdatedComponent || ShouldSkipUpdate(DeltaTime)) {
 		return;
 	}
+
+
+
+	UHHM_Component_Movement::Update_MovementSpeed(DeltaTime);
 	
 
 
 	if (m_FollowingPath.Num() > 0) {
-		FollowPath();
+		FollowPath(DeltaTime);
 	}
 }
 
@@ -83,7 +89,13 @@ bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _ind
 
 
 
-void UHHM_Component_Movement::FollowPath(void) {
+void UHHM_Component_Movement::Update_MovementSpeed(float DeltaTime) {
+	
+}
+
+
+
+void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 	UWorld* pWorld = nullptr;
 	pWorld = GetWorld();
 	if (pWorld == nullptr) {
@@ -105,20 +117,73 @@ void UHHM_Component_Movement::FollowPath(void) {
 		return;
 	}
 
+	float TileSize = 100.0f;
+
+
+
 	int32		Index_Target = m_FollowingPath[0].Index_Target;
 	FVector2D	IndexLocation_Target = FVector2D();
 	if (pGameMode->Utility_Index_Seperate(IndexLocation_Target, Index_Target) == false) {
-
+		//Exception
+		return;
 	}
-	//Get EndVector
+	FVector		Location_Target = FVector();
+	if (pGameMode->Utility_Calculate_Location(Location_Target, IndexLocation_Target) == false) {
+		//Exception
+		return;
+	}
 
 
-	const ALocalMap* LocalMap = nullptr;
-	LocalMap = pGameMode->Get_LocalMap_Const();
+	/*const ALocalMap* LocalMap = nullptr;
+	LocalMap = pGameMode->Get_LocalMap_Const();*/
 
 	FVector Location_Current = GetActorLocation();
+	float	Location_Start_X = Location_Current.X - ((m_EntitySize_Horizontal - 1) * (TileSize * 0.5f));
+	float	Location_Start_Y = Location_Current.Y - ((m_EntitySize_Vertical - 1) * (TileSize * 0.5f));
+	FVector Location_Start = FVector(Location_Start_X, 0.0f, Location_Start_Y);
+	FVector2D IndexLocation_Start = FVector2D(Location_Start.X / TileSize, Location_Start.Z / TileSize);
 
 
 
 	EHHM_MoveType MoveType_Current = m_FollowingPath[0].eMoveType;
+
+
+
+	//Check is entity at target point
+	FVector Vec_Distance_Target = Location_Target - Location_Start;
+	float	Distance_Target = Vec_Distance_Target.Size();
+	//Change this Value later ---- ---- ---- ----
+	float	Acceptable_Distance = 10.0f;
+	if (Distance_Target <= Acceptable_Distance) {
+		m_FollowingPath.RemoveAt(0);
+		return;
+	}
+
+
+
+	//Following Path
+	if (MoveType_Current == EHHM_MoveType::MT_OnGround) {
+		//Get Target Direction
+		FVector Direction_Current_To_Target = Location_Target - Location_Current;
+		Direction_Current_To_Target.Y = 0.0f;
+		Direction_Current_To_Target.Z = 0.0f;
+		Direction_Current_To_Target.Normalize();
+
+		//Get Location of this entity should be after this tick
+		FVector Location_AfterTick = Location_Current + (Direction_Current_To_Target * m_CurrentSpeed * DeltaTime);
+
+		//Get Distance of AfterTick and Target
+		FVector Direction_Current_To_AfterTick = Location_AfterTick - Location_Current;
+		Direction_Current_To_AfterTick.Y = 0.0f;
+		Direction_Current_To_AfterTick.Z = 0.0f;
+
+		float Distance_Current_To_AfterTick = Direction_Current_To_AfterTick.Size();
+		float Distance_Current_To_Target = Direction_Current_To_Target.Size();
+
+		//Compare The Distance and if Entity will be pass the target after this tick, set actor's location as target
+		
+	}
+	else if (MoveType_Current == EHHM_MoveType::MT_Jump) {
+
+	}
 }
