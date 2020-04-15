@@ -90,12 +90,49 @@ bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _ind
 
 
 void UHHM_Component_Movement::Update_MovementSpeed(float DeltaTime) {
-	
+	float Speed_Current_Tick = m_Speed_Default;
+
+
+
+	//Applying modification elements
+	int32 Num_ModificationElements = m_Container_Speed_ModificationElement.Num();
+
+	if (Num_ModificationElements > 0) {
+		for (int32 Index = 0; Index < Num_ModificationElements; ++Index) {
+			float ModificationValue = m_Container_Speed_ModificationElement[Index];
+			Speed_Current_Tick += ModificationValue;
+		}
+	}
+
+
+
+	//Applying Multiplication Elements
+	int32 Num_MultiplicationElements = m_Container_Speed_MultiplicationElement.Num();
+
+	if (Num_MultiplicationElements > 0) {
+		TArray<FHHM_Movement_SpeedMultiplicationData> Container_Speed_MultiplicationElement_Sorted;
+		Container_Speed_MultiplicationElement_Sorted = m_Container_Speed_MultiplicationElement;
+
+		// Note :: here sorting job is done by simple bubble sorting. change it to better sorting algorithm if any performance issue occurs
+	}
+
+
+
+	m_Speed_Current = Speed_Current_Tick;
 }
 
 
 
 void UHHM_Component_Movement::FollowPath(float DeltaTime) {
+
+	//if ( Currently wating for jump ) do FollowPath_Jump(DeltaTime);
+	if (m_MoveType_Current == EHHM_MoveType::MT_Jump || m_MoveType_Current == EHHM_MoveType::MT_Fall
+		|| m_MoveType_Current == EHHM_MoveType::MT_HorizontalJump_Left || m_MoveType_Current == EHHM_MoveType::MT_HorizontalJump_Right) {
+		UHHM_Component_Movement::FollowPath_Jump(DeltaTime);
+	}
+
+
+
 	UWorld* pWorld = nullptr;
 	pWorld = GetWorld();
 	if (pWorld == nullptr) {
@@ -170,7 +207,7 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 		Direction_Current_To_Target.Normalize();
 
 		//Get Location of this entity should be after this tick
-		FVector Location_AfterTick = Location_Current + (Direction_Current_To_Target * m_CurrentSpeed * DeltaTime);
+		FVector Location_AfterTick = Location_Current + (Direction_Current_To_Target * (m_Speed_Current * TileSize) * DeltaTime);
 
 		//Get Distance of AfterTick and Target
 		FVector Direction_Current_To_AfterTick = Location_AfterTick - Location_Current;
@@ -186,4 +223,14 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 	else if (MoveType_Current == EHHM_MoveType::MT_Jump) {
 
 	}
+}
+
+
+
+void UHHM_Component_Movement::FollowPath_Jump(float DeltaTime) {
+
+}
+
+void UHHM_Component_Movement::FollowPath_Walk(float DeltaTime) {
+
 }
