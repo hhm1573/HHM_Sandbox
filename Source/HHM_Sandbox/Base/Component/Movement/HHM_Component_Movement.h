@@ -23,6 +23,11 @@ public:
 
 protected:
 	UPROPERTY()
+		float			m_TileSize = 0.0f;
+
+
+
+	UPROPERTY()
 		EHHM_MoveType	m_MoveType_Current = EHHM_MoveType::MT_OnGround;
 	UPROPERTY()
 		float			m_Move_Timer = 0.0f;
@@ -58,6 +63,12 @@ public:
 public:
 	bool			MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical);
 
+#pragma region Getter
+
+	
+
+#pragma endregion
+
 public:
 	//Added element will be summed with speed value.
 	//* Return value : index of value added on container. return negative value if adding work failed
@@ -68,10 +79,16 @@ public:
 	//* Return value : index of value added on container. return negative value if adding work failed
 	int32			Add_Speed_MultiplicationElement(int32 _weight, float _multiplyValue);
 
+#pragma region State_Check
 public:
+	bool			Is_OnAir_Begin(void);
+	bool			Is_OnAir(void);
+	bool			Is_OnAir_End(void);
+
 	bool			IsJumpStart(void);
 	bool			IsJumping(void);
 	bool			IsJumpEnd(void);
+#pragma endregion
 
 protected:
 	virtual void	Update_MovementSpeed(float DeltaTime);
@@ -79,7 +96,7 @@ protected:
 
 private:
 	void			FollowPath_Jump(float DeltaTime);
-	void			FollowPath_Walk(float DeltaTime);
+	void			FollowPath_Walk(float DeltaTime, const FVector& _location_Current, const FVector& _location_Target);
 	
 	
 };

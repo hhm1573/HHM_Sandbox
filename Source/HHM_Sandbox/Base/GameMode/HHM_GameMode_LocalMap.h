@@ -46,7 +46,7 @@ public:
 	bool			Utility_Index_Seperate(FVector2D& _vec_Return, int32 _index);
 	bool			Utility_Index_Combine(int32& _index_Return, FVector2D _vec_Index);
 	bool			Utility_Calculate_IndexLocation(FVector2D& _vec_Return, float _location_X, float _location_Z);
-	bool			Utility_Calculate_Location(FVector& _vec_Return, FVector2D _vec_IndexLocation);
+	bool			Utility_Calculate_Location(FVector& _vec_Return, FVector2D _vec_IndexLocation, float _location_Y = 0.0f);
 
 #pragma endregion
 

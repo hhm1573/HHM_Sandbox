@@ -96,7 +96,7 @@ bool AHHM_GameMode_LocalMap::Utility_Calculate_IndexLocation(FVector2D& _vec_Ret
 	return true;
 }
 
-bool AHHM_GameMode_LocalMap::Utility_Calculate_Location(FVector& _vec_Return, FVector2D _vec_IndexLocation) {
+bool AHHM_GameMode_LocalMap::Utility_Calculate_Location(FVector& _vec_Return, FVector2D _vec_IndexLocation, float _location_Y) {
 	bool IsValidIndexLocation = AHHM_GameMode_LocalMap::Check_IsValidIndex(_vec_IndexLocation.X, _vec_IndexLocation.Y);
 	if (IsValidIndexLocation == false) {
 		return false;
@@ -104,7 +104,7 @@ bool AHHM_GameMode_LocalMap::Utility_Calculate_Location(FVector& _vec_Return, FV
 
 	float Location_X = _vec_IndexLocation.X * m_MapInfo.TileSize;
 	float Location_Z = _vec_IndexLocation.Y * m_MapInfo.TileSize;
-	FVector Vec_Return = FVector(Location_X, 0.0f, Location_Z);
+	FVector Vec_Return = FVector(Location_X, _location_Y, Location_Z);
 	
 	_vec_Return = Vec_Return;
 
