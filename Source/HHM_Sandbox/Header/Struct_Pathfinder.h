@@ -90,9 +90,11 @@ public:
 		int32			Index_Start = 0;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PathNodeData_MoveType")
 		EHHM_MoveType	eMoveType = EHHM_MoveType::MT_OnGround;
+	//When jumping, movevalue set as many as 1 than Actual JumpLength. So Actual JumpLength = MoveValue - 1.
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PathNodeData_MoveValue")
 		int32			MoveValue = 0;
 
+	//Target IndexLocation
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PathNodeData_Location")
 		FVector2D		Location = FVector2D(-1.0f, -1.0f);
 

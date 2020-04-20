@@ -25,14 +25,18 @@ protected:
 	UPROPERTY()
 		float			m_TileSize = 0.0f;
 
+	UPROPERTY()
+		FHHM_Entity_MovementData	m_MovementData = FHHM_Entity_MovementData();
+
 
 
 	UPROPERTY()
 		EHHM_MoveType	m_MoveType_Current = EHHM_MoveType::MT_OnGround;
 	UPROPERTY()
+		//Used for moves like jump,fall,etc.. when timer reached to zero, character will move to target location
 		float			m_Move_Timer = 0.0f;
 	UPROPERTY()
-		FVector2D		m_MoveTarget_Current = FVector2D();
+		FVector			m_MoveTarget_Current = FVector();
 	UPROPERTY()
 		EHHM_MoveType	m_MoveType_Before = EHHM_MoveType::MT_OnGround;
 
@@ -94,9 +98,19 @@ protected:
 	virtual void	Update_MovementSpeed(float DeltaTime);
 	virtual void	FollowPath(float DeltaTime);
 
+#pragma region Implement_FollowingPath
 private:
 	void			FollowPath_Jump(float DeltaTime);
-	void			FollowPath_Walk(float DeltaTime, const FVector& _location_Current, const FVector& _location_Target);
+	void			FollowPath_Jump_Free(float DeltaTime);
+
+	void			FollowPath_Fall(float DeltaTime);
+	void			FollowPath_Fall_Free(float DeltaTime);
+
+	void			FollowPath_HorizontalJump(float DeltaTime);
+	void			FollowPath_HorizontalJump_Free(float DeltaTime);
+
+	void			FollowPath_Walk(float DeltaTime/*, const FVector& _location_Current, const FVector& _location_Target*/);
+#pragma endregion
 	
 	
 };

@@ -241,15 +241,6 @@ void UHHM_Component_Movement::Update_MovementSpeed(float DeltaTime) {
 
 void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 
-	//if ( Currently wating for jump ) do FollowPath_Jump(DeltaTime);
-	if (m_MoveType_Current == EHHM_MoveType::MT_Jump || m_MoveType_Current == EHHM_MoveType::MT_Fall
-		|| m_MoveType_Current == EHHM_MoveType::MT_HorizontalJump_Left || m_MoveType_Current == EHHM_MoveType::MT_HorizontalJump_Right) {
-		UHHM_Component_Movement::FollowPath_Jump(DeltaTime);
-		//Do Switch
-	}
-
-
-
 	UWorld* pWorld = nullptr;
 	pWorld = GetWorld();
 	if (pWorld == nullptr) {
@@ -323,21 +314,112 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 		return;
 	}
 
+	m_MoveTarget_Current = Location_Target;
+
+
+
+	//if ( Currently wating for jump ) do FollowPath_Jump(DeltaTime);
+	/*if (m_MoveType_Current == EHHM_MoveType::MT_Jump || m_MoveType_Current == EHHM_MoveType::MT_Fall
+		|| m_MoveType_Current == EHHM_MoveType::MT_HorizontalJump_Left || m_MoveType_Current == EHHM_MoveType::MT_HorizontalJump_Right) {
+		UHHM_Component_Movement::FollowPath_Jump(DeltaTime);
+		//Do Switch
+	}*/
+	if (m_MoveType_Current != EHHM_MoveType::MT_OnGround) {
+		switch (m_MoveType_Current)
+		{
+		case EHHM_MoveType::MT_Jump:
+			UHHM_Component_Movement::FollowPath_Jump(DeltaTime);
+			break;
+
+		case EHHM_MoveType::MT_Fall:
+			UHHM_Component_Movement::FollowPath_Fall(DeltaTime);
+			return;
+			break;
+
+		case EHHM_MoveType::MT_HorizontalJump_Left:
+		case EHHM_MoveType::MT_HorizontalJump_Right:
+			UHHM_Component_Movement::FollowPath_HorizontalJump(DeltaTime);
+			return;
+			break;
+
+		default:
+			//Exception : not implemented input movetype
+			return;
+			break;
+		}
+	}
+
 
 
 	//Following Path
-	UHHM_Component_Movement::FollowPath_Walk(DeltaTime, Location_Current, Location_Target);
+	UHHM_Component_Movement::FollowPath_Walk(DeltaTime);
 }
 
 
 
+#pragma region Implement_FollowingPath
 void UHHM_Component_Movement::FollowPath_Jump(float DeltaTime) {
+	//if current jump is free-jump, call free-jump function instead.
+	int32 JumpLength_Current = m_FollowingPath[0].MoveValue - 1;	//Because MoveValue is set as 1 more value than actual jump length
+
+	if (JumpLength_Current >= m_MovementData.Jump_Vertical_FreeJump_Minimum) {
+		UHHM_Component_Movement::FollowPath_Jump_Free(DeltaTime);
+		return;
+	}
+
+
+
+	//if jump just started, reset MoveTimer
+	if (m_MoveType_Before != EHHM_MoveType::MT_Jump) {
+		float Duration_Animation = m_MovementData.Jump_Vertical_AnimationDuration[JumpLength_Current];
+		m_Move_Timer = Duration_Animation;
+	}
+
+	float MoveTimer_AfterTick = m_Move_Timer - DeltaTime;
+	if (MoveTimer_AfterTick <= 0) {
+		FVector Location_Current = GetActorLocation();
+		FVector Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
+		FQuat		Rotator = FQuat();
+		FHitResult	HitResult = FHitResult();
+
+		SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator, false, HitResult);
+
+		m_Move_Timer = 0.0f;
+	}
+}
+
+void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
+	//Set target location as just directly above character
+	//Current Location + Jumplength * tilesize
+}
+
+
+
+void UHHM_Component_Movement::FollowPath_Fall(float DeltaTime) {
 
 }
 
-void UHHM_Component_Movement::FollowPath_Walk(float DeltaTime, const FVector& _location_Current, const FVector& _location_Target) {
+void UHHM_Component_Movement::FollowPath_Fall_Free(float DeltaTime) {
+
+}
+
+
+
+void UHHM_Component_Movement::FollowPath_HorizontalJump(float DeltaTime) {
+
+}
+
+void UHHM_Component_Movement::FollowPath_HorizontalJump_Free(float DeltaTime) {
+
+}
+
+
+
+void UHHM_Component_Movement::FollowPath_Walk(float DeltaTime) {
+	FVector Location_Current = GetActorLocation();
+
 	//Get Target Direction
-	FVector Direction_Current_To_Target = _location_Target - _location_Current;
+	FVector Direction_Current_To_Target = m_MoveTarget_Current - Location_Current;
 	Direction_Current_To_Target.Y = 0.0f;
 	Direction_Current_To_Target.Z = 0.0f;
 
@@ -345,10 +427,10 @@ void UHHM_Component_Movement::FollowPath_Walk(float DeltaTime, const FVector& _l
 	Direction_Current_To_Target.Normalize();
 
 	//Get Location of this entity should be after this tick
-	FVector Location_AfterTick = _location_Current + (Direction_Current_To_Target * (m_Speed_Current * m_TileSize) * DeltaTime);
+	FVector Location_AfterTick = Location_Current + (Direction_Current_To_Target * (m_Speed_Current * m_TileSize) * DeltaTime);
 
 	//Get Distance of AfterTick and Target
-	FVector Vec_Current_To_AfterTick = Location_AfterTick - _location_Current;
+	FVector Vec_Current_To_AfterTick = Location_AfterTick - Location_Current;
 	Vec_Current_To_AfterTick.Y = 0.0f;
 	Vec_Current_To_AfterTick.Z = 0.0f;
 
@@ -365,3 +447,4 @@ void UHHM_Component_Movement::FollowPath_Walk(float DeltaTime, const FVector& _l
 		SafeMoveUpdatedComponent(Vec_Current_To_AfterTick, Rotator, false, HitResult);
 	}
 }
+#pragma endregion
