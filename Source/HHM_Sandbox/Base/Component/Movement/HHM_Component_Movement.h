@@ -7,6 +7,7 @@
 
 #include "Header/Struct_Pathfinder.h"
 #include "Data/Entity/Struct_Entity_MovementData.h"
+#include "Data/Entity/Enum_Entity_MovementData.h"
 
 #include "HHM_Component_Movement.generated.h"
 
@@ -31,19 +32,27 @@ protected:
 
 
 	UPROPERTY()
-		EHHM_MoveType	m_MoveType_Current = EHHM_MoveType::MT_OnGround;
+		EHHM_MoveType				m_MoveType_Current = EHHM_MoveType::MT_OnGround;
+	UPROPERTY()
+		EHHM_MoveType				m_MoveType_Before = EHHM_MoveType::MT_OnGround;
+	UPROPERTY()
+		EHHM_Entity_Movement_State	m_MoveState_Current = EHHM_Entity_Movement_State::MoveState_Dummy;
+	//UPROPERTY()
+	//	EHHM_Entity_Movement_State	m_MoveState_Before = EHHM_Entity_Movement_State::MoveState_Dummy;	// HHM Note : this variable might not needed
 	UPROPERTY()
 		//Used for moves like jump,fall,etc.. when timer reached to zero, character will move to target location
-		float			m_Move_Timer = 0.0f;
+		float						m_Move_Timer = 0.0f;
 	UPROPERTY()
-		FVector			m_MoveTarget_Current = FVector();
-	UPROPERTY()
-		EHHM_MoveType	m_MoveType_Before = EHHM_MoveType::MT_OnGround;
+		FVector						m_MoveTarget_Current = FVector();
+	
+
 
 	UPROPERTY()
 		TArray<float>									m_Container_Speed_ModificationElement;
 	UPROPERTY()
 		TArray<FHHM_Movement_SpeedMultiplicationData>	m_Container_Speed_MultiplicationElement;
+
+
 
 	int32 m_EntitySize_Horizontal = 1;
 	int32 m_EntitySize_Vertical = 1;
@@ -65,6 +74,11 @@ public:
 	virtual void	TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
+	UFUNCTION(BlueprintCallable)
+		float		Get_MoveTimer() { return m_Move_Timer; }
+
+public:
+	UFUNCTION(BlueprintCallable)
 	bool			MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical);
 
 #pragma region Getter
@@ -111,6 +125,9 @@ private:
 
 	void			FollowPath_Walk(float DeltaTime/*, const FVector& _location_Current, const FVector& _location_Target*/);
 #pragma endregion
+
+private:
+	bool			Calculate_MoveTarget_Location(void);
 	
 	
 };

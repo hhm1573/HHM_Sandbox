@@ -1,6 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HHM_Entity.h"
+
+#include "Base/Component/Movement/HHM_Component_Movement.h"
+
 #include "Base/GameInstance/HHM_GameInstance.h"
 
 #include "Engine/World.h"
@@ -16,6 +19,10 @@ AHHM_Entity::AHHM_Entity()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+
+
+	m_pComponent_Movement = CreateDefaultSubobject<UHHM_Component_Movement>(TEXT("HHM_MovementComponent"));
+	m_pComponent_Movement->UpdatedComponent = RootComponent;
 }
 
 // Called when the game starts or when spawned

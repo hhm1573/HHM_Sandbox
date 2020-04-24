@@ -84,6 +84,8 @@ void UHHM_Component_Movement::TickComponent(float DeltaTime, ELevelTick TickType
 }
 
 bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical) {
+	// HHM Note : Add Location Check whether entity can reach/stand or not
+
 	UWorld* pWorld = GetWorld();
 	if (pWorld == nullptr) {
 		return false;
@@ -122,12 +124,26 @@ bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _ind
 	//pManager_Navigation->Search_Path(pLocalMap, )
 	m_FollowingPath = Path_Find;
 
+	bool IsSucceed_Calculation = UHHM_Component_Movement::Calculate_MoveTarget_Location();
+	if (IsSucceed_Calculation == false) {
+		m_FollowingPath.Empty();
+		return false;
+	}
+
 	
 
 	return true;
 }
 
 
+
+int32	UHHM_Component_Movement::Add_Speed_ModificationElement(float _modifyValue) {
+	return 0;
+}
+
+int32	UHHM_Component_Movement::Add_Speed_MultiplicationElement(int32 _weight, float _multiplyValue) {
+	return 0;
+}
 
 #pragma region State_Check
 
@@ -241,45 +257,6 @@ void UHHM_Component_Movement::Update_MovementSpeed(float DeltaTime) {
 
 void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 
-	UWorld* pWorld = nullptr;
-	pWorld = GetWorld();
-	if (pWorld == nullptr) {
-		//Exception
-		return;
-	}
-
-	AGameModeBase* pGameMode_Raw = nullptr;
-	pGameMode_Raw = pWorld->GetAuthGameMode();
-	if (pGameMode_Raw == nullptr) {
-		//Exception
-		return;
-	}
-
-	AHHM_GameMode_LocalMap* pGameMode = nullptr;
-	pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
-	if (pGameMode == nullptr) {
-		//Exception
-		return;
-	}
-
-
-
-	int32		Index_Target = m_FollowingPath[0].Index_Target;
-	FVector2D	IndexLocation_Target = FVector2D();
-	if (pGameMode->Utility_Index_Seperate(IndexLocation_Target, Index_Target) == false) {
-		//Exception
-		return;
-	}
-	FVector		Location_Target = FVector();
-	if (pGameMode->Utility_Calculate_Location(Location_Target, IndexLocation_Target) == false) {		//HHM Note : Y Level Control
-		//Exception
-		return;
-	}
-
-
-	/*const ALocalMap* LocalMap = nullptr;
-	LocalMap = pGameMode->Get_LocalMap_Const();*/
-
 	FVector Location_Current = GetActorLocation();
 	float	Location_Start_X = Location_Current.X - ((m_EntitySize_Horizontal - 1) * (m_TileSize * 0.5f));
 	float	Location_Start_Y = Location_Current.Y - ((m_EntitySize_Vertical - 1) * (m_TileSize * 0.5f));
@@ -293,7 +270,7 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 
 
 	//Check is entity at target point
-	FVector Vec_Distance_Target = Location_Target - Location_Start;
+	FVector Vec_Distance_Target = m_MoveTarget_Current - Location_Start;
 	float	Distance_Target = Vec_Distance_Target.Size();
 	//HHM Note : Change this Value later ---- ---- ---- ----
 	float	Acceptable_Distance = 10.0f;
@@ -301,6 +278,13 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 	//Return if entity is already at target point
 	if (Distance_Target <= Acceptable_Distance) {
 		m_FollowingPath.RemoveAt(0);
+
+		bool IsSucceed_Calculation = UHHM_Component_Movement::Calculate_MoveTarget_Location();
+		if (IsSucceed_Calculation == false) {
+			//Exception
+			m_FollowingPath.Empty();
+			return;
+		}
 
 		/*m_MoveType_Before = m_MoveType_Current;
 		int32 Num_RemainPath = m_FollowingPath.Num();
@@ -313,8 +297,6 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 
 		return;
 	}
-
-	m_MoveTarget_Current = Location_Target;
 
 
 
@@ -375,6 +357,7 @@ void UHHM_Component_Movement::FollowPath_Jump(float DeltaTime) {
 		m_Move_Timer = Duration_Animation;
 	}
 
+	//Decrease MoveTimer and move actor if movetimer reach zero on this tick.
 	float MoveTimer_AfterTick = m_Move_Timer - DeltaTime;
 	if (MoveTimer_AfterTick <= 0) {
 		FVector Location_Current = GetActorLocation();
@@ -386,11 +369,166 @@ void UHHM_Component_Movement::FollowPath_Jump(float DeltaTime) {
 
 		m_Move_Timer = 0.0f;
 	}
+
+	m_Move_Timer = MoveTimer_AfterTick;
 }
 
 void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 	//Set target location as just directly above character
 	//Current Location + Jumplength * tilesize
+	//Start - End - During
+
+
+
+	//if Jump just started reset MoveTimer and MoveState, and also fix move target location
+	if (m_MoveType_Before != EHHM_MoveType::MT_Jump) {
+		//Reset MoveTimer
+		float Duration_Animation_Begin = m_MovementData.Jump_Vertical_FreeJump_Duration_Start;
+		m_Move_Timer = Duration_Animation_Begin;
+
+		//Reset MoveState
+		m_MoveState_Current = EHHM_Entity_Movement_State::MoveState_Begin;
+
+
+
+		//Fix MoveTarget Location
+		UWorld* pWorld = nullptr;
+		pWorld = GetWorld();
+		if (pWorld == nullptr) {
+			//Exception
+			m_FollowingPath.Empty();
+			return;
+		}
+
+		AGameModeBase* pGameMode_Raw = nullptr;
+		pGameMode_Raw = pWorld->GetAuthGameMode();
+		if (pGameMode_Raw == nullptr) {
+			//Exception
+			m_FollowingPath.Empty();
+			return;
+		}
+
+		AHHM_GameMode_LocalMap* pGameMode = nullptr;
+		pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
+		if (pGameMode == nullptr) {
+			//Exception
+			m_FollowingPath.Empty();
+			return;
+		}
+
+		// HHM Note : if Optimizing work needed, these location calculating part might needs to be modified. calculate on this function instead calling some utility functions
+		int32		Index_Current = m_FollowingPath[0].Index_Start;
+		FVector2D	IndexLocation_Current = FVector2D();
+		bool IsSucceed_SeperateIndex = pGameMode->Utility_Index_Seperate(IndexLocation_Current, Index_Current);
+		if (IsSucceed_SeperateIndex == false) {
+			//Exception
+			m_FollowingPath.Empty();
+			return;
+		}
+		
+		int32 JumpLength = m_FollowingPath[0].MoveValue - 1;
+		int32 MoveTarget_Height = JumpLength - 1;
+		int32 Index_MoveTarget_Height = IndexLocation_Current.Y + MoveTarget_Height;
+		FVector2D IndexLocation_MoveTarget = FVector2D(IndexLocation_Current.X, Index_MoveTarget_Height);
+
+		FVector Location_MoveTarget = FVector();
+		bool IsSucceed_CalculateLocation = pGameMode->Utility_Calculate_Location(Location_MoveTarget, IndexLocation_MoveTarget, 0.0f);
+		if (IsSucceed_CalculateLocation == false) {
+			//Exception
+			m_FollowingPath.Empty();
+			return;
+		}
+
+		m_MoveTarget_Current = Location_MoveTarget;
+	}
+
+	float MoveTimer_AfterTick = m_Move_Timer - DeltaTime;
+
+
+
+	//Begin
+	if (m_MoveState_Current == EHHM_Entity_Movement_State::MoveState_Begin) {
+		if (MoveTimer_AfterTick <= 0.0f) {
+			m_MoveState_Current = EHHM_Entity_Movement_State::MoveState_During;
+			m_Move_Timer = 0.0f;
+			return;
+		}
+	}
+
+
+
+	//End
+	if (m_MoveState_Current == EHHM_Entity_Movement_State::MoveState_End) {
+		if (MoveTimer_AfterTick <= 0.0f) {
+			m_MoveState_Current = EHHM_Entity_Movement_State::MoveState_Dummy;
+
+			FVector		Location_Current = GetActorLocation();
+			FVector		Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
+			FQuat		Rotator = FQuat();
+			FHitResult	HitResult = FHitResult();
+			bool IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator, false, HitResult);
+			if (IsSucceed_Move == false) {
+				//Exception
+				m_FollowingPath.Empty();
+				return;
+			}
+
+			m_Move_Timer = 0.0f;
+			
+			return;
+		}
+	}
+
+
+
+	//During
+	if (m_MoveState_Current == EHHM_Entity_Movement_State::MoveState_During) {
+		FVector Location_Current = GetActorLocation();
+		float Location_Z_AfterTick = Location_Current.Z + (m_MovementData.Jump_Vertical_FreeJump_Speed * DeltaTime * m_TileSize);
+		float Location_Z_MoveTarget = m_MoveTarget_Current.Z;
+
+		FVector	Location_AfterTick = FVector(Location_Current.X, Location_Current.Y, Location_Z_AfterTick);
+		
+		if (Location_Z_AfterTick >= Location_Z_MoveTarget) {
+			FVector		Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
+			FQuat		Rotator = FQuat();
+			FHitResult	HitResult = FHitResult();
+			bool		IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator, false, HitResult);
+			if (IsSucceed_Move == false) {
+				//Exception
+				m_FollowingPath.Empty();
+				return;
+			}
+
+			m_MoveState_Current = EHHM_Entity_Movement_State::MoveState_End;
+			
+			m_Move_Timer = m_MovementData.Jump_Vertical_FreeJump_Duration_End;
+
+			bool IsSucceed_CalculateMoveTarget = UHHM_Component_Movement::Calculate_MoveTarget_Location();
+			if (IsSucceed_CalculateMoveTarget == false) {
+				//Exception
+				m_FollowingPath.Empty();
+				return;
+			}
+
+			return;
+		}
+		else {
+			FVector		Vec_CurrentToAfterTick = Location_AfterTick - Location_Current;
+			FQuat		Rotator = FQuat();
+			FHitResult	HitResult = FHitResult();
+			bool		IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToAfterTick, Rotator, false, HitResult);
+			if (IsSucceed_Move == false) {
+				//Exception
+				m_FollowingPath.Empty();
+				return;
+			}
+		}
+	}
+
+	//Exception
+	m_FollowingPath.Empty();
+	return;
 }
 
 
@@ -448,3 +586,40 @@ void UHHM_Component_Movement::FollowPath_Walk(float DeltaTime) {
 	}
 }
 #pragma endregion
+
+bool UHHM_Component_Movement::Calculate_MoveTarget_Location(void) {
+	int32 Num_FollowingPath = m_FollowingPath.Num();
+	if (Num_FollowingPath <= 0) {
+		//Exception
+		return false;
+	}
+
+	UWorld* pWorld = nullptr;
+	pWorld = GetWorld();
+	if (pWorld == nullptr) {
+		//Exception
+		return false;
+	}
+
+	AGameModeBase* pGameMode_Raw = nullptr;
+	pGameMode_Raw = pWorld->GetAuthGameMode();
+	if (pGameMode_Raw == nullptr) {
+		//Exception
+		return false;
+	}
+
+	AHHM_GameMode_LocalMap* pGameMode = nullptr;
+	pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
+	if (pGameMode == nullptr) {
+		//Exception
+		return false;
+	}
+
+	FVector TargetLocation;
+	bool IsCalculationSucceed = pGameMode->Utility_Calculate_Location(TargetLocation, m_FollowingPath[0].IndexLocation_Target, 0.0f);
+	
+	m_MoveTarget_Current = TargetLocation;
+
+	return IsCalculationSucceed;
+	
+}

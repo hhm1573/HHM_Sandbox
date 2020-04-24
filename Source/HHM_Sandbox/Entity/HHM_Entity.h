@@ -12,6 +12,10 @@
 
 
 
+class UHHM_Component_Movement;
+
+
+
 UCLASS()
 class HHM_SANDBOX_API AHHM_Entity : public ACharacter
 {
@@ -23,6 +27,10 @@ public:
 
 protected:
 	class ALocalMap* m_pLocalMap = nullptr;
+
+private:
+	UPROPERTY(Category = HHM_Entity, VisibleAnywhere, BlueprintReadOnly)
+	UHHM_Component_Movement* m_pComponent_Movement = nullptr;
 
 
 

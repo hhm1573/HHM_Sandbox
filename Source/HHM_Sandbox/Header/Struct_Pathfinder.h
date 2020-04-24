@@ -96,7 +96,7 @@ public:
 
 	//Target IndexLocation
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PathNodeData_Location")
-		FVector2D		Location = FVector2D(-1.0f, -1.0f);
+		FVector2D		IndexLocation_Target = FVector2D(-1.0f, -1.0f);
 
 public:
 	FHHM_PathNodeData() {
@@ -108,7 +108,7 @@ public:
 		Index_Start = _index_Start;
 		eMoveType = _eMoveType;
 		MoveValue = _moveValue;
-		Location = _location;
+		IndexLocation_Target = _location;
 	}
 
 };
