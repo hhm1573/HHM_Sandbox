@@ -22,6 +22,10 @@ class HHM_SANDBOX_API UHHM_Component_Movement : public UPawnMovementComponent
 public:
 	UHHM_Component_Movement();
 
+	//Temporary function
+public:
+	void Temp_Set_MoveData(FHHM_Entity_MovementData& _moveData) { m_MovementData = _moveData; }
+
 protected:
 	UPROPERTY()
 		float			m_TileSize = 0.0f;
@@ -29,7 +33,7 @@ protected:
 	UPROPERTY()
 		FHHM_Entity_MovementData	m_MovementData = FHHM_Entity_MovementData();
 
-
+	//한글 주석 테스트
 
 	UPROPERTY()
 		EHHM_MoveType				m_MoveType_Current = EHHM_MoveType::MT_OnGround;
@@ -74,16 +78,15 @@ public:
 	virtual void	TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-	UFUNCTION(BlueprintCallable)
-		float		Get_MoveTimer() { return m_Move_Timer; }
-
-public:
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	bool			MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical);
 
 #pragma region Getter
+	//Get speed etc.
 
-	
+public:
+	UFUNCTION()
+		float		Get_MoveTimer() { return m_Move_Timer; }
 
 #pragma endregion
 

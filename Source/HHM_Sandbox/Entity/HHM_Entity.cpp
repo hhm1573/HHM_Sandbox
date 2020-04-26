@@ -18,11 +18,6 @@ AHHM_Entity::AHHM_Entity()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-
-
-	m_pComponent_Movement = CreateDefaultSubobject<UHHM_Component_Movement>(TEXT("HHM_MovementComponent"));
-	m_pComponent_Movement->UpdatedComponent = RootComponent;
 }
 
 // Called when the game starts or when spawned
