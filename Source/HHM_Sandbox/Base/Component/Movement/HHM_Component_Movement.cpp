@@ -258,10 +258,10 @@ void UHHM_Component_Movement::Update_MovementSpeed(float DeltaTime) {
 void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 
 	FVector Location_Current = GetActorLocation();
-	float	Location_Start_X = Location_Current.X - ((m_EntitySize_Horizontal - 1) * (m_TileSize * 0.5f));
-	float	Location_Start_Y = Location_Current.Y - ((m_EntitySize_Vertical - 1) * (m_TileSize * 0.5f));
-	FVector Location_Start = FVector(Location_Start_X, 0.0f, Location_Start_Y);														//HHM Note : Y Level Control
-	FVector2D IndexLocation_Start = FVector2D(Location_Start.X / m_TileSize, Location_Start.Z / m_TileSize);
+	//float	Location_Start_X = Location_Current.X - ((m_EntitySize_Horizontal - 1) * (m_TileSize * 0.5f));
+	//float	Location_Start_Y = Location_Current.Y - ((m_EntitySize_Vertical - 1) * (m_TileSize * 0.5f));
+	//FVector Location_Start = FVector(Location_Start_X, 0.0f, Location_Start_Y);														//HHM Note : Y Level Control
+	//FVector2D IndexLocation_Start = FVector2D(Location_Start.X / m_TileSize, Location_Start.Z / m_TileSize);
 
 
 
@@ -270,8 +270,8 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 
 
 	//Check is entity at target point
-	FVector Vec_Distance_Target = m_MoveTarget_Current - Location_Start;
-	float	Distance_Target = Vec_Distance_Target.Size();
+	FVector Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
+	float	Distance_Target = Vec_CurrentToTarget.Size();
 	//HHM Note : Change this Value later ---- ---- ---- ----
 	float	Acceptable_Distance = 10.0f;
 
@@ -396,7 +396,7 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 		pWorld = GetWorld();
 		if (pWorld == nullptr) {
 			//Exception
-			m_FollowingPath.Empty();
+			Abort_Path();
 			return;
 		}
 
@@ -404,7 +404,7 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 		pGameMode_Raw = pWorld->GetAuthGameMode();
 		if (pGameMode_Raw == nullptr) {
 			//Exception
-			m_FollowingPath.Empty();
+			Abort_Path();
 			return;
 		}
 
@@ -412,7 +412,7 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 		pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
 		if (pGameMode == nullptr) {
 			//Exception
-			m_FollowingPath.Empty();
+			Abort_Path();
 			return;
 		}
 
@@ -422,7 +422,7 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 		bool IsSucceed_SeperateIndex = pGameMode->Utility_Index_Seperate(IndexLocation_Current, Index_Current);
 		if (IsSucceed_SeperateIndex == false) {
 			//Exception
-			m_FollowingPath.Empty();
+			Abort_Path();
 			return;
 		}
 		
@@ -435,7 +435,7 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 		bool IsSucceed_CalculateLocation = pGameMode->Utility_Calculate_Location(Location_MoveTarget, IndexLocation_MoveTarget, 0.0f);
 		if (IsSucceed_CalculateLocation == false) {
 			//Exception
-			m_FollowingPath.Empty();
+			Abort_Path();
 			return;
 		}
 
@@ -462,14 +462,23 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 		if (MoveTimer_AfterTick <= 0.0f) {
 			m_MoveState_Current = EHHM_Entity_Movement_State::MoveState_Dummy;
 
+			
 			FVector		Location_Current = GetActorLocation();
 			FVector		Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
-			FQuat		Rotator = FQuat();
+
+			AActor* pActor_Owner = GetOwner();
+			if (pActor_Owner == nullptr) {
+				//Exception
+				Abort_Path();
+				return;
+			}
+			FRotator	Rotator_Current = pActor_Owner->GetActorRotation();
+			FQuat		Quat_Current = Rotator_Current.Quaternion();
 			FHitResult	HitResult = FHitResult();
-			bool IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator, false, HitResult);
+			bool IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToTarget, Quat_Current, false, HitResult);
 			if (IsSucceed_Move == false) {
 				//Exception
-				m_FollowingPath.Empty();
+				Abort_Path();
 				return;
 			}
 
@@ -491,12 +500,21 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 		
 		if (Location_Z_AfterTick >= Location_Z_MoveTarget) {
 			FVector		Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
-			FQuat		Rotator = FQuat();
+
+			AActor* pActor_Owner = GetOwner();
+			if (pActor_Owner == nullptr) {
+				//Exception
+				Abort_Path();
+				return;
+			}
+			FRotator	Rotator_Current = pActor_Owner->GetActorRotation();
+			FQuat		Quat_Current = Rotator_Current.Quaternion();
+
 			FHitResult	HitResult = FHitResult();
-			bool		IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator, false, HitResult);
+			bool		IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToTarget, Quat_Current, false, HitResult);
 			if (IsSucceed_Move == false) {
 				//Exception
-				m_FollowingPath.Empty();
+				Abort_Path();
 				return;
 			}
 
@@ -507,7 +525,7 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 			bool IsSucceed_CalculateMoveTarget = UHHM_Component_Movement::Calculate_MoveTarget_Location();
 			if (IsSucceed_CalculateMoveTarget == false) {
 				//Exception
-				m_FollowingPath.Empty();
+				Abort_Path();
 				return;
 			}
 
@@ -515,19 +533,28 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 		}
 		else {
 			FVector		Vec_CurrentToAfterTick = Location_AfterTick - Location_Current;
-			FQuat		Rotator = FQuat();
+
+			AActor* pActor_Owner = GetOwner();
+			if (pActor_Owner == nullptr) {
+				//Exception
+				Abort_Path();
+				return;
+			}
+			FRotator	Rotator_Current = pActor_Owner->GetActorRotation();
+			FQuat		Quat_Current = Rotator_Current.Quaternion();
+
 			FHitResult	HitResult = FHitResult();
-			bool		IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToAfterTick, Rotator, false, HitResult);
+			bool		IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToAfterTick, Quat_Current, false, HitResult);
 			if (IsSucceed_Move == false) {
 				//Exception
-				m_FollowingPath.Empty();
+				Abort_Path();
 				return;
 			}
 		}
 	}
 
 	//Exception
-	m_FollowingPath.Empty();
+	Abort_Path();
 	return;
 }
 
@@ -576,13 +603,20 @@ void UHHM_Component_Movement::FollowPath_Walk(float DeltaTime) {
 	float Distance_Current_To_Target = Vec_Current_To_Target.Size();
 
 	//Compare The Distance and if Entity will be pass the target after this tick, set actor's location as target
-	FQuat Rotator = FQuat();
+	AActor* pActor_Owner = GetOwner();
+	if (pActor_Owner == nullptr) {
+		//Exception
+		Abort_Path();
+		return;
+	}
+	FRotator Rotator_Current = pActor_Owner->GetActorRotation();
+	FQuat Quat_Current = Rotator_Current.Quaternion();
 	FHitResult HitResult = FHitResult();
 	if (Distance_Current_To_AfterTick > Distance_Current_To_Target) {
-		SafeMoveUpdatedComponent(Vec_Current_To_Target, Rotator, false, HitResult);
+		SafeMoveUpdatedComponent(Vec_Current_To_Target, Quat_Current, false, HitResult);
 	}
 	else {
-		SafeMoveUpdatedComponent(Vec_Current_To_AfterTick, Rotator, false, HitResult);
+		SafeMoveUpdatedComponent(Vec_Current_To_AfterTick, Quat_Current, false, HitResult);
 	}
 }
 #pragma endregion
@@ -622,4 +656,10 @@ bool UHHM_Component_Movement::Calculate_MoveTarget_Location(void) {
 
 	return IsCalculationSucceed;
 	
+}
+
+void UHHM_Component_Movement::Abort_Path(void) {
+	m_FollowingPath.Empty();
+	m_Move_Timer = 0.0f;
+	m_MoveTarget_Current = FVector();
 }

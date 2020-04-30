@@ -25,6 +25,7 @@ public:
 	//Temporary function
 public:
 	void Temp_Set_MoveData(FHHM_Entity_MovementData& _moveData) { m_MovementData = _moveData; }
+	void Temp_Set_DefaultSpeed(float _speed_TilePerSec) { m_Speed_Default = _speed_TilePerSec; }
 
 protected:
 	UPROPERTY()
@@ -58,6 +59,18 @@ protected:
 
 
 
+	UPROPERTY()
+	float m_Speed_Default = 0.0f; // Tile Per Sec
+	UPROPERTY()
+	float m_Speed_Current = 0.0f; //Tile Per Sec
+	
+
+
+	UPROPERTY()
+	TArray<FHHM_PathNodeData>	m_FollowingPath;
+
+
+
 	int32 m_EntitySize_Horizontal = 1;
 	int32 m_EntitySize_Vertical = 1;
 
@@ -65,13 +78,9 @@ protected:
 	int32 m_MaxFallHeight = 0;
 	int32 m_MaxHorizontalJumpLength = 0;
 
-	float m_Speed_Default = 0.0f; // Tile Per Sec
-	float m_Speed_Current = 0.0f; //Tile Per Sec
-
 	float m_MoveDistance_ThisTick = 0.0f;
 	float m_MoveDistance_PostTick = 0.0f;
 
-	TArray<FHHM_PathNodeData>	m_FollowingPath;
 
 public:
 	virtual void	BeginPlay() override;
@@ -131,6 +140,8 @@ private:
 
 private:
 	bool			Calculate_MoveTarget_Location(void);
+
+	void			Abort_Path(void);
 	
 	
 };

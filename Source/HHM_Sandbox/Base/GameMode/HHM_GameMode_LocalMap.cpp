@@ -102,8 +102,8 @@ bool AHHM_GameMode_LocalMap::Utility_Calculate_Location(FVector& _vec_Return, FV
 		return false;
 	}
 
-	float Location_X = _vec_IndexLocation.X * m_MapInfo.TileSize;
-	float Location_Z = _vec_IndexLocation.Y * m_MapInfo.TileSize;
+	float Location_X = _vec_IndexLocation.X * m_MapInfo.TileSize + ( m_MapInfo.TileSize * 0.5f );
+	float Location_Z = _vec_IndexLocation.Y * m_MapInfo.TileSize + ( m_MapInfo.TileSize * 0.5f );
 	FVector Vec_Return = FVector(Location_X, _location_Y, Location_Z);
 	
 	_vec_Return = Vec_Return;

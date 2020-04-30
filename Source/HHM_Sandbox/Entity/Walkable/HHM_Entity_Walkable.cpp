@@ -29,6 +29,8 @@ AHHM_Entity_Walkable::AHHM_Entity_Walkable() {
 	MoveData.Jump_Vertical_AnimationDuration.Add(1.5f);
 	MoveData.Jump_Vertical_AnimationDuration.Add(2.0f);
 	m_pComponent_Movement->Temp_Set_MoveData(MoveData);
+
+	m_pComponent_Movement->Temp_Set_DefaultSpeed(1.0f);
 }
 
 
