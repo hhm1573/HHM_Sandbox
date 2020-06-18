@@ -359,7 +359,7 @@ void UHHM_Component_Movement::FollowPath_Jump(float DeltaTime) {
 
 	//Decrease MoveTimer and move actor if movetimer reach zero on this tick.
 	float MoveTimer_AfterTick = m_Move_Timer - DeltaTime;
-	if (MoveTimer_AfterTick <= 0) {
+	if (MoveTimer_AfterTick <= 0.0f) {
 		FVector Location_Current = GetActorLocation();
 		FVector Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
 		FQuat		Rotator = FQuat();
@@ -368,6 +368,7 @@ void UHHM_Component_Movement::FollowPath_Jump(float DeltaTime) {
 		SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator, false, HitResult);
 
 		m_Move_Timer = 0.0f;
+		return;
 	}
 
 	m_Move_Timer = MoveTimer_AfterTick;
@@ -561,11 +562,108 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 
 
 void UHHM_Component_Movement::FollowPath_Fall(float DeltaTime) {
+	int32 FallLength_Current = m_FollowingPath[0].MoveValue - 1;	//Because MoveValue is set as 1 more value than actaul jump length
 
+	if (FallLength_Current >= m_MovementData.Fall_FreeFall_Minimum) {	//if FallLength is same or higher than freefall minimum length, do freefall
+		UHHM_Component_Movement::FollowPath_Fall_Free(DeltaTime);
+		return;
+	}
+
+
+
+	//if Fall just started, reset MoveTimer
+	if (m_MoveType_Before != EHHM_MoveType::MT_Fall) {
+		float Duration_Animation = m_MovementData.Fall_AnimationDuration[FallLength_Current];
+		m_Move_Timer = Duration_Animation;
+	}
+
+	//Decrease MoveTimer and move actor if MoveTimer reach zero on this tick.
+	float MoveTimer_AfterTick = m_Move_Timer - DeltaTime;
+	if (MoveTimer_AfterTick <= 0.0f) {
+		FVector Location_Current = GetActorLocation();
+		FVector	Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
+		FQuat		Rotator = FQuat();
+		FHitResult	HitResult = FHitResult();
+
+		SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator, false, HitResult);
+
+		m_Move_Timer = 0.0f;
+		return;
+	}
+
+	m_Move_Timer = MoveTimer_AfterTick;
 }
 
 void UHHM_Component_Movement::FollowPath_Fall_Free(float DeltaTime) {
+	//Set target location as just directly below character
+	//Current location + Jumplength + tilesize
+	//Start - End - During
 
+
+
+	//if Fall just started reset MoveTimer and MoveState, and also fix move target location
+	if (m_MoveType_Before != EHHM_MoveType::MT_Fall) {
+		//Reset MoveTimer
+		float Duration_Animation_Begin = m_MovementData.Fall_FreeFall_Duration_Start;
+		m_Move_Timer = Duration_Animation_Begin;
+
+		//Reset MoveState
+		m_MoveState_Current = EHHM_Entity_Movement_State::MoveState_Begin;
+
+
+
+		//Fix MoveTarget Location
+		UWorld* pWorld = nullptr;
+		pWorld = GetWorld();
+		if (pWorld == nullptr) {
+			//Exception
+			Abort_Path();
+			return;
+		}
+
+		AGameModeBase* pGameMode_Raw = nullptr;
+		pGameMode_Raw = pWorld->GetAuthGameMode();
+		if (pGameMode_Raw == nullptr) {
+			//Exception
+			Abort_Path();
+			return;
+		}
+
+		AHHM_GameMode_LocalMap* pGameMode = nullptr;
+		pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
+		if (pGameMode == nullptr) {
+			//Exception
+			Abort_Path();
+			return;
+		}
+
+		// HHM Note : if Optimizing work needed, these location calculating part might needs to be modified. calculate on this function instead calling some utility functions
+		int32		Index_Current = m_FollowingPath[0].Index_Start;
+		FVector2D	IndexLocation_Current = FVector2D();
+		bool IsSucceed_SeperateIndex = pGameMode->Utility_Index_Seperate(IndexLocation_Current, Index_Current);
+		if (IsSucceed_SeperateIndex == false) {
+			//Exception
+			Abort_Path();
+			return;
+		}
+
+		int32 JumpLength = m_FollowingPath[0].MoveValue - 1;
+		int32 MoveTarget_Height = JumpLength - 1;
+		int32 Index_MoveTarget_Height = IndexLocation_Current.Y + MoveTarget_Height;
+		FVector2D IndexLocation_MoveTarget = FVector2D(IndexLocation_Current.X, Index_MoveTarget_Height);
+
+		FVector Location_MoveTarget = FVector();
+		bool IsSucceed_CalculateLocation = pGameMode->Utility_Calculate_Location(Location_MoveTarget, IndexLocation_MoveTarget, 0.0f);
+		if (IsSucceed_CalculateLocation == false) {
+			//Exception
+			Abort_Path();
+			return;
+		}
+
+		m_MoveTarget_Current = Location_MoveTarget;
+	}
+
+	float MoveTimer_AfterTick = m_Move_Timer - DeltaTime;
 }
 
 
