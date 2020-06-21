@@ -138,6 +138,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Rendering)
 		bool Set_TileRenderData(int32 _index, int32 _tileID, int32 _tileSubID, FTransform& _transform);
 	UFUNCTION(BlueprintCallable, Category = Rendering)
+		//Call this function when certain tile needs to change it's render state. ex) placed,destroyed,etc.
+		//해당 인덱스의 타일에게 새로운 렌더상태에 대한 값을 요청하고, 해당 인덱스의 기존 렌더데이터를 삭제후 새로 얻은 렌더값을 렌더합니다.
+		//인덱스의 타일에 어떠한 변동사항이 생길경우 호출되어야 합니다.
 		bool Update_TileRenderData(const FHHM_TileData& _tileData);
 
 private:

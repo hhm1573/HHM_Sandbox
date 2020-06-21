@@ -311,6 +311,7 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 		{
 		case EHHM_MoveType::MT_Jump:
 			UHHM_Component_Movement::FollowPath_Jump(DeltaTime);
+			return;
 			break;
 
 		case EHHM_MoveType::MT_Fall:
