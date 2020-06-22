@@ -38,6 +38,11 @@ public:
 private:
 	UPROPERTY()
 		class AHHM_Manager_Tile*		m_pManager_Tile = nullptr;
+	UPROPERTY()
+		class AHHM_Manager_LocalMap*	m_pManager_LocalMap = nullptr;
+
+	UPROPERTY()
+		FVector2D						m_Vec_Offset;
 
 private:
 	UPROPERTY()

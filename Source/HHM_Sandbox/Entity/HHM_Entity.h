@@ -22,7 +22,8 @@ public:
 	AHHM_Entity();
 
 protected:
-	class ALocalMap* m_pLocalMap = nullptr;
+	class ALocalMap*	m_pLocalMap = nullptr;
+	int32				m_EntityID = -1;
 
 
 
@@ -37,6 +38,12 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+
+
+public:
+	void Register_Entity(class ALocalMap* _pLocalMap, int32 _entityID);
+	void DeRegister_Entity(void);
 
 
 
