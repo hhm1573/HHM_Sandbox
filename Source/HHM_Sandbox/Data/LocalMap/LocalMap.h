@@ -8,6 +8,7 @@
 #include "Header/Struct.h"
 #include "Header/Struct_Tile.h"
 #include "Header/Struct_Renderer.h"
+#include "Header/Struct_LocalMap.h"
 #include "Header/Enum.h"
 
 #include "LocalMap.generated.h"
@@ -34,6 +35,17 @@ public:
 #pragma endregion
 
 #pragma region Variables
+
+private:
+	UPROPERTY()
+		int32							m_ID_LocalMap = -1;
+	UPROPERTY()
+		int32							m_Index_Horizontal = 0;
+	UPROPERTY()
+		int32							m_Index_Vertical = 0;
+	UPROPERTY()
+	//World Location
+		FVector2D						m_Location_Offset;
 
 private:
 	UPROPERTY()
@@ -82,10 +94,11 @@ private:
 
 #pragma region Initialize related
 
+public:
+	void	Validfy_LocalMap(int32 _id, int32 _index_Horizontal, int32 _index_Vertical, const FHHM_LocalMap_MapData& _mapData);
+
 private:
 	void	Clear_Map(void);
-	//Resize Mapdata Array and fill with AirTile Info
-	void	Initialize_Map(const FHHM_MapInfo& mapInfo);
 	void	Refresh_MovementData(void);
 	void	Request_TileManager(void);
 
@@ -103,6 +116,8 @@ private:
 
 public:
 	const FHHM_MapInfo&				Get_MapInfo(void) const { return m_MapInfo; }
+	//Offset representing world location. not local offset
+	const FVector2D&				Get_LocalMap_Offset(void) const { if (m_ID_LocalMap == -1) {/*Exception LocalMap Not validfied*/ } return m_Location_Offset; }
 
 	const TArray<FHHM_TileData>&	Get_MapData(void) const { return m_Arr_MapData; }
 	TArray<FHHM_TileData>&			Get_MapData_Ref(void) { return m_Arr_MapData; }
@@ -110,7 +125,7 @@ public:
 		const FHHM_TileData&		Get_TileInfo(int32 index_Horizontal, int32 index_Vertical) const;
 
 public:
-	void	Set_MapData(const TArray<FHHM_TileData>& mapData) { m_Arr_MapData = mapData; }
+	//void	Set_MapData(const TArray<FHHM_TileData>& mapData) { m_Arr_MapData = mapData; }
 
 #pragma endregion
 

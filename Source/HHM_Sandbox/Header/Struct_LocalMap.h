@@ -3,10 +3,11 @@
 #include "CoreMinimal.h"
 
 #include "Header/Struct.h"
+#include "Header/Struct_Tile.h"
 
 #include "Struct_LocalMap.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FHHM_LocalMapConstructionData
 {
 	GENERATED_USTRUCT_BODY()
@@ -19,7 +20,7 @@ public:
 
 
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FHHM_LocalMapConstructionResult
 {
 	GENERATED_USTRUCT_BODY()
@@ -38,6 +39,18 @@ public:
 };
 
 
+
+USTRUCT(BlueprintType)
+struct FHHM_LocalMap_MapData
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MapData")
+		TArray<FHHM_TileData>			Container_TileData;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MapData")
+		TArray<FHHM_TileMovementInfo>	Container_TileMovementData;
+};
 
 
 

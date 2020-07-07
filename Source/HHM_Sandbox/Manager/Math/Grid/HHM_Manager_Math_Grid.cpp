@@ -2,18 +2,20 @@
 
 #include "HHM_Manager_Math_Grid.h"
 
+#include "Header/Macro.h"
+
 
 
 FVector	AHHM_Manager_Math_Grid::Convert_IndexToTranslation(const FHHM_MapInfo& mapInfo, int32 index) {
 	int32	Index_Horizontal = index % mapInfo.MapSize_Horizontal;
 	int32	Index_Vertical = index / mapInfo.MapSize_Horizontal;
-	FVector	Translation = FVector(Index_Horizontal * mapInfo.TileSize, 0.0f, Index_Vertical * mapInfo.TileSize);
+	FVector	Translation = FVector(Index_Horizontal * HHM_TILE_MESH_SIZE, 0.0f, Index_Vertical * HHM_TILE_MESH_SIZE);
 	return Translation;
 }
 
 int32	AHHM_Manager_Math_Grid::Convert_TranslationToIndex(const FHHM_MapInfo& mapInfo, const FVector& translation) {
-	int32	Index_Horizontal = int32(translation.X / mapInfo.TileSize);
-	int32	Index_Vertical = int32(translation.Z / mapInfo.TileSize);
+	int32	Index_Horizontal = int32(translation.X / HHM_TILE_MESH_SIZE);
+	int32	Index_Vertical = int32(translation.Z / HHM_TILE_MESH_SIZE);
 	int32	Index = Index_Horizontal + (Index_Vertical * mapInfo.MapSize_Horizontal);
 	return Index;
 }

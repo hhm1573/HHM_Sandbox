@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "Manager/HHM_Manager.h"
 
+#include "Header/Macro.h"
 #include "Header/Struct.h"
+#include "Header/Struct_Tile.h"
 #include "Header/Struct_LocalMap.h"
 
 #include "HHM_Manager_LocalMap.generated.h"
@@ -27,6 +29,9 @@ private:
 	UPROPERTY()
 		TMap<int32, class ALocalMap*>	m_Container_LocalMap;
 
+	//Represent the total reserved elements on container
+	UPROPERTY()
+		int32							m_Size_Container_Entity = 0;
 	UPROPERTY()
 		TArray<class AHHM_Entity*>		m_Container_Entity;
 	UPROPERTY()
@@ -45,10 +50,14 @@ private:
 public:
 	bool Create_LocalMap(FHHM_LocalMapConstructionData _mapConstructionData, FHHM_LocalMapConstructionResult& _mapConstructionResult);
 
+private:
+	bool	Initialize_MapData(const FHHM_MapInfo& _mapInfo, TArray<FHHM_TileData> _ref_Container_TileData);
+
 
 
 private:
-	int32 Find_AvailiableIndex_LocalMap(void);
+	int32	Find_AvailiableIndex_LocalMap(void);
+	void	Resize_Container_AvailiableIndex_Entity(void);
 
 
 

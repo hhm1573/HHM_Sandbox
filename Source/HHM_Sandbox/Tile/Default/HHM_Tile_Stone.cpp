@@ -32,7 +32,7 @@ void AHHM_Tile_Stone::OnConstruction(const FTransform& Transform) {
 		UTexture*			pTexture_Stone = LoadObject<UTexture>(nullptr, TEXT("/Game/HHM_Develope/Core/Resource/Texture/Texture_Tile_Stone_Develope"));
 		UMaterialInstanceDynamic* pMaterialinstance = UMaterialInstanceDynamic::Create(pMaterial_Raw, this, TEXT("Tile_Material_Stone"));
 		pMaterialinstance->SetTextureParameterValue(TEXT("Param_Texture"), pTexture_Stone);
-		pMaterialinstance->SetScalarParameterValue(TEXT("Param_TextureSize"), 512.0f);
+		pMaterialinstance->SetScalarParameterValue(TEXT("Param_TextureSize"), 64.0f);
 		/*FLinearColor Color_Grey = FLinearColor(1.0f, 0.5f, 0.5f, 1.0f);
 		pMaterialinstance->SetVectorParameterValue(TEXT("DyeColor"), Color_Grey);*/
 

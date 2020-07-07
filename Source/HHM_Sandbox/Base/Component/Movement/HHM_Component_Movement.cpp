@@ -363,7 +363,7 @@ void UHHM_Component_Movement::FollowPath_Jump(float DeltaTime) {
 	if (MoveTimer_AfterTick <= 0.0f) {
 		FVector Location_Current = GetActorLocation();
 		FVector Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
-		FQuat		Rotator = FQuat();
+		FQuat		Rotator = FQuat(0.0f, 0.0f, 0.0f, 1.0f);
 		FHitResult	HitResult = FHitResult();
 
 		SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator, false, HitResult);

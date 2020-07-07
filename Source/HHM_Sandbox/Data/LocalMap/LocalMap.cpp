@@ -2,6 +2,7 @@
 
 #include "LocalMap.h"
 
+#include "Header/Macro.h"
 #include "Header/Struct_Tile.h"
 #include "Tile/Base/HHM_Tile.h"
 
@@ -29,6 +30,10 @@ ALocalMap::ALocalMap()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	if (m_ID_LocalMap != -1) {
+		m_ID_LocalMap = -1;
+	}
+
 
 
 	/*if (m_pComp_LocalMapRender == nullptr) {
@@ -43,6 +48,12 @@ void ALocalMap::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//Local Map should been validfied before BeginPlay, by LocalMap Manager right after spawned.
+	if (m_ID_LocalMap < 0) {
+		//Exception
+		return;
+	}
+
 
 	
 	if (m_pManager_Tile == nullptr) {
@@ -53,35 +64,8 @@ void ALocalMap::BeginPlay()
 		}
 	}
 
-	UWorld* pWorld = nullptr;
-	pWorld = GetWorld();
-	if (pWorld == nullptr) {
-		//Exception
-		return;
-	}
 
-	AGameModeBase* pGameMode_Raw = nullptr;
-	pGameMode_Raw = pWorld->GetAuthGameMode();
-	if (pGameMode_Raw == nullptr) {
-		//Exception
-		return;
-	}
 
-	AHHM_GameMode_LocalMap* pGameMode = nullptr;
-	pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
-	if (pGameMode == nullptr) {
-		//Exception
-		return;
-	}
-
-	Initialize_Map(pGameMode->Get_MapInfo());
-	AGenerator_LocalMap::Generate_DebugMap(m_Arr_MapData, m_MapInfo, m_pManager_Tile);
-
-	//if (m_pComp_LocalMapRender->Initialize_Renderer() == false) {
-	//	//Exception
-	//	return;
-	//}
-	//m_pComp_LocalMapRender->Set_MapData(m_Arr_MapData, m_MapInfo);
 	const bool Succeed_Initialize_MeshComponent = ALocalMap::Initialize_MeshComponent();
 	if (Succeed_Initialize_MeshComponent == false) {
 		//Exception
@@ -108,30 +92,33 @@ void ALocalMap::Tick(float DeltaTime)
 
 #pragma region Initialize related
 
-void ALocalMap::Clear_Map(void) {
-	m_Arr_MapData.Empty();
+void ALocalMap::Validfy_LocalMap(int32 _id, int32 _index_Horizontal, int32 _index_Vertical, const FHHM_LocalMap_MapData& _mapData)
+{
+	if (m_ID_LocalMap != -1) {
+		//Exception : Validfy twice
+	}
+
+	m_ID_LocalMap = _id;
+	m_Index_Horizontal = _index_Horizontal;
+	m_Index_Vertical = _index_Vertical;
+
+	float Location_Horizontal = _index_Horizontal * HHM_OFFSET_LOCALMAP;
+	float Location_Vertical = _index_Vertical * HHM_OFFSET_LOCALMAP;
+	FVector2D Location_Offset = FVector2D(Location_Horizontal, Location_Vertical);
+
+	m_Location_Offset = Location_Offset;
+
+
+
+	//Set MapData
+	m_Arr_MapData = _mapData.Container_TileData;
+	m_Arr_MovementData = _mapData.Container_TileMovementData;
+
+	return;
 }
 
-void ALocalMap::Initialize_Map(const FHHM_MapInfo& mapInfo) {
-	if (mapInfo.MapSize_Horizontal <= 0 || mapInfo.MapSize_Vertical <= 0) {
-		//Exception
-		return;
-	}
-
-	if (m_pManager_Tile == nullptr) {
-		//Exception
-		return;
-	}
-
-	m_MapInfo = mapInfo;
-
-	Clear_Map();
-
-	FHHM_TileData	TileData_Air = m_pManager_Tile->Get_DefaultTileInfo_ByID(0);
-
-	int32 TotalTileNum = mapInfo.MapSize_Horizontal * mapInfo.MapSize_Vertical;
-
-	m_Arr_MapData.Init(TileData_Air, TotalTileNum);
+void ALocalMap::Clear_Map(void) {
+	m_Arr_MapData.Empty();
 }
 
 void ALocalMap::Refresh_MovementData(void) {
@@ -261,6 +248,10 @@ bool ALocalMap::Initialize_Container_InstancedMesh(void)
 			pInstancedStaticMeshComponent->SetupAttachment(RootComponent);
 			pInstancedStaticMeshComponent->SetStaticMesh(m_pStaticMesh);
 			pInstancedStaticMeshComponent->SetMaterial(0, TileRenderInfo.Arr_Material[index_Material]);
+
+			//HHM Note : Tile Size Scaling Part.
+			float Scale_InstancedStaticMesh = HHM_TILE_SIZE / HHM_TILE_MESH_SIZE;
+			pInstancedStaticMeshComponent->SetWorldScale3D(FVector(Scale_InstancedStaticMesh));
 
 			//Collision Setting
 			const bool IsPassable = Ref_TileContainer[index_Tile]->Get_IsPassable();
