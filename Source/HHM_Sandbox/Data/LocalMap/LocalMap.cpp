@@ -92,7 +92,7 @@ void ALocalMap::Tick(float DeltaTime)
 
 #pragma region Initialize related
 
-void ALocalMap::Validfy_LocalMap(int32 _id, int32 _index_Horizontal, int32 _index_Vertical, const FHHM_LocalMap_MapData& _mapData)
+void ALocalMap::Validfy_LocalMap(int32 _id, int32 _index_Horizontal, int32 _index_Vertical,const FHHM_MapInfo& _mapInfo, const FHHM_LocalMap_MapData& _mapData)
 {
 	if (m_ID_LocalMap != -1) {
 		//Exception : Validfy twice
@@ -109,6 +109,8 @@ void ALocalMap::Validfy_LocalMap(int32 _id, int32 _index_Horizontal, int32 _inde
 	m_Location_Offset = Location_Offset;
 
 
+
+	m_MapInfo = _mapInfo;
 
 	//Set MapData
 	m_Arr_MapData = _mapData.Container_TileData;

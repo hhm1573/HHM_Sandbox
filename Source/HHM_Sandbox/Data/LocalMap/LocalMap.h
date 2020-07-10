@@ -95,7 +95,7 @@ private:
 #pragma region Initialize related
 
 public:
-	void	Validfy_LocalMap(int32 _id, int32 _index_Horizontal, int32 _index_Vertical, const FHHM_LocalMap_MapData& _mapData);
+	void	Validfy_LocalMap(int32 _id, int32 _index_Horizontal, int32 _index_Vertical, const FHHM_MapInfo& _mapInfo, const FHHM_LocalMap_MapData& _mapData);
 
 private:
 	void	Clear_Map(void);

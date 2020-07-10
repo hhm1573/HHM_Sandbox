@@ -24,10 +24,17 @@ public:
 	AHHM_Manager_LocalMap();
 
 
+
+private:
+	const class AHHM_Manager_LocalMap*		m_pManager_LocalMap = nullptr;
+
+
 	
 private:
 	UPROPERTY()
 		TMap<int32, class ALocalMap*>	m_Container_LocalMap;
+	UPROPERTY()
+		int32							m_AvailiableIndex_LocalMap = 0;
 
 	//Represent the total reserved elements on container
 	UPROPERTY()
@@ -35,7 +42,7 @@ private:
 	UPROPERTY()
 		TArray<class AHHM_Entity*>		m_Container_Entity;
 	UPROPERTY()
-		TArray<int32>					m_Container_AvailiableIndex_Entity;
+		TArray<int32>					m_Container_AvailiableIndex_Entity; 
 
 
 
@@ -51,7 +58,7 @@ public:
 	bool Create_LocalMap(FHHM_LocalMapConstructionData _mapConstructionData, FHHM_LocalMapConstructionResult& _mapConstructionResult);
 
 private:
-	bool	Initialize_MapData(const FHHM_MapInfo& _mapInfo, TArray<FHHM_TileData> _ref_Container_TileData);
+	bool	Initialize_MapData(const FHHM_MapInfo& _mapInfo, int32 _index_LocalMap, TArray<FHHM_TileData> _ref_Container_TileData);
 
 
 

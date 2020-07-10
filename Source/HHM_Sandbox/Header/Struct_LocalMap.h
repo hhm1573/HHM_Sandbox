@@ -5,6 +5,8 @@
 #include "Header/Struct.h"
 #include "Header/Struct_Tile.h"
 
+#include "Header/Enum_LocalMap.h"
+
 #include "Struct_LocalMap.generated.h"
 
 USTRUCT(BlueprintType)
@@ -15,6 +17,9 @@ struct FHHM_LocalMapConstructionData
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ConstructionData_Base")
 		FHHM_MapInfo	MapInfo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ConstructionData_Base")
+		EHHM_LocalMap_Option_Generator		GeneratorType;
 
 };
 
