@@ -41,6 +41,7 @@ void AHHM_GameMode_LocalMap::BeginPlay() {
 	if (m_pLocalMap == nullptr) {
 		//m_pLocalMap = NewObject<ALocalMap>(this, TEXT("LocalMapData"));
 		m_pLocalMap = pWorld->SpawnActor<ALocalMap>();
+		//Request Spawn localmap on localmap manager instead of just spawning actor
 	}
 
 

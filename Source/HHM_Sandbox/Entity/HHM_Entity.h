@@ -39,11 +39,14 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void BeginDestroy() override;
+
 
 
 public:
 	void Register_Entity(class ALocalMap* _pLocalMap, int32 _entityID);
 	void DeRegister_Entity(void);
+	const int32&	Get_ID(void) { return m_EntityID; }
 
 
 

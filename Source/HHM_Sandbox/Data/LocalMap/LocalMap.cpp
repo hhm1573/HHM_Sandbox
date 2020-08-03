@@ -18,6 +18,8 @@
 
 #include "Components/InstancedStaticMeshComponent.h"
 
+#include "Entity/HHM_Entity.h"
+
 
 
 const FVector Const_TileOffset = FVector(50.0f, 0.0f, 0.0f);
@@ -1033,6 +1035,7 @@ bool ALocalMap::IsAreaStandable(int32 _index, int8 _entity_Width, int8 _entity_H
 
 
 
+
 bool ALocalMap::Check_IsValidPos(int32 Index_Horizontal, int32 Index_Vertical) const {
 	if (Index_Horizontal < 0 || Index_Vertical < 0)
 		return false;
@@ -1056,3 +1059,163 @@ bool ALocalMap::Check_IsValidIndex(int32 _index) const {
 void ALocalMap::Translate_TileInfo_To_MovementData(const FHHM_TileData& tileInfo, FHHM_TileMovementInfo& tileMovementInfo) {
 	tileMovementInfo.Passable = tileInfo.IsPassable;
 }
+
+
+
+#pragma region Entity
+
+void ALocalMap::Container_Expand_AvailiableIndex_Entity(void) {
+
+	int32 Num_Container_Entity = m_Container_Entity.Num();
+
+	if (Num_Container_Entity > m_Size_Container_Entity) {
+		//Exception Total Entity number is larger than expected. this exception check might already executed on Container_Resize function.
+		//if you can't see resize functions error note, consider use resize function instead of this function since resize function can temporarily fix this issue.
+	}
+
+	if (m_Size_Container_Entity == 0) {
+		
+		m_Container_AvailiableIndex_Entity.Empty();
+		if (Num_Container_Entity != 0) {
+			//Exception there should be no entity on container. do debug on LocalMap's Container_Expand function to find which entity exist
+		}
+		m_Container_Entity.Empty();
+		
+		m_Container_AvailiableIndex_Entity.Add(0);
+		m_Size_Container_Entity = 1;
+
+		return;
+		
+	}
+
+
+
+	int32 Size_Container_Entity_Original = m_Size_Container_Entity;
+	int32 Size_Container_Entity_Target = Size_Container_Entity_Original * 2;
+
+	for (int32 index_Add = 0; index_Add < Size_Container_Entity_Original; ++index_Add) {
+		int32 Index_New = Size_Container_Entity_Original + index_Add;
+		m_Container_AvailiableIndex_Entity.Add(Index_New);
+	}
+
+	m_Size_Container_Entity = Size_Container_Entity_Target;
+
+	
+
+	int32 Num_Container_Entity_After = m_Container_Entity.Num();
+	if (Num_Container_Entity_After != Size_Container_Entity_Target) {
+		//Exception Entity containers size doesn't match with expected number.
+	}
+
+	return;
+
+}
+
+void ALocalMap::Container_Contract_AvailiableIndex_Entity(void)
+{
+	if (m_Size_Container_Entity <= 0) {
+		//Exception Stored entity container size is below 0
+		return;
+	}
+
+	int32 Size_Container_Entity_Target = m_Size_Container_Entity / 2;
+	int32 ID_Entity_Last = 0;
+
+	// HHM Note : Auto Type
+	for (auto& EntityPair : m_Container_Entity) {
+		int32 ID_Entity = EntityPair.Key;
+		if (ID_Entity > ID_Entity_Last) {
+			ID_Entity_Last = ID_Entity;
+		}
+	}
+
+	if (ID_Entity_Last >= Size_Container_Entity_Target) {
+		//Exception 
+		return;
+	}
+
+	/*bool ValidIndex = m_Container_AvailiableIndex_Entity.IsValidIndex(Size_Container_Entity_Target);
+	while (ValidIndex == true) {
+		m_Container_AvailiableIndex_Entity.RemoveAtSwap()
+	}*/
+
+	m_Container_AvailiableIndex_Entity.RemoveAtSwap(Size_Container_Entity_Target, Size_Container_Entity_Target);
+}
+
+void ALocalMap::Container_Resize_AvailiableIndex_Entity(void)
+{
+}
+
+int32 ALocalMap::Entity_Register(int32 _index_LocalMap, AHHM_Entity* _pEntity)
+{
+	if (_pEntity == nullptr) {
+		//Exception Input entity is nullptr
+		return -1;
+	}
+
+	int32 Size_AvailiableIndex_Entity = m_Container_AvailiableIndex_Entity.Num();
+	if (Size_AvailiableIndex_Entity <= 0) {
+		int32 Size_Container_Entity = m_Container_Entity.Num();
+		if (Size_Container_Entity < Size_AvailiableIndex_Entity) {
+			//Exception Size of entity container is smaller than availiable ID queue.there might a hole in entity container.
+			//may need some logging option that can debug entity container
+			//registering will procceed normaly though.
+		}
+		
+		ALocalMap::Container_Expand_AvailiableIndex_Entity();
+	}
+
+
+
+	int32 Size_AvailiableIndex_Entity_AfterExpand = m_Container_AvailiableIndex_Entity.Num();
+	if (Size_AvailiableIndex_Entity_AfterExpand <= 0) {
+		//Exception there is no availiable ID on queue even after expand work procceed. expanding container process might not work correctly.
+		return -1;
+	}
+
+	int32 Index_FirstAvailiable = m_Container_AvailiableIndex_Entity[0];
+
+	m_Container_AvailiableIndex_Entity.RemoveAt(0);
+	bool IsTargetIDOccupied = m_Container_Entity.Contains(Index_FirstAvailiable);
+
+	if (IsTargetIDOccupied == true) {
+		//Exception Stored Availiable Index is not Valid. quite surely there were problem on entity creation process.
+		return -1;
+	}
+
+	m_Container_Entity.Add(Index_FirstAvailiable, _pEntity);
+
+	return Index_FirstAvailiable;	//i just noticed that Available is right not Availiable. :d
+}
+
+void ALocalMap::Entity_Deregister(int32 _index_LocalMap, AHHM_Entity* _pEntity)
+{
+	// HHM Note : There is no contracting container work on deregister process. i may should do shirink container at some point.
+	// HHM Note : 어떠한 로깅액션을 취해야 문제가 생긴 사용자에게서 받은 로그와 데이터를 토대로 정확히 같은 상황을 재현하여 원활하게 디버깅이 가능할까?
+	// 게임을 로드할때 로드한 시간을 랜덤테이블의 시드로 두고 해당 랜덤테이블상에서 취한 랜덤값을 이용하여 랜덤이벤트등을 진행시키고, 문제 발생시 로드한 세이브와 시간을 저장하게끔?
+	// 혹은 저장시마다 시간을 시드로 두고 그 값을 저장하게끔 하여 저장된 데이터를 보내게끔? 플레이어가 직접 저장하는것과는 다르게 백그라운드에서 특정시간마다 갱신되는 세이브로 하는것도
+	// 나쁘지 않을듯 싶다. 세이브로드가 불가능한 하드코어모드의 세이브처럼. 또한 오류레벨에 따라 무조건 각자의 파일로 저장할것, 한번 저장한 후에는 일정 시간동안 저장하지 않는것 등으로 구분하는것도
+	// 괜찮을듯 싶다. 좀 더 생각해볼것.
+
+	int32 ID_Deregistered = _pEntity->Get_ID();
+
+	AHHM_Entity* StoredEntityAddress = m_Container_Entity[ID_Deregistered];
+	if (StoredEntityAddress != _pEntity) {
+		//Exception Certain ID's Stored entity data is not matched with Entity that request deregistering of that id
+		return;
+	}
+
+	m_Container_Entity.Remove(ID_Deregistered);
+
+	int32 Size_Container_AvailiableIndex_Entity = m_Container_AvailiableIndex_Entity.Num();
+	for (int32 index_Compare = 0; index_Compare < Size_Container_AvailiableIndex_Entity; ++index_Compare) {
+		if (index_Compare > ID_Deregistered) {
+			m_Container_AvailiableIndex_Entity.Insert(ID_Deregistered, index_Compare);
+			break;
+		}
+	}
+
+	return;
+}
+
+#pragma endregion

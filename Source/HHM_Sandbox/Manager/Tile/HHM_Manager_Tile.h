@@ -40,7 +40,7 @@ private:
 
 public:
 	AHHM_Tile*	Get_Tile_By_ID(int32 TileID);
-	const FHHM_TileData&	Get_DefaultTileInfo_ByID(int32 TileID);
+	const FHHM_TileData&	Get_DefaultTileInfo_ByID(int32 TileID) const;
 	
 public:
 	TMap<int32, AHHM_Tile*>&		Get_TileArr_Ref(void) { return m_Container_Tile; }

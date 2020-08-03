@@ -46,6 +46,8 @@ public:
 
 
 USTRUCT(BlueprintType)
+// HHM Note : Make it as class. also make property class that can store data as string (serialize)
+// needed functions : Add Remove Resize Num etc.. make it can handle multiple arrays at once
 struct FHHM_LocalMap_MapData
 {
 	GENERATED_USTRUCT_BODY()
@@ -55,6 +57,9 @@ public:
 		TArray<FHHM_TileData>			Container_TileData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MapData")
 		TArray<FHHM_TileMovementInfo>	Container_TileMovementData;
+
+public:
+	void Empty(void) { Container_TileData.Empty(); Container_TileMovementData.Empty(); }
 };
 
 

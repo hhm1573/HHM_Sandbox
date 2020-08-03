@@ -26,7 +26,7 @@ public:
 
 
 private:
-	const class AHHM_Manager_LocalMap*		m_pManager_LocalMap = nullptr;
+	const class AHHM_Manager_Tile*		m_pManager_Tile = nullptr;
 
 
 	
@@ -38,11 +38,11 @@ private:
 
 	//Represent the total reserved elements on container
 	UPROPERTY()
-		int32							m_Size_Container_Entity = 0;
+		int32							m_Size_Container_Entity = 0;	//HHM Note : Move entity container to LocalMap
 	UPROPERTY()
 		TArray<class AHHM_Entity*>		m_Container_Entity;
 	UPROPERTY()
-		TArray<int32>					m_Container_AvailiableIndex_Entity; 
+		TArray<int32>					m_Container_AvailiableIndex_Entity; //Resize if total number of entity is over container.
 
 
 
@@ -50,15 +50,18 @@ public:
 	virtual void BeginPlay() override;
 
 private:
-	void Initialize_Manager_LocalMap(void);
+	void	Initialize_Manager_LocalMap(void);
 
 
 	
 public:
-	bool Create_LocalMap(FHHM_LocalMapConstructionData _mapConstructionData, FHHM_LocalMapConstructionResult& _mapConstructionResult);
+	bool	Create_LocalMap(FHHM_LocalMapConstructionData _mapConstructionData, FHHM_LocalMapConstructionResult& _mapConstructionResult);
 
 private:
-	bool	Initialize_MapData(const FHHM_MapInfo& _mapInfo, int32 _index_LocalMap, TArray<FHHM_TileData> _ref_Container_TileData);
+	bool	Initialize_LocalMap(const FHHM_MapInfo& _mapInfo, int32 _index_LocalMap, FHHM_LocalMap_MapData& _mapData);
+	bool	Construct_MapData_Empty(FHHM_LocalMap_MapData* _mapData, const FHHM_MapInfo& _mapInfo);
+	bool	Construct_MapData_TestMap(FHHM_LocalMap_MapData* _mapData, const FHHM_MapInfo& _mapInfo);
+	// HHM Note : Add function that Load Local Map from save.
 
 
 

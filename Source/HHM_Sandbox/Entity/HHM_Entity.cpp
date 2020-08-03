@@ -48,6 +48,20 @@ void AHHM_Entity::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 }
 
+void AHHM_Entity::BeginDestroy() {
+
+}
+
+
+
+void AHHM_Entity::Register_Entity(ALocalMap* _pLocalMap, int32 _entityID)
+{
+}
+
+void AHHM_Entity::DeRegister_Entity(void) {
+
+}
+
 
 
 void AHHM_Entity::HHM_Jump_Implementation(const FVector& jump_LocationStart, const FVector& jump_LocationEnd, const int32& jump_Height) {

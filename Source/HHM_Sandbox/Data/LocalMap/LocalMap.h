@@ -59,10 +59,12 @@ private:
 private:
 	UPROPERTY()
 		FHHM_MapInfo					m_MapInfo;
-	UPROPERTY()
+	/*UPROPERTY()
 		TArray<FHHM_TileData>			m_Arr_MapData;
 	UPROPERTY()
-		TArray<FHHM_TileMovementInfo>	m_Arr_MovementData;
+		TArray<FHHM_TileMovementInfo>	m_Arr_MovementData;*/
+	UPROPERTY()
+		FHHM_LocalMap_MapData			m_MapData;
 	//TileMovementData Array
 
 //private:
@@ -99,8 +101,11 @@ public:
 
 private:
 	void	Clear_Map(void);
-	void	Refresh_MovementData(void);
 	void	Request_TileManager(void);
+
+	//Movement Data
+public:
+	void	Refresh_MovementData(void);
 
 	//Rendering
 private:
@@ -115,7 +120,8 @@ private:
 #pragma region Get/Set
 
 public:
-	const FHHM_MapInfo&				Get_MapInfo(void) const { return m_MapInfo; }
+	FHHM_LocalMap_MapData*			Get_MapData_Address(void) { if (m_ID_LocalMap >= 0) {/*Exception LocalMap is already validfied. can't access to map data's address after validfied*/ } return &m_MapData; }
+	const FHHM_MapInfo&				Get_MapInfo_ConstRef(void) const { return m_MapInfo; }
 	//Offset representing world location. not local offset
 	const FVector2D&				Get_LocalMap_Offset(void) const { if (m_ID_LocalMap == -1) {/*Exception LocalMap Not validfied*/ } return m_Location_Offset; }
 
@@ -197,6 +203,39 @@ private:
 	bool	Check_IsValidPos(int32 Index_Horizontal, int32 Index_Vertical) const;
 	bool	Check_IsValidIndex(int32 _index) const ;
 	void	Translate_TileInfo_To_MovementData(const FHHM_TileData& tileInfo, FHHM_TileMovementInfo& tileMovementInfo);
+
+#pragma endregion
+
+
+
+#pragma region Entity
+
+	private:
+		UPROPERTY()
+			int32								m_Size_Container_Entity = 0;
+		UPROPERTY()
+			TMap<int32, class AHHM_Entity*>		m_Container_Entity;
+		//you can just make entity container as list and fill it as nullptr when there is no entity registered on that index(ID).
+		//i just use map container because i don't wanna resize id queue so often and resizing entity container itself so i can just resize one container.
+		//it might a stupid decision cause due to my current state of my life, i'm so stressed and it ruining my body and my mind so i became much dumber than i was
+		//so if you think list would be much simpler or can increase performance much, you can change it.
+		UPROPERTY()
+			TArray<int32>						m_Container_AvailiableIndex_Entity;	
+
+		
+
+	private:
+		void	Container_Expand_AvailiableIndex_Entity(void);
+		void	Container_Contract_AvailiableIndex_Entity(void);
+		//not sure it is needed. not constructed
+		void	Container_Resize_AvailiableIndex_Entity(void); // 2n*2 size / get last index
+
+	public:
+		int32	Entity_Register(int32 _index_LocalMap, class AHHM_Entity* _pEntity);
+		void	Entity_Deregister(int32 _index_LocalMap, class AHHM_Entity* _pEntity);
+
+		//Spawn Entity?
+		//Despawn Entity?
 
 #pragma endregion
 };

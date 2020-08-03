@@ -36,6 +36,6 @@ public:
 
 
 public:
-	static void Generate_DebugMap(TArray<FHHM_TileData>& mapData, const FHHM_MapInfo& mapInfo, AHHM_Manager_Tile* pManager_Tile);
+	static void Generate_DebugMap(TArray<FHHM_TileData>& mapData, const FHHM_MapInfo& mapInfo, const AHHM_Manager_Tile* pManager_Tile);
 
 };

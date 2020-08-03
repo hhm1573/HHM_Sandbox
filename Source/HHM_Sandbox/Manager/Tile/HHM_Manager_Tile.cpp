@@ -86,9 +86,14 @@ AHHM_Tile* AHHM_Manager_Tile::Get_Tile_By_ID(int32 TileID) {
 	return m_Container_Tile[TileID];
 }
 
-const FHHM_TileData& AHHM_Manager_Tile::Get_DefaultTileInfo_ByID(int32 TileID) {
-	AHHM_Tile* pTile = nullptr;
-	pTile = Get_Tile_By_ID(TileID);
+const FHHM_TileData& AHHM_Manager_Tile::Get_DefaultTileInfo_ByID(int32 TileID) const {
+	const int32 Size_TileArr = m_Container_Tile.Num();
+	if (TileID >= Size_TileArr) {
+		//Exception input tileID is out of range
+		return m_Container_Tile[0]->Get_DefaultTileInfo();
+	}
+
+	AHHM_Tile* pTile = m_Container_Tile[TileID];
 	if (pTile == nullptr) {
 		//exception
 		return m_Container_Tile[0]->Get_DefaultTileInfo();
