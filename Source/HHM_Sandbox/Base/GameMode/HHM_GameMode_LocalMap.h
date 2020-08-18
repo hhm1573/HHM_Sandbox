@@ -25,15 +25,14 @@ protected:
 		class AHHM_Manager_Tile*		m_pManager_Tile = nullptr;
 	UPROPERTY(VisibleAnywhere)
 		class AHHM_Manager_Navigation*	m_pManager_Navigation = nullptr;
+	UPROPERTY(VisibleAnywhere)
+		class AHHM_Manager_LocalMap*	m_pManager_LocalMap = nullptr;
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 		FHHM_MapInfo				m_MapInfo;
-	UPROPERTY()
-		class ALocalMap*			m_pLocalMap = nullptr;
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category = TouchPanel)
-		class ATouchPanel*			m_pTouchPanel = nullptr;
 
 
 

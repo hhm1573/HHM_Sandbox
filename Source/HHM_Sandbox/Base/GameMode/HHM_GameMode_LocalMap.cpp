@@ -7,6 +7,8 @@
 
 #include "Manager/Tile/HHM_Manager_Tile.h"
 #include "Manager/Navigation/HHM_Manager_Navigation.h"
+#include "Header/Struct_LocalMap.h"
+#include "Manager/LocalMap/HHM_Manager_LocalMap.h"
 #include "Data/LocalMap/LocalMap.h"
 
 #include "Base/TouchPanel/TouchPanel.h"
@@ -38,16 +40,17 @@ void AHHM_GameMode_LocalMap::BeginPlay() {
 		m_pManager_Navigation = pWorld->SpawnActor<AHHM_Manager_Navigation>();
 	}
 
-	if (m_pLocalMap == nullptr) {
-		//m_pLocalMap = NewObject<ALocalMap>(this, TEXT("LocalMapData"));
-		m_pLocalMap = pWorld->SpawnActor<ALocalMap>();
-		//Request Spawn localmap on localmap manager instead of just spawning actor
-	}
+	if (m_pManager_LocalMap == nullptr) {
+		m_pManager_LocalMap = pWorld->SpawnActor<AHHM_Manager_LocalMap>();
+		//HHM Note : Debug Map
 
-
-
-	if (m_pTouchPanel == nullptr) {
-		m_pTouchPanel = pWorld->SpawnActor<ATouchPanel>();
+		FHHM_LocalMapConstructionData MapConstructData = FHHM_LocalMapConstructionData(m_MapInfo, EHHM_LocalMap_Option_Generator::LocalMapGenerator_TestMap);
+		FHHM_LocalMapConstructionResult MapConstructResult = FHHM_LocalMapConstructionResult();
+		
+		bool IsSucceed_CreateLocalMap = m_pManager_LocalMap->Create_LocalMap(MapConstructData, MapConstructResult);
+		if (IsSucceed_CreateLocalMap == false) {
+			//Exception
+		}
 	}
 }
 

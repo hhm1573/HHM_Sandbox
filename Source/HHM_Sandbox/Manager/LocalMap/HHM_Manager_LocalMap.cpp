@@ -135,11 +135,19 @@ bool AHHM_Manager_LocalMap::Create_LocalMap(FHHM_LocalMapConstructionData _mapCo
 	int32 Index_Horizontal = ID_LocalMap_Created % HHM_NUM_LOCALMAP_HORIZONTAL;
 	int32 Index_Vertical = ID_LocalMap_Created / HHM_NUM_LOCALMAP_HORIZONTAL;
 
+	float Location_Horizontal = Index_Horizontal * HHM_OFFSET_LOCALMAP;
+	float Location_Vertical = Index_Vertical * HHM_OFFSET_LOCALMAP;
+
+	FVector Location_LocalMap = FVector(Location_Horizontal, 0.0f, Location_Vertical);
+	pLocalMap_Created->SetActorLocation(Location_LocalMap);
+
 	
 
 	pLocalMap_Created->Validfy_LocalMap(ID_LocalMap_Created, Index_Horizontal, Index_Vertical, _mapConstructionData.MapInfo, pMapData);
 
 	m_Container_LocalMap.Add(ID_LocalMap_Created, pLocalMap_Created);
+
+	//HHM Note : Log Created LocalMap Result info.
 
 	return true;
 }

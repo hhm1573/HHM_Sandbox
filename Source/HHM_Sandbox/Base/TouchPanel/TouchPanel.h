@@ -14,7 +14,7 @@ class UBoxComponent;
 
 
 UCLASS()
-class HHM_SANDBOX_API ATouchPanel : public AActor
+class HHM_SANDBOX_API ATouchPanel : public AActor	//Obsoloete
 {
 	GENERATED_BODY()
 	

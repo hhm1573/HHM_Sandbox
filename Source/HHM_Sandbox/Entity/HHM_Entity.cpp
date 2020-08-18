@@ -49,17 +49,47 @@ void AHHM_Entity::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 }
 
 void AHHM_Entity::BeginDestroy() {
+	Super::BeginDestroy();
 
+	DeRegister_Entity();
 }
 
 
 
 void AHHM_Entity::Register_Entity(ALocalMap* _pLocalMap, int32 _entityID)
 {
+	if (_pLocalMap == nullptr) {
+		//Exception Input LocalMap is nullptr
+		bool IsDestroySucceed = Destroy();
+		if (IsDestroySucceed == false) {
+			//Exception Can't destroy actor
+		}
+		return;
+	}
+
+	if (_entityID < 0) {
+		bool IsDestroySucceed = Destroy();
+		if (IsDestroySucceed == false) {
+			//Exception Can't destroy actor
+		}
+		return;
+	}
+
+	m_pLocalMap = _pLocalMap;
+	m_EntityID = _entityID;
 }
 
 void AHHM_Entity::DeRegister_Entity(void) {
+	m_pLocalMap->Entity_Deregister(this);
 
+	m_pLocalMap = nullptr;
+	m_EntityID = -1;
+
+	bool IsDestroySucceed = Destroy();
+	if (IsDestroySucceed == false) {
+		//Exception Can't destroy actor
+	}
+	return;
 }
 
 

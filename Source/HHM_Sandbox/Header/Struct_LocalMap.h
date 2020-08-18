@@ -21,6 +21,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ConstructionData_Base")
 		EHHM_LocalMap_Option_Generator		GeneratorType;
 
+public:
+	FHHM_LocalMapConstructionData() {
+		MapInfo = FHHM_MapInfo();
+		GeneratorType = EHHM_LocalMap_Option_Generator::LocalMapGenerator_Empty;
+	}
+
+	FHHM_LocalMapConstructionData(const FHHM_MapInfo& _mapInfo, const EHHM_LocalMap_Option_Generator& _generatorType) {
+		MapInfo = _mapInfo;
+		GeneratorType = _generatorType;
+	}
 };
 
 

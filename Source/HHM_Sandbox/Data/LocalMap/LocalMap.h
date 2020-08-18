@@ -32,6 +32,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void BeginDestroy() override;
+
 #pragma endregion
 
 #pragma region Variables
@@ -59,6 +61,8 @@ private:
 private:
 	UPROPERTY()
 		FHHM_MapInfo					m_MapInfo;
+	UPROPERTY(EditAnywhere)
+		class UBoxComponent*			m_pComponent_TouchPanel = nullptr;
 	/*UPROPERTY()
 		TArray<FHHM_TileData>			m_Arr_MapData;
 	UPROPERTY()
@@ -98,6 +102,7 @@ private:
 
 public:
 	void	Validfy_LocalMap(int32 _id, int32 _index_Horizontal, int32 _index_Vertical, const FHHM_MapInfo& _mapInfo, const FHHM_LocalMap_MapData& _mapData);
+	bool	Initialize_TouchPanel(void);
 
 private:
 	void	Clear_Map(void);
@@ -121,6 +126,7 @@ private:
 
 public:
 	FHHM_LocalMap_MapData*			Get_MapData_Address(void) { if (m_ID_LocalMap >= 0) {/*Exception LocalMap is already validfied. can't access to map data's address after validfied*/ } return &m_MapData; }
+	UFUNCTION(BlueprintCallable, Category = Variables)
 	const FHHM_MapInfo&				Get_MapInfo_ConstRef(void) const { return m_MapInfo; }
 	//Offset representing world location. not local offset
 	const FVector2D&				Get_LocalMap_Offset(void) const { if (m_ID_LocalMap == -1) {/*Exception LocalMap Not validfied*/ } return m_Location_Offset; }
@@ -231,8 +237,8 @@ private:
 		void	Container_Resize_AvailiableIndex_Entity(void); // 2n*2 size / get last index
 
 	public:
-		int32	Entity_Register(int32 _index_LocalMap, class AHHM_Entity* _pEntity);
-		void	Entity_Deregister(int32 _index_LocalMap, class AHHM_Entity* _pEntity);
+		int32	Entity_Register(class AHHM_Entity* _pEntity);
+		void	Entity_Deregister(class AHHM_Entity* _pEntity);
 
 		//Spawn Entity?
 		//Despawn Entity?

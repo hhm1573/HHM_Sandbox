@@ -40,6 +40,8 @@ void ATouchPanel::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//Exception Obsolete Actor
+
 
 	
 	//Setup Components

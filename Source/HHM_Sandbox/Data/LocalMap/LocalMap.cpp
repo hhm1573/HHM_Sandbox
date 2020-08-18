@@ -16,6 +16,7 @@
 #include "Manager/Math/Grid/HHM_Manager_Math_Grid.h"
 #include "Data/LocalMap/Generator/Generator_LocalMap.h"
 
+#include "Components/BoxComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 
 #include "Entity/HHM_Entity.h"
@@ -37,6 +38,8 @@ ALocalMap::ALocalMap()
 	}
 
 
+
+	
 
 	/*if (m_pComp_LocalMapRender == nullptr) {
 		m_pComp_LocalMapRender = CreateDefaultSubobject<UHHM_Component_LocalMapRender>(TEXT("LocalMapRenderComponent"));
@@ -68,6 +71,14 @@ void ALocalMap::BeginPlay()
 
 
 
+	const bool Succeed_Initialize_TouchPanel = ALocalMap::Initialize_TouchPanel();
+	if (Succeed_Initialize_TouchPanel == false) {
+		//Exception
+		return;
+	}
+
+
+
 	const bool Succeed_Initialize_MeshComponent = ALocalMap::Initialize_MeshComponent();
 	if (Succeed_Initialize_MeshComponent == false) {
 		//Exception
@@ -88,6 +99,18 @@ void ALocalMap::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ALocalMap::BeginDestroy() {
+	Super::BeginDestroy();
+	//Delete all actor
+
+	//HHM Note : Auto type
+	for (auto pairElem : m_Container_Entity) {
+		ALocalMap::Entity_Deregister(pairElem.Value);
+	}
+
+	//HHM Note : Log Entity container size.
 }
 
 #pragma endregion
@@ -120,6 +143,40 @@ void ALocalMap::Validfy_LocalMap(int32 _id, int32 _index_Horizontal, int32 _inde
 
 	return;
 }
+
+bool ALocalMap::Initialize_TouchPanel(void) {
+	if (m_pComponent_TouchPanel == nullptr) {
+		m_pComponent_TouchPanel = NewObject<UBoxComponent>(this, TEXT("TouchPanel"));
+		if (m_pComponent_TouchPanel == nullptr) {
+			//Exception Error during initialize component
+			return false;
+		}
+
+		if (m_pComponent_TouchPanel != nullptr) {
+			m_pComponent_TouchPanel->SetupAttachment(RootComponent);
+		}
+	}
+
+	if (m_ID_LocalMap < 0 || m_MapInfo.MapSize_Horizontal <= 0 || m_MapInfo.MapSize_Vertical <= 0) {
+		//Exception LocalMap not validfied
+		return false;
+	}
+
+
+
+	float	Size_Panel_Horizontal = m_MapInfo.MapSize_Horizontal * HHM_TILE_SIZE;
+	float	Size_Panel_Vertical = m_MapInfo.MapSize_Vertical * HHM_TILE_SIZE;
+	FVector Size_Panel = FVector(Size_Panel_Horizontal, 0.0f, Size_Panel_Vertical);
+
+	m_pComponent_TouchPanel->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	m_pComponent_TouchPanel->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
+	m_pComponent_TouchPanel->SetBoxExtent(Size_Panel * 0.5f);
+	m_pComponent_TouchPanel->SetRelativeLocation(Size_Panel * 0.5f);
+
+	return true;
+}
+
+
 
 void ALocalMap::Clear_Map(void) {
 	m_Arr_MapData.Empty();
@@ -1146,7 +1203,7 @@ void ALocalMap::Container_Resize_AvailiableIndex_Entity(void)
 {
 }
 
-int32 ALocalMap::Entity_Register(int32 _index_LocalMap, AHHM_Entity* _pEntity)
+int32 ALocalMap::Entity_Register(AHHM_Entity* _pEntity)
 {
 	if (_pEntity == nullptr) {
 		//Exception Input entity is nullptr
@@ -1188,7 +1245,7 @@ int32 ALocalMap::Entity_Register(int32 _index_LocalMap, AHHM_Entity* _pEntity)
 	return Index_FirstAvailiable;	//i just noticed that Available is right not Availiable. :d
 }
 
-void ALocalMap::Entity_Deregister(int32 _index_LocalMap, AHHM_Entity* _pEntity)
+void ALocalMap::Entity_Deregister(AHHM_Entity* _pEntity)
 {
 	// HHM Note : There is no contracting container work on deregister process. i may should do shirink container at some point.
 	// HHM Note : 어떠한 로깅액션을 취해야 문제가 생긴 사용자에게서 받은 로그와 데이터를 토대로 정확히 같은 상황을 재현하여 원활하게 디버깅이 가능할까?

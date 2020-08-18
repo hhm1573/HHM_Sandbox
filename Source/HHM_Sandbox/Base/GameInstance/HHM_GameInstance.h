@@ -21,7 +21,7 @@ class AHHM_Manager_Tile;
  * 
  */
 UCLASS()
-class HHM_SANDBOX_API UHHM_GameInstance : public UGameInstance
+class HHM_SANDBOX_API UHHM_GameInstance : public UGameInstance	//HHM Note : quite obsolete. remove unnecessary managers
 {
 	GENERATED_BODY()
 
@@ -29,20 +29,20 @@ private:
 	UPROPERTY()
 		FHHM_MapInfo				m_MapInfo;
 	
-	/*UPROPERTY()
-		AHHM_Manager_Texture*		m_pManager_Texture = nullptr;*/
+	///*UPROPERTY()
+	//	AHHM_Manager_Texture*		m_pManager_Texture = nullptr;*/
 
-	UPROPERTY()
-		AHHM_Manager_Render*		m_pManager_Render = nullptr;
-	/*UPROPERTY()
-		AHHM_Manager_LocalMap*		m_pManager_LocalMap = nullptr;*/
-	UPROPERTY()
-		AHHM_Manager_Tile*			m_pManager_Tile = nullptr;
-	/*UPROPERTY()
-		AHHM_Manager_Navigation*	m_pManager_Navigation = nullptr;*/
-	
-	/*UPROPERTY()
-		AHHM_Manager_Debug*			m_pManager_Debug = nullptr;*/
+	//UPROPERTY()
+	//	AHHM_Manager_Render*		m_pManager_Render = nullptr;
+	///*UPROPERTY()
+	//	AHHM_Manager_LocalMap*		m_pManager_LocalMap = nullptr;*/
+	//UPROPERTY()
+	//	AHHM_Manager_Tile*			m_pManager_Tile = nullptr;
+	///*UPROPERTY()
+	//	AHHM_Manager_Navigation*	m_pManager_Navigation = nullptr;*/
+	//
+	///*UPROPERTY()
+	//	AHHM_Manager_Debug*			m_pManager_Debug = nullptr;*/
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
