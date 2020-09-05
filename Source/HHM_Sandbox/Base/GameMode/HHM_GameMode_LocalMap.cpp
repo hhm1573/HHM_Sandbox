@@ -58,62 +58,62 @@ void AHHM_GameMode_LocalMap::BeginPlay() {
 
 #pragma region Utilities
 
-bool AHHM_GameMode_LocalMap::Utility_Index_Seperate(FVector2D& _vec_Return, int32 _index) {
-	int32 Index_Horizontal = _index % m_MapInfo.MapSize_Horizontal;
-	int32 Index_Vertical = _index / m_MapInfo.MapSize_Horizontal;
-
-	bool IsValidIndexLocation = AHHM_GameMode_LocalMap::Check_IsValidIndex(Index_Horizontal, Index_Vertical);
-	if (IsValidIndexLocation == false) {
-		return false;
-	}
-
-	FVector2D Vec_Return = FVector2D(Index_Horizontal, Index_Vertical);
-	_vec_Return = Vec_Return;
-
-	return true;
-}
-
-bool AHHM_GameMode_LocalMap::Utility_Index_Combine(int32& _index_Return, FVector2D _vec_Index) {
-	int32 Index_Combined = int32(_vec_Index.X) + (int32(_vec_Index.Y) * m_MapInfo.MapSize_Horizontal);
-	
-	bool IsValidIndex = AHHM_GameMode_LocalMap::Check_IsValidIndex(Index_Combined);
-	if (IsValidIndex == false) {
-		return false;
-	}
-
-	_index_Return = Index_Combined;
-
-	return true;
-}
-
-bool AHHM_GameMode_LocalMap::Utility_Calculate_IndexLocation(FVector2D& _vec_Return, float _location_X, float _location_Z) {
-	int32 Index_Horizontal = int32(_location_X / m_MapInfo.TileSize);
-	int32 Index_Vertical = int32(_location_Z / m_MapInfo.TileSize);
-
-	FVector2D Vec_Return = FVector2D(Index_Horizontal, Index_Vertical);
-	bool IsValidLocation = AHHM_GameMode_LocalMap::Check_IsValidIndex(Vec_Return.X, Vec_Return.Y);
-	if (IsValidLocation == false)
-		return false;
-
-	_vec_Return = Vec_Return;
-
-	return true;
-}
-
-bool AHHM_GameMode_LocalMap::Utility_Calculate_Location(FVector& _vec_Return, FVector2D _vec_IndexLocation, float _location_Y) {
-	bool IsValidIndexLocation = AHHM_GameMode_LocalMap::Check_IsValidIndex(_vec_IndexLocation.X, _vec_IndexLocation.Y);
-	if (IsValidIndexLocation == false) {
-		return false;
-	}
-
-	float Location_X = _vec_IndexLocation.X * m_MapInfo.TileSize + ( m_MapInfo.TileSize * 0.5f );
-	float Location_Z = _vec_IndexLocation.Y * m_MapInfo.TileSize + ( m_MapInfo.TileSize * 0.5f );
-	FVector Vec_Return = FVector(Location_X, _location_Y, Location_Z);
-	
-	_vec_Return = Vec_Return;
-
-	return true;
-}
+//bool AHHM_GameMode_LocalMap::Utility_Index_Seperate(FVector2D& _vec_Return, int32 _index) {
+//	int32 Index_Horizontal = _index % m_MapInfo.MapSize_Horizontal;
+//	int32 Index_Vertical = _index / m_MapInfo.MapSize_Horizontal;
+//
+//	bool IsValidIndexLocation = AHHM_GameMode_LocalMap::Check_IsValidIndex(Index_Horizontal, Index_Vertical);
+//	if (IsValidIndexLocation == false) {
+//		return false;
+//	}
+//
+//	FVector2D Vec_Return = FVector2D(Index_Horizontal, Index_Vertical);
+//	_vec_Return = Vec_Return;
+//
+//	return true;
+//}
+//
+//bool AHHM_GameMode_LocalMap::Utility_Index_Combine(int32& _index_Return, FVector2D _vec_Index) {
+//	int32 Index_Combined = int32(_vec_Index.X) + (int32(_vec_Index.Y) * m_MapInfo.MapSize_Horizontal);
+//	
+//	bool IsValidIndex = AHHM_GameMode_LocalMap::Check_IsValidIndex(Index_Combined);
+//	if (IsValidIndex == false) {
+//		return false;
+//	}
+//
+//	_index_Return = Index_Combined;
+//
+//	return true;
+//}
+//
+//bool AHHM_GameMode_LocalMap::Utility_Calculate_IndexLocation(FVector2D& _vec_Return, float _location_X, float _location_Z) {
+//	int32 Index_Horizontal = int32(_location_X / m_MapInfo.TileSize);
+//	int32 Index_Vertical = int32(_location_Z / m_MapInfo.TileSize);
+//
+//	FVector2D Vec_Return = FVector2D(Index_Horizontal, Index_Vertical);
+//	bool IsValidLocation = AHHM_GameMode_LocalMap::Check_IsValidIndex(Vec_Return.X, Vec_Return.Y);
+//	if (IsValidLocation == false)
+//		return false;
+//
+//	_vec_Return = Vec_Return;
+//
+//	return true;
+//}
+//
+//bool AHHM_GameMode_LocalMap::Utility_Calculate_Location(FVector& _vec_Return, FVector2D _vec_IndexLocation, float _location_Y) {
+//	bool IsValidIndexLocation = AHHM_GameMode_LocalMap::Check_IsValidIndex(_vec_IndexLocation.X, _vec_IndexLocation.Y);
+//	if (IsValidIndexLocation == false) {
+//		return false;
+//	}
+//
+//	float Location_X = _vec_IndexLocation.X * m_MapInfo.TileSize + ( m_MapInfo.TileSize * 0.5f );
+//	float Location_Z = _vec_IndexLocation.Y * m_MapInfo.TileSize + ( m_MapInfo.TileSize * 0.5f );
+//	FVector Vec_Return = FVector(Location_X, _location_Y, Location_Z);
+//	
+//	_vec_Return = Vec_Return;
+//
+//	return true;
+//}
 
 #pragma endregion
 

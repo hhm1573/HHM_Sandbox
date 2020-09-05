@@ -4,6 +4,8 @@
 #include "HHM_Component_Movement.h"
 #include "Header/Struct_Pathfinder.h"
 
+#include "Entity/HHM_Entity.h"
+
 #include "Engine/World.h"
 #include "Base/GameMode/HHM_GameMode_LocalMap.h"
 #include "Manager/Navigation/HHM_Manager_Navigation.h"
@@ -85,37 +87,62 @@ void UHHM_Component_Movement::TickComponent(float DeltaTime, ELevelTick TickType
 
 bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical) {
 	// HHM Note : Add Location Check whether entity can reach/stand or not
+	// HHM Note : Save Manager's pointer if that kind of thing needed
 
+	//Get Navigation Manager
 	UWorld* pWorld = GetWorld();
 	if (pWorld == nullptr) {
+		//Exception
 		return false;
 	}
 
 	AGameModeBase* pGameMode_Raw = pWorld->GetAuthGameMode();
 	if (pGameMode_Raw == nullptr) {
+		//Exception
 		return false;
 	}
 
-	AHHM_GameMode_LocalMap* pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
+	AHHM_GameMode_LocalMap* pGameMode = Cast <AHHM_GameMode_LocalMap>(pGameMode_Raw);
 	if (pGameMode == nullptr) {
+		//Exception
 		return false;
 	}
 
-	const AHHM_Manager_Navigation* pManager_Navigation = pGameMode->Get_Manager_Navigation_Const();
+	AHHM_Manager_Navigation* pManager_Navigation = pGameMode->Get_Manager_Navigation();
 	if (pManager_Navigation == nullptr) {
+		//Exception
 		return false;
 	}
 
-	const ALocalMap* pLocalMap = pGameMode->Get_LocalMap_Const();
-	if (pLocalMap == nullptr) {
+
+
+	//Get LocalMap & MapInfo
+	AActor* pOwner_Raw = GetOwner();
+	if (pOwner_Raw == nullptr) {
+		//Exception
 		return false;
 	}
+
+	AHHM_Entity* pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+	if (pOwner == nullptr) {
+		//Exception
+		return false;
+	}
+
+	const ALocalMap* pLocalMap = pOwner->Get_LocalMap_Const();
+	if (pLocalMap == nullptr) {
+		//Exception
+		return false;
+	}
+
+	const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
 
 
 
 	FVector Vec_Location_Current = GetActorLocation();
 	FVector2D Vec_Location_Start = FVector2D();
-	if (pGameMode->Utility_Calculate_IndexLocation(Vec_Location_Start, Vec_Location_Current.X, Vec_Location_Current.Z) == false) {
+	bool IsSucceed_Calculate_IndexLocation = AHHM_Manager_Math_Grid::Convert_Translation_To_IndexLocation(Vec_Location_Start, Vec_Location_Current, MapInfo);
+	if (IsSucceed_Calculate_IndexLocation == false) {
 		return false;
 	}
 	FVector2D Vec_Location_End = FVector2D(_index_Horizontal, _index_Vertical);
@@ -394,34 +421,36 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 
 
 		//Fix MoveTarget Location
-		UWorld* pWorld = nullptr;
-		pWorld = GetWorld();
-		if (pWorld == nullptr) {
+		//Get LocalMap & MapInfo
+		AActor* pOwner_Raw = GetOwner();
+		if (pOwner_Raw == nullptr) {
 			//Exception
 			Abort_Path();
 			return;
 		}
 
-		AGameModeBase* pGameMode_Raw = nullptr;
-		pGameMode_Raw = pWorld->GetAuthGameMode();
-		if (pGameMode_Raw == nullptr) {
+		AHHM_Entity* pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+		if (pOwner == nullptr) {
 			//Exception
 			Abort_Path();
 			return;
 		}
 
-		AHHM_GameMode_LocalMap* pGameMode = nullptr;
-		pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
-		if (pGameMode == nullptr) {
+		const ALocalMap* pLocalMap = pOwner->Get_LocalMap_Const();
+		if (pLocalMap == nullptr) {
 			//Exception
 			Abort_Path();
 			return;
 		}
+
+		const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+
+
 
 		// HHM Note : if Optimizing work needed, these location calculating part might needs to be modified. calculate on this function instead calling some utility functions
 		int32		Index_Current = m_FollowingPath[0].Index_Start;
 		FVector2D	IndexLocation_Current = FVector2D();
-		bool IsSucceed_SeperateIndex = pGameMode->Utility_Index_Seperate(IndexLocation_Current, Index_Current);
+		bool IsSucceed_SeperateIndex = AHHM_Manager_Math_Grid::Index_Seperate(IndexLocation_Current, Index_Current, MapInfo);
 		if (IsSucceed_SeperateIndex == false) {
 			//Exception
 			Abort_Path();
@@ -434,7 +463,7 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 		FVector2D IndexLocation_MoveTarget = FVector2D(IndexLocation_Current.X, Index_MoveTarget_Height);
 
 		FVector Location_MoveTarget = FVector();
-		bool IsSucceed_CalculateLocation = pGameMode->Utility_Calculate_Location(Location_MoveTarget, IndexLocation_MoveTarget, 0.0f);
+		bool IsSucceed_CalculateLocation = AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(Location_MoveTarget, IndexLocation_MoveTarget, MapInfo);
 		if (IsSucceed_CalculateLocation == false) {
 			//Exception
 			Abort_Path();
@@ -614,34 +643,36 @@ void UHHM_Component_Movement::FollowPath_Fall_Free(float DeltaTime) {
 
 
 		//Fix MoveTarget Location
-		UWorld* pWorld = nullptr;
-		pWorld = GetWorld();
-		if (pWorld == nullptr) {
+		//Get LocalMap & MapInfo
+		AActor* pOwner_Raw = GetOwner();
+		if (pOwner_Raw == nullptr) {
 			//Exception
 			Abort_Path();
 			return;
 		}
 
-		AGameModeBase* pGameMode_Raw = nullptr;
-		pGameMode_Raw = pWorld->GetAuthGameMode();
-		if (pGameMode_Raw == nullptr) {
+		AHHM_Entity* pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+		if (pOwner == nullptr) {
 			//Exception
 			Abort_Path();
 			return;
 		}
 
-		AHHM_GameMode_LocalMap* pGameMode = nullptr;
-		pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
-		if (pGameMode == nullptr) {
+		const ALocalMap* pLocalMap = pOwner->Get_LocalMap_Const();
+		if (pLocalMap == nullptr) {
 			//Exception
 			Abort_Path();
 			return;
 		}
+
+		const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+
+
 
 		// HHM Note : if Optimizing work needed, these location calculating part might needs to be modified. calculate on this function instead calling some utility functions
 		int32		Index_Current = m_FollowingPath[0].Index_Start;
 		FVector2D	IndexLocation_Current = FVector2D();
-		bool IsSucceed_SeperateIndex = pGameMode->Utility_Index_Seperate(IndexLocation_Current, Index_Current);
+		bool IsSucceed_SeperateIndex = AHHM_Manager_Math_Grid::Index_Seperate(IndexLocation_Current, Index_Current, MapInfo);
 		if (IsSucceed_SeperateIndex == false) {
 			//Exception
 			Abort_Path();
@@ -654,7 +685,7 @@ void UHHM_Component_Movement::FollowPath_Fall_Free(float DeltaTime) {
 		FVector2D IndexLocation_MoveTarget = FVector2D(IndexLocation_Current.X, Index_MoveTarget_Height);
 
 		FVector Location_MoveTarget = FVector();
-		bool IsSucceed_CalculateLocation = pGameMode->Utility_Calculate_Location(Location_MoveTarget, IndexLocation_MoveTarget, 0.0f);
+		bool IsSucceed_CalculateLocation = AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(Location_MoveTarget, IndexLocation_MoveTarget, MapInfo);
 		if (IsSucceed_CalculateLocation == false) {
 			//Exception
 			Abort_Path();
@@ -727,29 +758,34 @@ bool UHHM_Component_Movement::Calculate_MoveTarget_Location(void) {
 		return false;
 	}
 
-	UWorld* pWorld = nullptr;
-	pWorld = GetWorld();
-	if (pWorld == nullptr) {
+	//Get LocalMap & MapInfo
+	AActor* pOwner_Raw = GetOwner();
+	if (pOwner_Raw == nullptr) {
 		//Exception
+		Abort_Path();
 		return false;
 	}
 
-	AGameModeBase* pGameMode_Raw = nullptr;
-	pGameMode_Raw = pWorld->GetAuthGameMode();
-	if (pGameMode_Raw == nullptr) {
+	AHHM_Entity* pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+	if (pOwner == nullptr) {
 		//Exception
+		Abort_Path();
 		return false;
 	}
 
-	AHHM_GameMode_LocalMap* pGameMode = nullptr;
-	pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
-	if (pGameMode == nullptr) {
+	const ALocalMap* pLocalMap = pOwner->Get_LocalMap_Const();
+	if (pLocalMap == nullptr) {
 		//Exception
+		Abort_Path();
 		return false;
 	}
+
+	const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+
+
 
 	FVector TargetLocation;
-	bool IsCalculationSucceed = pGameMode->Utility_Calculate_Location(TargetLocation, m_FollowingPath[0].IndexLocation_Target, 0.0f);
+	bool IsCalculationSucceed = AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(TargetLocation, m_FollowingPath[0].IndexLocation_Target, MapInfo);
 	
 	m_MoveTarget_Current = TargetLocation;
 

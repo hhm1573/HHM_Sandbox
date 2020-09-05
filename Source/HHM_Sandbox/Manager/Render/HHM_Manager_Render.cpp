@@ -342,7 +342,13 @@ bool AHHM_Manager_Render::RenderInstance_Add(int32 tileID, int32 tileSubID, int3
 
 	//Adjusting target tile's translation
 	FTransform	Transform_Adjusted = tileTransform;
-	FVector		Translation = AHHM_Manager_Math_Grid::Convert_IndexToTranslation(m_MapInfo, index_Tile) + Const_TileOffset;
+	FVector		Translation_Raw = FVector::ZeroVector;	//Before add offset coordinate
+	bool IsSucceed_ConvertTranslation = AHHM_Manager_Math_Grid::Convert_Index_To_Translation(Translation_Raw, index_Tile, m_MapInfo);
+	if (IsSucceed_ConvertTranslation == false) {
+		//Exception
+		return false;
+	}
+	FVector		Translation = Translation_Raw + Const_TileOffset;
 	Transform_Adjusted.SetTranslation(Translation);	
 
 	//Add instance and save index to renderinfo
@@ -394,7 +400,12 @@ bool AHHM_Manager_Render::RenderInstance_Remove(int32 index_Tile) {
 
 		//Find last instance's index
 		FVector	Translation_LastInstance = Transform_LastInstance.GetTranslation();
-		int32	index_LastInstance = AHHM_Manager_Math_Grid::Convert_TranslationToIndex(m_MapInfo, Translation_LastInstance);
+		int32	index_LastInstance = -1;
+		bool IsSucceed_ConvertToIndex = AHHM_Manager_Math_Grid::Convert_Translation_To_Index(index_LastInstance, Translation_LastInstance, m_MapInfo);
+		if (IsSucceed_ConvertToIndex == false) {
+			//Exception
+			return false;
+		}
 
 		//Paste last instance's transform data to target's instance
 		m_Map_Instanced[TileID_Target].Arr_pInstancedStaticMesh[TileSubID_Target]->UpdateInstanceTransform(index_Instance_Target, Transform_LastInstance);

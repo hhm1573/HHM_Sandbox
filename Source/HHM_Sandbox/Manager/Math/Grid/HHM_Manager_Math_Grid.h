@@ -18,8 +18,10 @@ class HHM_SANDBOX_API AHHM_Manager_Math_Grid : public AHHM_Manager
 	GENERATED_BODY()
 
 public:
-	static FVector	Convert_IndexToTranslation(const FHHM_MapInfo& mapInfo, int32 index);	//Return position is not a center position but start position (Left bottom corner)
-	static int32	Convert_TranslationToIndex(const FHHM_MapInfo& mapInfo, const FVector& translation);
+	static bool		Convert_Index_To_Translation(FVector& _vec_Translation_Return, int32 _index, const FHHM_MapInfo& _mapInfo);	//Return position is not a center position but start position (Left bottom corner)
+	static bool		Convert_IndexLocation_To_Translation(FVector& _vec_Translation_Return, const FVector2D& _vec_IndexLocation, const FHHM_MapInfo& _mapInfo);
+	static bool		Convert_Translation_To_Index(int32& _index_Return, const FVector& _vec_Translation, const FHHM_MapInfo& _mapInfo);
+	static bool		Convert_Translation_To_IndexLocation(FVector2D& _vec_IndexLocation_Return, const FVector& _translation, const FHHM_MapInfo& _mapInfo);
 
 	/*
 	Get Horizontal and Vertical index and combine it as an index use for map array.

@@ -25,7 +25,7 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 	}
 
 	//Get Map Information and check start location
-	const FHHM_MapInfo	MapInfo = _pLocalMap->Get_MapInfo();
+	const FHHM_MapInfo&	MapInfo = _pLocalMap->Get_MapInfo_ConstRef();
 	const int32	Num_Map = MapInfo.MapSize_Horizontal * MapInfo.MapSize_Vertical;
 	if (_location_Start.X < 0 || _location_Start.X >= MapInfo.MapSize_Horizontal
 		|| _location_Start.Y < 0 || _location_Start.Y >= MapInfo.MapSize_Vertical) {

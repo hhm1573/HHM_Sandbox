@@ -41,11 +41,11 @@ public:
 
 #pragma region Utilities
 
-public:
-	bool			Utility_Index_Seperate(FVector2D& _vec_Return, int32 _index);
-	bool			Utility_Index_Combine(int32& _index_Return, FVector2D _vec_Index);
-	bool			Utility_Calculate_IndexLocation(FVector2D& _vec_Return, float _location_X, float _location_Z);
-	bool			Utility_Calculate_Location(FVector& _vec_Return, FVector2D _vec_IndexLocation, float _location_Y = 0.0f);
+//public:
+//	bool			Utility_Index_Seperate(FVector2D& _vec_Return, int32 _index);
+//	bool			Utility_Index_Combine(int32& _index_Return, FVector2D _vec_Index);
+//	bool			Utility_Calculate_IndexLocation(FVector2D& _vec_Return, float _location_X, float _location_Z);
+//	bool			Utility_Calculate_Location(FVector& _vec_Return, FVector2D _vec_IndexLocation, float _location_Y = 0.0f);
 
 #pragma endregion
 
@@ -53,19 +53,16 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-		class ALocalMap*						Get_LocalMap() { return m_pLocalMap; }
-		const class ALocalMap*					Get_LocalMap_Const() const { return m_pLocalMap; }
-	UFUNCTION(BlueprintCallable)
 		class AHHM_Manager_Tile*				Get_Manager_Tile() { return m_pManager_Tile; }
 		const class AHHM_Manager_Tile*			Get_Manager_Tile_Const() const { return m_pManager_Tile; }
+	UFUNCTION(BlueprintCallable)
+		class AHHM_Manager_LocalMap*			Get_Manager_LocalMap() { return m_pManager_LocalMap; }
+		const class AHHM_Manager_LocalMap*		Get_Manager_LocalMap_Const() const { return m_pManager_LocalMap; }
 	UFUNCTION(BlueprintCallable)
 		class AHHM_Manager_Navigation*			Get_Manager_Navigation() { return m_pManager_Navigation; }
 		const class AHHM_Manager_Navigation*	Get_Manager_Navigation_Const() const { return m_pManager_Navigation; }
 	UFUNCTION(BlueprintCallable)
 		const FHHM_MapInfo&						Get_MapInfo() { return m_MapInfo; }
-
-public:
-	void Set_LocalMap(class ALocalMap* _pLocalMap) { m_pLocalMap = _pLocalMap; }
 
 
 

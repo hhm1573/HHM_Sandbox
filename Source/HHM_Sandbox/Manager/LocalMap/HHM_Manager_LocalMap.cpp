@@ -143,7 +143,7 @@ bool AHHM_Manager_LocalMap::Create_LocalMap(FHHM_LocalMapConstructionData _mapCo
 
 	
 
-	pLocalMap_Created->Validfy_LocalMap(ID_LocalMap_Created, Index_Horizontal, Index_Vertical, _mapConstructionData.MapInfo, pMapData);
+	pLocalMap_Created->Validfy_LocalMap(ID_LocalMap_Created, Index_Horizontal, Index_Vertical, _mapConstructionData.MapInfo);
 
 	m_Container_LocalMap.Add(ID_LocalMap_Created, pLocalMap_Created);
 
@@ -152,35 +152,19 @@ bool AHHM_Manager_LocalMap::Create_LocalMap(FHHM_LocalMapConstructionData _mapCo
 	return true;
 }
 
-bool AHHM_Manager_LocalMap::Initialize_LocalMap(const FHHM_MapInfo& _mapInfo, int32 _index_LocalMap, FHHM_LocalMap_MapData& _mapData)
+ALocalMap* AHHM_Manager_LocalMap::Get_LocalMap(int32 _index_LocalMap)
 {
-	bool IsIndexAvailiable = m_Container_LocalMap.Contains(_index_LocalMap);
-	if (IsIndexAvailiable == false) {
-		//Exception
-		return false;
-	}
-
-	int32 Index_Horizontal = _index_LocalMap % HHM_NUM_LOCALMAP_HORIZONTAL;
-	int32 Index_Vertical = _index_LocalMap / HHM_NUM_LOCALMAP_HORIZONTAL;
-
-	//input data check
-	int32 Num_Container_TileData = _mapData.Container_TileData.Num();
-	int32 Num_MapTile = _mapInfo.MapSize_Horizontal * _mapInfo.MapSize_Vertical;
-	if (Num_Container_TileData != Num_MapTile) {
-		//Exception Input MapData's tile number doesnt match with mapinfo
-		return false;
-	}	//HHM Note : 맵데이터에 들어있는 모든 정보에 대한 검사를 실행하지 않기 때문에 신용도가 떨어지고 위험하다. 추후 필요하면 검사과정 추가.
-	
-	m_Container_LocalMap[_index_LocalMap]->Validfy_LocalMap(_index_LocalMap, Index_Horizontal, Index_Vertical, _mapInfo, _mapData);
-	// HHM Note : Create_LocalMap 함수로 인해 이 Initialize_LocalMap 함수가 호출되고, 다시 이 함수에서 막 생성된 로컬맵에 Validfy_LocalMap 함수를 호출한다.
-	// LocalMap 은 받은 맵 데이터를 자신이 갖고있는 컨테이너에 저장하는데, 이때 넘겨받은 맵데이터 레퍼런스를 통해 동일한 맵데이터를 재 선언하게될것으로 보인다.
-	// Create_LocalMap 함수에서 생성(선언)한 맵데이터와 LocalMap의 Validfy_LocalMap 함수에서 실제로 저장되는 맵데이터 변수는 서로 다른 개체일 가능성이 있으므로
-	// 추후 최적화를 위해서는 로컬맵의 멤버변수에 대한 주소혹은 레퍼런스를 Create_LocalMap 함수에서 받아오고 멤버변수를 직접 조작하거나 동적할당한 주소를 넘겨주어
-	// 로컬맵에서 주소를 멤버변수로 갖게하는등의 작업을 하는것이 좋아보인다.
-	// 그냥 주소를 받아와서 작업하는 방식으로 수정해놓는게 낫겠다 싶어 작업하기로 했다. 나중에 지울것.
-
-	return true;
+	bool IsAvailable_Index = m_Container_LocalMap.Contains(_index_LocalMap);
+	return IsAvailable_Index == true ? m_Container_LocalMap[_index_LocalMap] : nullptr;
 }
+
+const ALocalMap* AHHM_Manager_LocalMap::Get_LocalMap_const(int32 _index_LocalMap) const
+{
+	bool IsAvailable_Index = m_Container_LocalMap.Contains(_index_LocalMap);
+	return IsAvailable_Index == true ? m_Container_LocalMap[_index_LocalMap] : nullptr;
+}
+
+
 
 bool AHHM_Manager_LocalMap::Construct_MapData_Empty(FHHM_LocalMap_MapData* _mapData, const FHHM_MapInfo& _mapInfo) {
 	_mapData->Container_TileData.Empty();

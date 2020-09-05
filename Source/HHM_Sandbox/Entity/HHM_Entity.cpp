@@ -9,6 +9,7 @@
 #include "Engine/World.h"
 #include "GameFramework/GameModeBase.h"
 #include "Base/GameMode/HHM_GameMode_LocalMap.h"
+#include "Manager/LocalMap/HHM_Manager_LocalMap.h"
 
 #include "Data/LocalMap/LocalMap.h"
 //#include "Manager/LocalMap/HHM_Manager_LocalMap.h"
@@ -25,9 +26,11 @@ void AHHM_Entity::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	Request_LocalMap();
-	if (m_pLocalMap == nullptr) {
-		//Exception
+	if (m_EntityID < 0) {
+		//Exception Entity ID Is not available id. Entity Might Not registered.
+		if (Destroy() == false) {
+			//Exception Cant destroy actor
+		}
 		return;
 	}
 	
@@ -51,7 +54,9 @@ void AHHM_Entity::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 void AHHM_Entity::BeginDestroy() {
 	Super::BeginDestroy();
 
-	DeRegister_Entity();
+	if (m_EntityID >= 0 || m_pLocalMap != nullptr) {
+		DeRegister_Entity();
+	}
 }
 
 
@@ -80,6 +85,7 @@ void AHHM_Entity::Register_Entity(ALocalMap* _pLocalMap, int32 _entityID)
 }
 
 void AHHM_Entity::DeRegister_Entity(void) {
+	
 	m_pLocalMap->Entity_Deregister(this);
 
 	m_pLocalMap = nullptr;
@@ -130,11 +136,11 @@ void AHHM_Entity::HHM_HorizontalJump_Implementation(const FVector& _horizontalJu
 
 bool AHHM_Entity::Attack_Tile(int32 index_Horizontal, int32 index_Vertical, int32 damage) {
 	if (m_pLocalMap == nullptr) {
-		Request_LocalMap();
-		if (m_pLocalMap == nullptr) {
-			//Exception
-			return false;
+		//Exception No LocalMap Found. Entity Might Not registered.
+		if (Destroy() == false) {
+			//Exception Cant destroy actor
 		}
+		return false;
 	}
 
 	return m_pLocalMap->Damage_Tile(damage, EHHM_DamageType::Damage_Melee, this, index_Horizontal, index_Vertical);
@@ -143,11 +149,11 @@ bool AHHM_Entity::Attack_Tile(int32 index_Horizontal, int32 index_Vertical, int3
 bool AHHM_Entity::Place_Tile(int32 index_Horizontal, int32 index_Vertical, int32 tileID) {	
 	//temporary function. it will replaced with Use_Item or place_Item thing and there will be place function on local map class
 	if (m_pLocalMap == nullptr) {
-		Request_LocalMap();
-		if (m_pLocalMap == nullptr) {
-			//Exception
-			return false;
+		//Exception No LocalMap Found. Entity Might Not registered.
+		if (Destroy() == false) {
+			//Exception Cant destroy actor
 		}
+		return false;
 	}
 
 	const bool IsLocation_Placeable = m_pLocalMap->Check_Location_TilePlaceable(index_Horizontal, index_Vertical);
@@ -157,32 +163,4 @@ bool AHHM_Entity::Place_Tile(int32 index_Horizontal, int32 index_Vertical, int32
 
 	m_pLocalMap->Set_Tile_At_Pos(index_Horizontal, index_Vertical, tileID);
 	return true;
-}
-
-
-
-void AHHM_Entity::Request_LocalMap() {
-
-	UWorld* pWorld = nullptr;
-	pWorld = GetWorld();
-	if (pWorld == nullptr) {
-		//Exception
-		return;
-	}
-
-	AGameModeBase* pGameMode = nullptr;
-	pGameMode = pWorld->GetAuthGameMode();
-	if (pGameMode == nullptr) {
-		//Exception
-		return;
-	}
-
-	AHHM_GameMode_LocalMap* pGameMode_LocalMap = nullptr;
-	pGameMode_LocalMap = Cast<AHHM_GameMode_LocalMap>(pGameMode);
-	if (pGameMode_LocalMap == nullptr) {
-		//Exception
-		return;
-	}
-	
-	m_pLocalMap = pGameMode_LocalMap->Get_LocalMap();
 }

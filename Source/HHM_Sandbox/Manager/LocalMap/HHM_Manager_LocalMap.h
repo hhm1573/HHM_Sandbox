@@ -55,10 +55,12 @@ private:
 
 	
 public:
-	bool	Create_LocalMap(FHHM_LocalMapConstructionData _mapConstructionData, FHHM_LocalMapConstructionResult& _mapConstructionResult);
+	bool					Create_LocalMap(FHHM_LocalMapConstructionData _mapConstructionData, FHHM_LocalMapConstructionResult& _mapConstructionResult);
+	UFUNCTION(BlueprintCallable)
+	class ALocalMap*		Get_LocalMap(int32 _index_LocalMap);
+	const class ALocalMap*	Get_LocalMap_const(int32 _index_LocalMap) const;
 
 private:
-	bool	Initialize_LocalMap(const FHHM_MapInfo& _mapInfo, int32 _index_LocalMap, FHHM_LocalMap_MapData& _mapData);
 	bool	Construct_MapData_Empty(FHHM_LocalMap_MapData* _mapData, const FHHM_MapInfo& _mapInfo);
 	bool	Construct_MapData_TestMap(FHHM_LocalMap_MapData* _mapData, const FHHM_MapInfo& _mapInfo);
 	// HHM Note : Add function that Load Local Map from save.

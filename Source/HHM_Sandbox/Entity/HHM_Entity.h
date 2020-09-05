@@ -46,7 +46,9 @@ public:
 public:
 	void Register_Entity(class ALocalMap* _pLocalMap, int32 _entityID);
 	void DeRegister_Entity(void);
-	const int32&	Get_ID(void) { return m_EntityID; }
+	class ALocalMap*		Get_LocalMap(void) { return m_pLocalMap; }
+	const class ALocalMap*	Get_LocalMap_Const(void) { return m_pLocalMap; }
+	const int32&			Get_ID(void) { return m_EntityID; }
 
 
 
@@ -70,8 +72,4 @@ private:
 		bool Attack_Tile(int32 index_Horizontal, int32 index_Vertical, int32 damage);
 	UFUNCTION(BlueprintCallable)	//Temporary function will be replaced with Use_Item or place_Item so that it can request is it placeable tile and if it is what is it's Tile info
 		bool Place_Tile(int32 index_Horizontal, int32 index_Vertical, int32 tileID);
-
-protected:
-	void Request_LocalMap();
-
 };

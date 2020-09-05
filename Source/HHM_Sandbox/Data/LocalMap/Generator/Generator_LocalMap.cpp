@@ -34,6 +34,10 @@ void AGenerator_LocalMap::Tick(float DeltaTime)
 void AGenerator_LocalMap::Generate_DebugMap(TArray<FHHM_TileData>& mapData, const FHHM_MapInfo& mapInfo, const AHHM_Manager_Tile* pManager_Tile) {
 	FHHM_TileData TileInfo_Air = pManager_Tile->Get_DefaultTileInfo_ByID(0);
 	FHHM_TileData TileInfo_Floor = pManager_Tile->Get_DefaultTileInfo_ByID(1);
+
+	int32 Num_TotalTile = mapInfo.MapSize_Horizontal * mapInfo.MapSize_Vertical;
+	mapData.Init(TileInfo_Air, Num_TotalTile);
+
 	//Generate Floor
 	for (int32 CurIndex = 0; CurIndex < mapInfo.MapSize_Horizontal; ++CurIndex) {
 		mapData[CurIndex] = TileInfo_Floor;
