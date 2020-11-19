@@ -55,3 +55,11 @@ float AHHM_Entity_Walkable::Get_MoveTimer() {
 
 	return m_pComponent_Movement->Get_MoveTimer();
 }
+
+UHHM_Component_Movement* AHHM_Entity_Walkable::Get_Component_Movement()
+{
+	if (m_pComponent_Movement == nullptr) {
+		//Exception
+	}
+	return m_pComponent_Movement;
+}

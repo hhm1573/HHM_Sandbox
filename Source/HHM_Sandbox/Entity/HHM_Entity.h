@@ -22,8 +22,10 @@ public:
 	AHHM_Entity();
 
 protected:
-	class ALocalMap*	m_pLocalMap = nullptr;
-	int32				m_EntityID = -1;
+	UPROPERTY(BlueprintReadOnly, Category = HHM_Entity)
+		class ALocalMap*	m_pLocalMap = nullptr;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = HHM_Entity)
+		int32				m_EntityID = -1;
 
 
 
@@ -43,9 +45,11 @@ public:
 
 
 
-public:
-	void Register_Entity(class ALocalMap* _pLocalMap, int32 _entityID);
+private:
+	bool Register_Entity(void);
 	void DeRegister_Entity(void);
+
+public:
 	class ALocalMap*		Get_LocalMap(void) { return m_pLocalMap; }
 	const class ALocalMap*	Get_LocalMap_Const(void) { return m_pLocalMap; }
 	const int32&			Get_ID(void) { return m_EntityID; }

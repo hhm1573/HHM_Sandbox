@@ -34,7 +34,14 @@ protected:
 	UPROPERTY()
 		FHHM_Entity_MovementData	m_MovementData = FHHM_Entity_MovementData();
 
-	//한글 주석 테스트
+
+
+	UPROPERTY()
+		bool						m_bIsFalling = false;
+	UPROPERTY()
+		bool						m_bIsFalling_Before = false;
+
+
 
 	UPROPERTY()
 		EHHM_MoveType				m_MoveType_Current = EHHM_MoveType::MT_OnGround;
@@ -45,7 +52,7 @@ protected:
 	//UPROPERTY()
 	//	EHHM_Entity_Movement_State	m_MoveState_Before = EHHM_Entity_Movement_State::MoveState_Dummy;	// HHM Note : this variable might not needed
 	UPROPERTY()
-		//Used for moves like jump,fall,etc.. when timer reached to zero, character will move to target location
+		//Used for moves like jump,JumpDown,etc.. when timer reached to zero, character will move to target location
 		float						m_Move_Timer = 0.0f;
 	UPROPERTY()
 		FVector						m_MoveTarget_Current = FVector();
@@ -71,15 +78,22 @@ protected:
 
 
 
-	int32 m_EntitySize_Horizontal = 1;
-	int32 m_EntitySize_Vertical = 1;
+	UPROPERTY()
+		int32 m_EntitySize_Horizontal = 1;
+	UPROPERTY()
+		int32 m_EntitySize_Vertical = 1;
 
-	int32 m_MaxJumpHeight = 0;
-	int32 m_MaxFallHeight = 0;
-	int32 m_MaxHorizontalJumpLength = 0;
+	UPROPERTY()
+		int32 m_MaxJumpHeight = 0;
+	UPROPERTY()
+		int32 m_MaxJumpDownHeight = 0;
+	UPROPERTY()
+		int32 m_MaxHorizontalJumpLength = 0;
 
-	float m_MoveDistance_ThisTick = 0.0f;
-	float m_MoveDistance_PostTick = 0.0f;
+	UPROPERTY()
+		float m_MoveDistance_ThisTick = 0.0f;
+	UPROPERTY()
+		float m_MoveDistance_PostTick = 0.0f;
 
 
 public:
@@ -94,8 +108,18 @@ public:
 	//Get speed etc.
 
 public:
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		float		Get_MoveTimer() { return m_Move_Timer; }
+
+	UFUNCTION(BlueprintCallable)
+		bool			Get_IsFalling() { return m_bIsFalling; }
+	UFUNCTION(BlueprintCallable)
+		bool			Get_IsFalling_Before() { return m_bIsFalling_Before; }
+
+	UFUNCTION(BlueprintCallable)
+		EHHM_MoveType	Get_MoveType_Current() { return m_MoveType_Current; }
+	UFUNCTION(BlueprintCallable)
+		EHHM_MoveType	Get_MoveType_Before() { return m_MoveType_Before; }
 
 #pragma endregion
 
@@ -129,8 +153,8 @@ private:
 	void			FollowPath_Jump(float DeltaTime);
 	void			FollowPath_Jump_Free(float DeltaTime);
 
-	void			FollowPath_Fall(float DeltaTime);
-	void			FollowPath_Fall_Free(float DeltaTime);
+	void			FollowPath_DownJump(float DeltaTime);
+	void			FollowPath_DownJump_Free(float DeltaTime);
 
 	void			FollowPath_HorizontalJump(float DeltaTime);
 	void			FollowPath_HorizontalJump_Free(float DeltaTime);
@@ -140,6 +164,8 @@ private:
 
 private:
 	bool			Calculate_MoveTarget_Location(void);
+
+	bool			Check_IsFalling(void);
 
 	void			Abort_Path(void);
 	

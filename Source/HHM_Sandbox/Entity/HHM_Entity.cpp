@@ -26,12 +26,23 @@ void AHHM_Entity::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	//Register Entity. if register failed, destroy by self
 	if (m_EntityID < 0) {
-		//Exception Entity ID Is not available id. Entity Might Not registered.
-		if (Destroy() == false) {
-			//Exception Cant destroy actor
+		bool IsSucceed_Register = Register_Entity();
+		if (IsSucceed_Register == false) {
+			//Exception failed register
+			bool IsSucceed_Destroy = Destroy();
+			if (IsSucceed_Destroy == false) {
+				//Exception failed Destroy
+			}
+			return;
 		}
-		return;
+
+		if (m_EntityID < 0 || m_pLocalMap == nullptr) {
+			//Exception Not Successfuly registered
+			Destroy();
+			return;
+		}
 	}
 	
 	
@@ -61,9 +72,9 @@ void AHHM_Entity::BeginDestroy() {
 
 
 
-void AHHM_Entity::Register_Entity(ALocalMap* _pLocalMap, int32 _entityID)
+bool AHHM_Entity::Register_Entity(void)
 {
-	if (_pLocalMap == nullptr) {
+	/* if (_pLocalMap == nullptr) {
 		//Exception Input LocalMap is nullptr
 		bool IsDestroySucceed = Destroy();
 		if (IsDestroySucceed == false) {
@@ -81,7 +92,40 @@ void AHHM_Entity::Register_Entity(ALocalMap* _pLocalMap, int32 _entityID)
 	}
 
 	m_pLocalMap = _pLocalMap;
-	m_EntityID = _entityID;
+	m_EntityID = _entityID; */
+
+	//Work here
+
+	UWorld* pWorld = nullptr;
+	pWorld = GetWorld();
+	if (pWorld == nullptr) {
+		//Exception
+		return false;
+	}
+
+	AGameModeBase* pGameMode_Raw = nullptr;
+	pGameMode_Raw = pWorld->GetAuthGameMode();
+	if (pGameMode_Raw == nullptr) {
+		//Exception
+		return false;
+	}
+
+	AHHM_GameMode_LocalMap* pGameMode = nullptr;
+	pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
+	if (pGameMode == nullptr) {
+		//Exception
+		return false;
+	}
+
+	FVector ActorLocation = GetActorLocation();
+
+	bool IsSucceed_Register = pGameMode->Register_Entity(this, &m_EntityID, &m_pLocalMap, ActorLocation);
+	if (IsSucceed_Register == false) {
+		//Exception
+		return false;
+	}
+
+	return true;
 }
 
 void AHHM_Entity::DeRegister_Entity(void) {

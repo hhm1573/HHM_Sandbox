@@ -31,23 +31,16 @@ private:
 
 	
 private:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		TMap<int32, class ALocalMap*>	m_Container_LocalMap;
 	UPROPERTY()
 		int32							m_AvailiableIndex_LocalMap = 0;
-
-	//Represent the total reserved elements on container
-	UPROPERTY()
-		int32							m_Size_Container_Entity = 0;	//HHM Note : Move entity container to LocalMap
-	UPROPERTY()
-		TArray<class AHHM_Entity*>		m_Container_Entity;
-	UPROPERTY()
-		TArray<int32>					m_Container_AvailiableIndex_Entity; //Resize if total number of entity is over container.
 
 
 
 public:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 private:
 	void	Initialize_Manager_LocalMap(void);
@@ -55,7 +48,10 @@ private:
 
 	
 public:
-	bool					Create_LocalMap(FHHM_LocalMapConstructionData _mapConstructionData, FHHM_LocalMapConstructionResult& _mapConstructionResult);
+	UFUNCTION(BlueprintCallable)
+		bool				Create_LocalMap(FHHM_LocalMapConstructionData _mapConstructionData, FHHM_LocalMapConstructionResult& _mapConstructionResult);
+	UFUNCTION(BlueprintCallable)
+		bool				Destroy_LocalMap(int32 _id_LocalMap);
 	UFUNCTION(BlueprintCallable)
 	class ALocalMap*		Get_LocalMap(int32 _index_LocalMap);
 	const class ALocalMap*	Get_LocalMap_const(int32 _index_LocalMap) const;
@@ -69,7 +65,6 @@ private:
 
 private:
 	int32	Find_AvailiableIndex_LocalMap(void);
-	void	Resize_Container_AvailiableIndex_Entity(void);
 
 
 

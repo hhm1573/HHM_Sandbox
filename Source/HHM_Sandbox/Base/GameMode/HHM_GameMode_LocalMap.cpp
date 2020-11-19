@@ -5,6 +5,8 @@
 
 #include "Engine/World.h"
 
+#include "Base/Provider/HHM_Provider_Entity.h"
+
 #include "Manager/Tile/HHM_Manager_Tile.h"
 #include "Manager/Navigation/HHM_Manager_Navigation.h"
 #include "Header/Struct_LocalMap.h"
@@ -12,6 +14,8 @@
 #include "Data/LocalMap/LocalMap.h"
 
 #include "Base/TouchPanel/TouchPanel.h"
+
+#include "Header/Struct.h"
 
 
 
@@ -30,6 +34,15 @@ void AHHM_GameMode_LocalMap::BeginPlay() {
 		//Exception
 		return;
 	}
+
+
+
+	if (m_pProvider_Entity == nullptr) {
+		//m_pProvider_Entity = pWorld->SpawnActor<UHHM_Provider_Entity>();
+		m_pProvider_Entity = NewObject<UHHM_Provider_Entity>(this, TEXT("Provider_Entity"));
+	}
+
+
 
 	if (m_pManager_Tile == nullptr) {
 		//m_pManager_Tile = NewObject<AHHM_Manager_Tile>(this, TEXT("Manager_Tile"));
@@ -52,6 +65,10 @@ void AHHM_GameMode_LocalMap::BeginPlay() {
 			//Exception
 		}
 	}
+
+
+
+	Super::BeginPlay();
 }
 
 
@@ -114,6 +131,256 @@ void AHHM_GameMode_LocalMap::BeginPlay() {
 //
 //	return true;
 //}
+
+#pragma endregion
+
+
+
+#pragma region Entity Handling
+
+AHHM_Entity* AHHM_GameMode_LocalMap::Spawn_Entity_By_ID(int32 _id_Entity, int32 _id_Map_Horizontal, int32 _id_Map_Vertical, int32 _index_Horizontal, int32 _index_Vertical, float _offset_Depth)
+{
+	int32 ID_Map = (_id_Map_Vertical * HHM_NUM_MAX_LOCALMAP_IN_ROW) + _id_Map_Horizontal;
+	ALocalMap* pLocalMap = nullptr;
+	pLocalMap = AHHM_GameMode_LocalMap::Get_LocalMap_ByIndex(ID_Map);
+	if (pLocalMap == nullptr) {
+		//Exception Caution No LocalMap
+		return nullptr;
+	}
+
+	//if Index is too far from map border, cancel Spawn
+	const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+	bool IsTooFar_Left = _index_Horizontal < -HHM_INDEX_MAX_ACCEPTABLE_FROM_MAP_BORDER ? true : false;
+	bool IsTooFar_Right = _index_Horizontal - MapInfo.MapSize_Horizontal >= HHM_INDEX_MAX_ACCEPTABLE_FROM_MAP_BORDER ? true : false;
+	bool IsTooFar_Down = _index_Vertical < -HHM_INDEX_MAX_ACCEPTABLE_FROM_MAP_BORDER ? true : false;
+	bool IsTooFar_Up = _index_Vertical - MapInfo.MapSize_Vertical >= HHM_INDEX_MAX_ACCEPTABLE_FROM_MAP_BORDER ? true : false;
+	if (IsTooFar_Left == true || IsTooFar_Right == true || IsTooFar_Up == true || IsTooFar_Down == true) {
+		//Exception Caution Too Far From Map Border
+		return nullptr;
+	}
+
+	//Calculate Location
+	FVector Vec_Offset_LocalMap = FVector(_id_Map_Horizontal * HHM_OFFSET_LOCALMAP, 0.0f, _id_Map_Vertical * HHM_OFFSET_LOCALMAP);
+	FVector Vec_Offset_IndexLocation = FVector(_index_Horizontal * HHM_TILE_SIZE, 0.0f, _index_Vertical * HHM_TILE_SIZE);
+	FVector Vec_Offset_Depth = FVector(0.0f, _offset_Depth, 0.0f);
+	FVector Vec_Location = Vec_Offset_LocalMap + Vec_Offset_IndexLocation + Vec_Offset_Depth;
+
+	//Move to tile center location
+	FVector Vec_Offset_TileCenter = FVector(HHM_TILE_SIZE * 0.5f, 0.0f, HHM_TILE_SIZE * 0.5f);
+	Vec_Location = Vec_Location + Vec_Offset_TileCenter;
+
+	AHHM_Entity* pEntity_Spawned = m_pProvider_Entity->Spawn_Entity_By_ID(_id_Entity, Vec_Location);
+	if (pEntity_Spawned == nullptr) {
+		//Exception Danger Entity Spawn Failed
+		return nullptr;
+	}
+
+	return pEntity_Spawned;
+}
+
+AHHM_Entity* AHHM_GameMode_LocalMap::Spawn_Entity_By_ID(int32 _id_Entity, int32 _id_Map, int32 _index, float _offset_Depth)
+{
+	return nullptr;
+}
+
+AHHM_Entity* AHHM_GameMode_LocalMap::Spawn_Entity_By_ID(int32 _id_Entity, int32 _id_Map, int32 _index_Horizontal, int32 _index_Vertical, float _offset_Depth)
+{
+	int32 ID_Map = _id_Map;
+	ALocalMap* pLocalMap = nullptr;
+	pLocalMap = AHHM_GameMode_LocalMap::Get_LocalMap_ByIndex(ID_Map);
+	if (pLocalMap == nullptr) {
+		//Exception Caution No LocalMap
+		return nullptr;
+	}
+
+	//if Index is too far from map border, cancel Spawn
+	const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+	bool IsTooFar_Left = _index_Horizontal < -HHM_INDEX_MAX_ACCEPTABLE_FROM_MAP_BORDER ? true : false;
+	bool IsTooFar_Right = _index_Horizontal - MapInfo.MapSize_Horizontal >= HHM_INDEX_MAX_ACCEPTABLE_FROM_MAP_BORDER ? true : false;
+	bool IsTooFar_Down = _index_Vertical < -HHM_INDEX_MAX_ACCEPTABLE_FROM_MAP_BORDER ? true : false;
+	bool IsTooFar_Up = _index_Vertical - MapInfo.MapSize_Vertical >= HHM_INDEX_MAX_ACCEPTABLE_FROM_MAP_BORDER ? true : false;
+	if (IsTooFar_Left == true || IsTooFar_Right == true || IsTooFar_Up == true || IsTooFar_Down == true) {
+		//Exception Caution Too Far From Map Border
+		return nullptr;
+	}
+
+	//Seperate MapID
+	int32 ID_Map_Horizontal = _id_Map % HHM_NUM_MAX_LOCALMAP_IN_ROW;
+	int32 ID_Map_Vertical = _id_Map / HHM_NUM_MAX_LOCALMAP_IN_ROW;
+
+	//Calculate Location
+	FVector Vec_Offset_LocalMap = FVector(ID_Map_Horizontal * HHM_OFFSET_LOCALMAP, 0.0f, ID_Map_Vertical * HHM_OFFSET_LOCALMAP);
+	FVector Vec_Offset_IndexLocation = FVector(_index_Horizontal * HHM_TILE_SIZE, 0.0f, _index_Vertical * HHM_TILE_SIZE);
+	FVector Vec_Offset_Depth = FVector(0.0f, _offset_Depth, 0.0f);
+	FVector Vec_Location = Vec_Offset_LocalMap + Vec_Offset_IndexLocation + Vec_Offset_Depth;
+
+	//Move to tile center location
+	FVector Vec_Offset_TileCenter = FVector(HHM_TILE_SIZE * 0.5f, 0.0f, HHM_TILE_SIZE * 0.5f);
+	Vec_Location = Vec_Location + Vec_Offset_TileCenter;
+
+	AHHM_Entity* pEntity_Spawned = m_pProvider_Entity->Spawn_Entity_By_ID(_id_Entity, Vec_Location);
+	if (pEntity_Spawned == nullptr) {
+		//Exception Danger Entity Spawn Failed
+		return nullptr;
+	}
+
+	return pEntity_Spawned;
+}
+
+
+
+bool AHHM_GameMode_LocalMap::Register_Entity(AHHM_Entity* _pEntity, int32* _pEntityID_Return, ALocalMap** _ppLocalMap_Return, const FVector& _location)
+{
+	if (_pEntity == nullptr || _pEntityID_Return == nullptr || _ppLocalMap_Return == nullptr) {
+		//Exception One of input value is nullptr
+		return false;
+	}
+
+	ALocalMap* pLocalMap_Found = AHHM_GameMode_LocalMap::Get_LocalMap_ByLocation(_location);
+	if (pLocalMap_Found == nullptr) {
+		//Exception Can not found local map by given location
+		return false;
+	}
+
+	
+
+	int32 Registered_ID = pLocalMap_Found->Entity_Register(_pEntity);
+	if (Registered_ID < 0) {
+		//Exception Registering Entity on localmap failed.
+		return false;
+	}
+
+	*_pEntityID_Return = Registered_ID;
+	*_ppLocalMap_Return = pLocalMap_Found;
+
+	return true;
+}
+
+int32 AHHM_GameMode_LocalMap::Get_LocalMap_Index_ByLocation(const FVector& _location)
+{
+	if (m_pManager_LocalMap == nullptr) {
+		//Exception LocalMap Manager is nullptr. Critical error
+		return -1;
+	}
+
+
+
+	if (_location.X < HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER || _location.Y < HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER) {
+		//Exception Entity is way too far from maps
+		return -1;
+	}
+
+	//Guessing Index of local map. since there is some gap between maps, calculated(Guessed) index does not always indicates exact index.
+	int32 Index_Horizontal_Guessed = _location.X / HHM_OFFSET_LOCALMAP;
+	int32 Index_Vertical_Guessed = _location.Y / HHM_OFFSET_LOCALMAP;
+
+	//if location does not in range of next map(Guessed + 1 indexed map), it belongs to Guessed map.
+	float Location_Horizontal_Acceptable_Min_NextLocalMap = (Index_Horizontal_Guessed + 1) * HHM_OFFSET_LOCALMAP - HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER;
+	float Location_Vertical_Acceptable_Min_NextLocalMap = (Index_Vertical_Guessed + 1) * HHM_OFFSET_LOCALMAP - HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER;
+
+	int32 Index_Horizontal = (_location.X >= Location_Horizontal_Acceptable_Min_NextLocalMap) ? Index_Horizontal_Guessed + 1 : Index_Horizontal_Guessed;
+	int32 Index_Vertical = (_location.Y >= Location_Vertical_Acceptable_Min_NextLocalMap) ? Index_Vertical_Guessed + 1 : Index_Vertical_Guessed;
+
+	//Check if calculated index is not valid.
+	if (Index_Horizontal >= HHM_NUM_MAX_LOCALMAP_IN_ROW || Index_Vertical >= HHM_NUM_MAX_LOCALMAP_IN_ROW) {
+		//Exception Calculated index is not valid.
+		return -1;
+	}
+
+	int32 Index_LocalMap = Index_Horizontal + Index_Vertical * HHM_NUM_MAX_LOCALMAP_IN_ROW;
+	ALocalMap* pLocalMap = m_pManager_LocalMap->Get_LocalMap(Index_Horizontal);
+	if (pLocalMap == nullptr) {
+		//Exception nullptr on calculated index
+		return -1;
+	}
+
+	//Check location is too far from localmap that calculated index indicates.
+	const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+
+	float Location_Horizontal_Acceptable_Max_LocalMap = Index_Horizontal * HHM_OFFSET_LOCALMAP + HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER;
+	float Location_Vertical_Acceptable_Max_LocalMap = Index_Vertical * HHM_OFFSET_LOCALMAP + HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER;
+
+	bool IsHorizontalLocation_TooFar = (_location.X > Location_Horizontal_Acceptable_Max_LocalMap) ? true : false;
+	bool IsVerticalLocation_TooFar = (_location.Y > Location_Vertical_Acceptable_Max_LocalMap) ? true : false;
+
+	if (IsHorizontalLocation_TooFar == true || IsVerticalLocation_TooFar == true) {
+		//Exception location is too far from map
+		return -1;
+	}
+
+	return Index_LocalMap;
+}
+
+ALocalMap* AHHM_GameMode_LocalMap::Get_LocalMap_ByLocation(const FVector& _location)
+{
+	if (m_pManager_LocalMap == nullptr) {
+		//Exception LocalMap Manager is nullptr. Critical error
+		return nullptr;
+	}
+
+
+
+	if (_location.X < -HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER || _location.Y < -HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER) {
+		//Exception Entity is way too far from maps
+		return nullptr;
+	}
+
+	//Guessing Index of local map. since there is some gap between maps, calculated(Guessed) index does not always indicates exact index.
+	int32 Index_Horizontal_Guessed = _location.X / HHM_OFFSET_LOCALMAP;
+	int32 Index_Vertical_Guessed = _location.Y / HHM_OFFSET_LOCALMAP;
+
+	//if location does not in range of next map(Guessed + 1 indexed map), it belongs to Guessed map.
+	float Location_Horizontal_Acceptable_Min_NextLocalMap = (Index_Horizontal_Guessed + 1) * HHM_OFFSET_LOCALMAP - HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER;
+	float Location_Vertical_Acceptable_Min_NextLocalMap = (Index_Vertical_Guessed + 1) * HHM_OFFSET_LOCALMAP - HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER;
+
+	int32 Index_Horizontal = (_location.X >= Location_Horizontal_Acceptable_Min_NextLocalMap) ? Index_Horizontal_Guessed + 1 : Index_Horizontal_Guessed;
+	int32 Index_Vertical = (_location.Y >= Location_Vertical_Acceptable_Min_NextLocalMap) ? Index_Vertical_Guessed + 1 : Index_Vertical_Guessed;
+
+	//Check if calculated index is not valid.
+	if (Index_Horizontal >= HHM_NUM_MAX_LOCALMAP_IN_ROW || Index_Vertical >= HHM_NUM_MAX_LOCALMAP_IN_ROW) {
+		//Exception Calculated index is not valid.
+		return nullptr;
+	}
+
+	int32 Index_LocalMap = Index_Horizontal + Index_Vertical * HHM_NUM_MAX_LOCALMAP_IN_ROW;
+	ALocalMap* pLocalMap = m_pManager_LocalMap->Get_LocalMap(Index_Horizontal);
+	if (pLocalMap == nullptr) {
+		//Exception nullptr on calculated index
+		return nullptr;
+	}
+
+	//Check location is too far from localmap that calculated index indicates.
+	const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+
+	float Location_Horizontal_Acceptable_Max_LocalMap = Index_Horizontal * HHM_OFFSET_LOCALMAP + HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER + (MapInfo.MapSize_Horizontal * HHM_TILE_SIZE);
+	float Location_Vertical_Acceptable_Max_LocalMap = Index_Vertical * HHM_OFFSET_LOCALMAP + HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER + (MapInfo.MapSize_Vertical * HHM_TILE_SIZE);
+
+	bool IsHorizontalLocation_TooFar = (_location.X > Location_Horizontal_Acceptable_Max_LocalMap) ? true : false;
+	bool IsVerticalLocation_TooFar = (_location.Y > Location_Vertical_Acceptable_Max_LocalMap) ? true : false;
+
+	if (IsHorizontalLocation_TooFar == true || IsVerticalLocation_TooFar == true) {
+		//Exception location is too far from map
+		return nullptr;
+	}
+
+	return pLocalMap;
+}
+
+ALocalMap* AHHM_GameMode_LocalMap::Get_LocalMap_ByIndex(const int32& _index)
+{
+	if (m_pManager_LocalMap == nullptr) {
+		//Exception LocalMap Manager is nullptr. Critical error
+		return nullptr;
+	}
+
+	ALocalMap* pLocalMap = m_pManager_LocalMap->Get_LocalMap(_index);
+	if (pLocalMap == nullptr) {
+		//Exception nullptr on input index.
+		return nullptr;
+	}
+
+	return pLocalMap;
+}
 
 #pragma endregion
 

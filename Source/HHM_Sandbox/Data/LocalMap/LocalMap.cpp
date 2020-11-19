@@ -2,6 +2,8 @@
 
 #include "LocalMap.h"
 
+#include "Components/SceneComponent.h"
+
 #include "Header/Macro.h"
 #include "Header/Struct_Tile.h"
 #include "Tile/Base/HHM_Tile.h"
@@ -39,7 +41,8 @@ ALocalMap::ALocalMap()
 		m_ID_LocalMap = -1;
 	}
 
-
+	USceneComponent* pSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	RootComponent = pSceneComponent;
 
 	
 
@@ -62,17 +65,13 @@ void ALocalMap::BeginPlay()
 void ALocalMap::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void ALocalMap::BeginDestroy() {
 	Super::BeginDestroy();
-	//Delete all actor
 
-	//HHM Note : Auto type
-	for (auto pairElem : m_Container_Entity) {
-		ALocalMap::Entity_Deregister(pairElem.Value);
-	}
+	//Delete all actor
+	Entity_Clear();
 
 	//HHM Note : Log Entity container size.
 }
@@ -187,6 +186,8 @@ bool ALocalMap::Initialize_TouchPanel(void) {
 	m_pComponent_TouchPanel->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
 	m_pComponent_TouchPanel->SetBoxExtent(Size_Panel * 0.5f);
 	m_pComponent_TouchPanel->SetRelativeLocation(Size_Panel * 0.5f);
+
+	m_pComponent_TouchPanel->RegisterComponent();
 
 	return true;
 }
@@ -1037,7 +1038,7 @@ bool ALocalMap::RenderInstance_Add(int32 _tileID, int32 _tileSubID, int32 _index
 	//Adjusting target tile's translation
 	FTransform	Transform_Adjusted = _tileTransform;
 	FVector		Translation_Raw = FVector::ZeroVector;
-	bool		IsSucceed_Calculate_Translation_Raw = AHHM_Manager_Math_Grid::Convert_Index_To_Translation(Translation_Raw, _index_Tile, m_MapInfo);
+	bool		IsSucceed_Calculate_Translation_Raw = AHHM_Manager_Math_Grid::Convert_Index_To_Translation_Relative(Translation_Raw, _index_Tile, m_MapInfo);
 	if (IsSucceed_Calculate_Translation_Raw == false) {
 		//Exception
 		return false;
@@ -1096,7 +1097,7 @@ bool ALocalMap::RenderInstance_Remove(int32 _index_Tile)
 		//Find last instance's index
 		FVector	Translation_LastInstance = Transform_LastInstance.GetTranslation();
 		int32	index_LastInstance = -1;
-		bool IsSucceed_Calculate_Index_LastInstance = AHHM_Manager_Math_Grid::Convert_Translation_To_Index(index_LastInstance, Translation_LastInstance, m_MapInfo);
+		bool IsSucceed_Calculate_Index_LastInstance = AHHM_Manager_Math_Grid::Convert_Translation_To_Index_Relative(index_LastInstance, Translation_LastInstance, m_MapInfo);
 		if (IsSucceed_Calculate_Index_LastInstance == false) {
 			//Exception
 			return false;
@@ -1282,6 +1283,11 @@ void ALocalMap::Entity_Deregister(AHHM_Entity* _pEntity)
 
 	int32 ID_Deregistered = _pEntity->Get_ID();
 
+	bool IsExsisting_ID = m_Container_Entity.Contains(ID_Deregistered);
+	if (IsExsisting_ID == false) {
+		return;
+	}
+
 	AHHM_Entity* StoredEntityAddress = m_Container_Entity[ID_Deregistered];
 	if (StoredEntityAddress != _pEntity) {
 		//Exception Certain ID's Stored entity data is not matched with Entity that request deregistering of that id
@@ -1299,6 +1305,30 @@ void ALocalMap::Entity_Deregister(AHHM_Entity* _pEntity)
 	}
 
 	return;
+}
+
+
+
+void ALocalMap::Entity_Clear(void) {
+	//HHM Note : Auto type
+	int32 Num_Entity = m_Container_Entity.Num();
+	if (Num_Entity <= 0) {
+		return;
+	}
+
+	for (auto& PairElem : m_Container_Entity) {
+		if (PairElem.Value == nullptr) {
+			continue;
+		}
+
+		bool IsSucceed_Destroy = PairElem.Value->Destroy();
+		if (IsSucceed_Destroy == false) {
+			//Exception Destroy entity failed
+		}
+	}
+
+	m_Container_Entity.Empty();
+	m_Container_AvailiableIndex_Entity.Empty();
 }
 
 #pragma endregion

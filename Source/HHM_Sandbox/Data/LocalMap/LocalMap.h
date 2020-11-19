@@ -48,7 +48,7 @@ private:
 
 
 private:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		int32							m_ID_LocalMap = -1;
 	UPROPERTY()
 		int32							m_Index_Horizontal = 0;
@@ -113,6 +113,11 @@ public:
 #pragma region Get/Set
 
 public:
+	UFUNCTION(BlueprintCallable, Category = LocalMap_Data)
+		int32							Get_ID_LocalMap() { return m_ID_LocalMap; }
+	UFUNCTION(BlueprintCallable, Category = LocalMap_Data)
+		FVector2D						Get_IndexLocation_LocalMap() { return FVector2D(m_Index_Horizontal, m_Index_Vertical); }
+
 	FHHM_LocalMap_MapData*			Get_MapData_Address(void) { if (m_ID_LocalMap >= 0) {/*Exception LocalMap is already validfied. can't access to map data's address after validfied*/ } return &m_MapData; }
 	UFUNCTION(BlueprintCallable, Category = Variables)
 	const FHHM_MapInfo&				Get_MapInfo_ConstRef() const { return m_MapInfo; }
@@ -287,6 +292,9 @@ private:
 	public:
 		int32	Entity_Register(class AHHM_Entity* _pEntity);
 		void	Entity_Deregister(class AHHM_Entity* _pEntity);
+
+	private:
+		void	Entity_Clear(void); //Destroy all actor belong this map and empty the container
 
 		//Spawn Entity?
 		//Despawn Entity?

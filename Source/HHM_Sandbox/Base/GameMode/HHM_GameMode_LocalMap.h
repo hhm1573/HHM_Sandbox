@@ -22,6 +22,9 @@ public:
 
 protected:
 	UPROPERTY(VisibleAnywhere)
+		class UHHM_Provider_Entity*		m_pProvider_Entity = nullptr;
+
+	UPROPERTY(VisibleAnywhere)
 		class AHHM_Manager_Tile*		m_pManager_Tile = nullptr;
 	UPROPERTY(VisibleAnywhere)
 		class AHHM_Manager_Navigation*	m_pManager_Navigation = nullptr;
@@ -53,6 +56,8 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
+		class UHHM_Provider_Entity*				Get_Provider_Entity() { return m_pProvider_Entity; }
+	UFUNCTION(BlueprintCallable)
 		class AHHM_Manager_Tile*				Get_Manager_Tile() { return m_pManager_Tile; }
 		const class AHHM_Manager_Tile*			Get_Manager_Tile_Const() const { return m_pManager_Tile; }
 	UFUNCTION(BlueprintCallable)
@@ -63,6 +68,22 @@ public:
 		const class AHHM_Manager_Navigation*	Get_Manager_Navigation_Const() const { return m_pManager_Navigation; }
 	UFUNCTION(BlueprintCallable)
 		const FHHM_MapInfo&						Get_MapInfo() { return m_MapInfo; }
+
+
+#pragma region Entity Handling
+
+public:
+	class AHHM_Entity* Spawn_Entity_By_ID(int32 _id_Entity, int32 _id_Map_Horizontal, int32 _id_Map_Vertical, int32 _index_Horizontal, int32 _index_Vertical, float _offset_Depth);
+	class AHHM_Entity* Spawn_Entity_By_ID(int32 _id_Entity, int32 _id_Map, int32 _index, float _offset_Depth);
+	UFUNCTION(BlueprintCallable)
+		class AHHM_Entity* Spawn_Entity_By_ID(int32 _id_Entity, int32 _id_Map, int32 _index_Horizontal, int32 _index_Vertical, float _offset_Depth);
+
+	bool				Register_Entity(class AHHM_Entity* _pEntity, int32* _pEntityID_Return, class ALocalMap** _ppLocalMap_Return, const FVector& _location);	//Put address of entity's member variables as input
+	int32				Get_LocalMap_Index_ByLocation(const FVector& _location);
+	class ALocalMap*	Get_LocalMap_ByLocation(const FVector& _location);
+	class ALocalMap*	Get_LocalMap_ByIndex(const int32& _index);
+
+#pragma endregion
 
 
 

@@ -35,4 +35,6 @@ public:
 public:
 	UFUNCTION(BlueprintCallable)
 		float	Get_MoveTimer();	// HHM Note : Fix this functions name something like "Get_MoveComponent_MoveTimer", "MoveComponent_Get_MoveTimer" or "Component_Movement_Get_MoveTimer" etc.
+	UFUNCTION(BlueprintCallable)
+		UHHM_Component_Movement* Get_Component_Movement();
 };

@@ -43,10 +43,10 @@ struct FHHM_LocalMapConstructionResult
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ConstructionResult")
 		int32	MapIndex = -1;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ConstructionResult")
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ConstructionResult")
 		int32	MapIndex_Horizontal = -1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ConstructionResult")
-		int32	MapIndex_Vertical = -1;
+		int32	MapIndex_Vertical = -1;*/
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ConstructionResult")
 		class ALocalMap*	pLocalMap = nullptr;

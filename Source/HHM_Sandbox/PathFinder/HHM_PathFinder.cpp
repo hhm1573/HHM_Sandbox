@@ -95,7 +95,7 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 
 	Container_Node[(uint8)EHHM_MoveType::MT_OnGround].Init(FHHM_PathFinderNode(), Num_Map);
 	Container_Node[(uint8)EHHM_MoveType::MT_Jump].Init(FHHM_PathFinderNode(), Num_Map);
-	Container_Node[(uint8)EHHM_MoveType::MT_Fall].Init(FHHM_PathFinderNode(), Num_Map);
+	Container_Node[(uint8)EHHM_MoveType::MT_DownJump].Init(FHHM_PathFinderNode(), Num_Map);
 	Container_Node[(uint8)EHHM_MoveType::MT_HorizontalJump_Left].Init(FHHM_PathFinderNode(), Num_Map);
 	Container_Node[(uint8)EHHM_MoveType::MT_HorizontalJump_Right].Init(FHHM_PathFinderNode(), Num_Map);
 	//List_Open.Empty();
@@ -234,7 +234,7 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 					}
 					else {
 						--JumpValue_Neighbor;
-						eMoveType_Neighbor = EHHM_MoveType::MT_Fall;
+						eMoveType_Neighbor = EHHM_MoveType::MT_DownJump;
 					}
 				}
 				else {
@@ -266,7 +266,7 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 					}
 					break;
 
-				case EHHM_MoveType::MT_Fall:
+				case EHHM_MoveType::MT_DownJump:
 					continue;
 					break;
 
@@ -338,7 +338,7 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 				//if node is representing vertical movement(Jump or fall) and it is shorter path than old path, don't skip it
 				bool IsVerticallyShorterPath = false;
 
-				if ((eMoveType_Neighbor == EHHM_MoveType::MT_Fall && JumpValue_Neighbor > Container_Node[(uint8)eMoveType_Neighbor][Index_Neighbor].JumpValue)
+				if ((eMoveType_Neighbor == EHHM_MoveType::MT_DownJump && JumpValue_Neighbor > Container_Node[(uint8)eMoveType_Neighbor][Index_Neighbor].JumpValue)
 					|| (eMoveType_Neighbor == EHHM_MoveType::MT_Jump && JumpValue_Neighbor < Container_Node[(uint8)eMoveType_Neighbor][Index_Neighbor].JumpValue)) {
 
 					IsVerticallyShorterPath = true;
@@ -445,7 +445,7 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 				//의 과정을 거침으로 인해 탐색경로를 구축하는 과정에서 (바로 아래의 Container_PathNodeData_Return.Add 부분) 1칸 낙하하는 경우에 이동 방식이 잘못 입력됨
 				if ((eMoveType_Parent == EHHM_MoveType::MT_HorizontalJump_Left || eMoveType_Parent == EHHM_MoveType::MT_HorizontalJump_Right)
 					&& MoveValue == 1) {
-					eMoveType_FilteredNode = EHHM_MoveType::MT_Fall;
+					eMoveType_FilteredNode = EHHM_MoveType::MT_DownJump;
 				}
 
 				//Create NodeData and store it into return container

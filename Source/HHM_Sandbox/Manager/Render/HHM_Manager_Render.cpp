@@ -19,7 +19,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "Base/GameMode/HHM_GameMode_LocalMap.h"
 
-const FVector Const_TileOffset = FVector(50.0f, 0.0f, 0.0f);
+const FVector Const_TileOffsetH = FVector(50.0f, 0.0f, 0.0f);
 
 
 
@@ -348,7 +348,7 @@ bool AHHM_Manager_Render::RenderInstance_Add(int32 tileID, int32 tileSubID, int3
 		//Exception
 		return false;
 	}
-	FVector		Translation = Translation_Raw + Const_TileOffset;
+	FVector		Translation = Translation_Raw + Const_TileOffsetH;
 	Transform_Adjusted.SetTranslation(Translation);	
 
 	//Add instance and save index to renderinfo

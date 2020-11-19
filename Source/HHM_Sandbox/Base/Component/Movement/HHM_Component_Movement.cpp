@@ -4,6 +4,8 @@
 #include "HHM_Component_Movement.h"
 #include "Header/Struct_Pathfinder.h"
 
+#include "Header/Macro.h"
+
 #include "Entity/HHM_Entity.h"
 
 #include "Engine/World.h"
@@ -60,6 +62,13 @@ void UHHM_Component_Movement::TickComponent(float DeltaTime, ELevelTick TickType
 	if (!PawnOwner || !UpdatedComponent || ShouldSkipUpdate(DeltaTime)) {
 		return;
 	}
+
+	//Check Is Falling
+	//Do Falling update
+	//Is Falling Started
+	//If Falling started set falling true and do some falling job
+	//Is Falling End
+	//If True Set falling false and do some falling end job
 
 
 
@@ -175,24 +184,24 @@ int32	UHHM_Component_Movement::Add_Speed_MultiplicationElement(int32 _weight, fl
 #pragma region State_Check
 
 bool UHHM_Component_Movement::Is_OnAir_Begin(void) {
-	bool IsCurrentlyOnAir = m_MoveType_Current == EHHM_MoveType::MT_Jump || m_MoveType_Current == EHHM_MoveType::MT_Fall ||
+	bool IsCurrentlyOnAir = m_MoveType_Current == EHHM_MoveType::MT_Jump || m_MoveType_Current == EHHM_MoveType::MT_DownJump ||
 		m_MoveType_Current == EHHM_MoveType::MT_HorizontalJump_Left || m_MoveType_Current == EHHM_MoveType::MT_HorizontalJump_Right ? true : false;
 
 	return IsCurrentlyOnAir == true && m_MoveType_Before == EHHM_MoveType::MT_OnGround ? true : false;
 }
 
 bool UHHM_Component_Movement::Is_OnAir(void) {
-	bool IsCurrentlyOnAir = m_MoveType_Current == EHHM_MoveType::MT_Jump || m_MoveType_Current == EHHM_MoveType::MT_Fall ||
+	bool IsCurrentlyOnAir = m_MoveType_Current == EHHM_MoveType::MT_Jump || m_MoveType_Current == EHHM_MoveType::MT_DownJump ||
 		m_MoveType_Current == EHHM_MoveType::MT_HorizontalJump_Left || m_MoveType_Current == EHHM_MoveType::MT_HorizontalJump_Right ? true : false;
 
-	bool IsOnAirBefore = m_MoveType_Before == EHHM_MoveType::MT_Jump || m_MoveType_Before == EHHM_MoveType::MT_Fall ||
+	bool IsOnAirBefore = m_MoveType_Before == EHHM_MoveType::MT_Jump || m_MoveType_Before == EHHM_MoveType::MT_DownJump ||
 		m_MoveType_Before == EHHM_MoveType::MT_HorizontalJump_Left || m_MoveType_Before == EHHM_MoveType::MT_HorizontalJump_Right ? true : false;
 
 	return IsCurrentlyOnAir == true && IsOnAirBefore == true ? true : false;
 }
 
 bool UHHM_Component_Movement::Is_OnAir_End(void) {
-	bool IsOnAirBefore = m_MoveType_Before == EHHM_MoveType::MT_Jump || m_MoveType_Before == EHHM_MoveType::MT_Fall ||
+	bool IsOnAirBefore = m_MoveType_Before == EHHM_MoveType::MT_Jump || m_MoveType_Before == EHHM_MoveType::MT_DownJump ||
 		m_MoveType_Before == EHHM_MoveType::MT_HorizontalJump_Left || m_MoveType_Before == EHHM_MoveType::MT_HorizontalJump_Right ? true : false;
 
 	return IsOnAirBefore == true && m_MoveType_Current == EHHM_MoveType::MT_OnGround ? true : false;
@@ -341,8 +350,8 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 			return;
 			break;
 
-		case EHHM_MoveType::MT_Fall:
-			UHHM_Component_Movement::FollowPath_Fall(DeltaTime);
+		case EHHM_MoveType::MT_DownJump:
+			UHHM_Component_Movement::FollowPath_DownJump(DeltaTime);
 			return;
 			break;
 
@@ -591,19 +600,19 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 
 
 
-void UHHM_Component_Movement::FollowPath_Fall(float DeltaTime) {
-	int32 FallLength_Current = m_FollowingPath[0].MoveValue - 1;	//Because MoveValue is set as 1 more value than actaul jump length
+void UHHM_Component_Movement::FollowPath_DownJump(float DeltaTime) {
+	int32 JumpDownLength_Current = m_FollowingPath[0].MoveValue - 1;	//Because MoveValue is set as 1 more value than actaul jump length
 
-	if (FallLength_Current >= m_MovementData.Fall_FreeFall_Minimum) {	//if FallLength is same or higher than freefall minimum length, do freefall
-		UHHM_Component_Movement::FollowPath_Fall_Free(DeltaTime);
+	if (JumpDownLength_Current >= m_MovementData.Fall_FreeFall_Minimum) {	//if JumpDownLength is same or higher than free JumpDown minimum length, do free JumpDown
+		UHHM_Component_Movement::FollowPath_DownJump_Free(DeltaTime);
 		return;
 	}
 
 
 
-	//if Fall just started, reset MoveTimer
-	if (m_MoveType_Before != EHHM_MoveType::MT_Fall) {
-		float Duration_Animation = m_MovementData.Fall_AnimationDuration[FallLength_Current];
+	//if JumpDown just started, reset MoveTimer
+	if (m_MoveType_Before != EHHM_MoveType::MT_DownJump) {
+		float Duration_Animation = m_MovementData.Fall_AnimationDuration[JumpDownLength_Current];
 		m_Move_Timer = Duration_Animation;
 	}
 
@@ -624,15 +633,15 @@ void UHHM_Component_Movement::FollowPath_Fall(float DeltaTime) {
 	m_Move_Timer = MoveTimer_AfterTick;
 }
 
-void UHHM_Component_Movement::FollowPath_Fall_Free(float DeltaTime) {
+void UHHM_Component_Movement::FollowPath_DownJump_Free(float DeltaTime) {
 	//Set target location as just directly below character
 	//Current location + Jumplength + tilesize
 	//Start - End - During
 
 
 
-	//if Fall just started reset MoveTimer and MoveState, and also fix move target location
-	if (m_MoveType_Before != EHHM_MoveType::MT_Fall) {
+	//if JumpDown just started reset MoveTimer and MoveState, and also fix move target location
+	if (m_MoveType_Before != EHHM_MoveType::MT_DownJump) {
 		//Reset MoveTimer
 		float Duration_Animation_Begin = m_MovementData.Fall_FreeFall_Duration_Start;
 		m_Move_Timer = Duration_Animation_Begin;
@@ -786,11 +795,19 @@ bool UHHM_Component_Movement::Calculate_MoveTarget_Location(void) {
 
 	FVector TargetLocation;
 	bool IsCalculationSucceed = AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(TargetLocation, m_FollowingPath[0].IndexLocation_Target, MapInfo);
+
+	//Make it center of tile
+	FVector Location_Offset_TileCenter = FVector(HHM_TILE_SIZE * 0.5f, 0.0f, 0.0f);
 	
 	m_MoveTarget_Current = TargetLocation;
 
 	return IsCalculationSucceed;
 	
+}
+
+bool UHHM_Component_Movement::Check_IsFalling(void)
+{
+	return false;
 }
 
 void UHHM_Component_Movement::Abort_Path(void) {

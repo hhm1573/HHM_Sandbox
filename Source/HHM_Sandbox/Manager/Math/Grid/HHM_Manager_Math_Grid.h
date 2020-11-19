@@ -23,6 +23,10 @@ public:
 	static bool		Convert_Translation_To_Index(int32& _index_Return, const FVector& _vec_Translation, const FHHM_MapInfo& _mapInfo);
 	static bool		Convert_Translation_To_IndexLocation(FVector2D& _vec_IndexLocation_Return, const FVector& _translation, const FHHM_MapInfo& _mapInfo);
 
+	//Those function's are use for tile render system. may be deleted at some point
+	static bool		Convert_Index_To_Translation_Relative(FVector& _vec_Translation_Return, int32 _index, const FHHM_MapInfo& _mapInfo);
+	static bool		Convert_Translation_To_Index_Relative(int32& _index_Return, const FVector& _vec_Translation, const FHHM_MapInfo& _mapInfo);
+
 	/*
 	Get Horizontal and Vertical index and combine it as an index use for map array.
 	It Does Not do valid check

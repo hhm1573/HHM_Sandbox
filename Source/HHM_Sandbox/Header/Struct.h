@@ -15,6 +15,8 @@ public:
 		int32		MapSize_Vertical = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MapInfo")
 		float		TileSize = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MapInfo")
+		FVector		Location = FVector::ZeroVector;	//Offset Location Where map starts
 };
 
 

@@ -20,7 +20,7 @@
 
 
 AHHM_Manager_LocalMap::AHHM_Manager_LocalMap() {
-
+	//PrimaryActorTick.bCanEverTick = true;
 }
 
 
@@ -29,6 +29,10 @@ void AHHM_Manager_LocalMap::BeginPlay() {
 	Super::BeginPlay();
 
 	Initialize_Manager_LocalMap();
+}
+
+void AHHM_Manager_LocalMap::Tick(float DeltaTime) {
+	Super::Tick(DeltaTime);
 }
 
 
@@ -132,14 +136,18 @@ bool AHHM_Manager_LocalMap::Create_LocalMap(FHHM_LocalMapConstructionData _mapCo
 		return false;
 	}
 
-	int32 Index_Horizontal = ID_LocalMap_Created % HHM_NUM_LOCALMAP_HORIZONTAL;
-	int32 Index_Vertical = ID_LocalMap_Created / HHM_NUM_LOCALMAP_HORIZONTAL;
+	int32 Index_Horizontal = ID_LocalMap_Created % HHM_NUM_MAX_LOCALMAP_IN_ROW;
+	int32 Index_Vertical = ID_LocalMap_Created / HHM_NUM_MAX_LOCALMAP_IN_ROW;
 
 	float Location_Horizontal = Index_Horizontal * HHM_OFFSET_LOCALMAP;
 	float Location_Vertical = Index_Vertical * HHM_OFFSET_LOCALMAP;
 
 	FVector Location_LocalMap = FVector(Location_Horizontal, 0.0f, Location_Vertical);
 	pLocalMap_Created->SetActorLocation(Location_LocalMap);
+	pLocalMap_Created->UpdateComponentTransforms();
+
+	//Update Map Offset Variable which in MapInfo
+	_mapConstructionData.MapInfo.Location = Location_LocalMap;
 
 	
 
@@ -147,8 +155,37 @@ bool AHHM_Manager_LocalMap::Create_LocalMap(FHHM_LocalMapConstructionData _mapCo
 
 	m_Container_LocalMap.Add(ID_LocalMap_Created, pLocalMap_Created);
 
+
+
+	_mapConstructionResult.MapIndex = ID_LocalMap_Created;
+	_mapConstructionResult.pLocalMap = pLocalMap_Created;
+
 	//HHM Note : Log Created LocalMap Result info.
 
+	return true;
+}
+
+bool AHHM_Manager_LocalMap::Destroy_LocalMap(int32 _id_LocalMap) {
+	bool IsAvailiable_Id = m_Container_LocalMap.Contains(_id_LocalMap);
+	if (IsAvailiable_Id == false) {
+		//Exception Warning Input id not availiable
+		return false;
+	}
+
+	if (m_Container_LocalMap[_id_LocalMap] == nullptr) {
+		//Exception Warning Input id localmap was nullptr
+		m_Container_LocalMap.Remove(_id_LocalMap);
+		return false;
+	}
+
+	bool IsSucceed_DestroyLocalMap = m_Container_LocalMap[_id_LocalMap]->Destroy();
+	if (IsSucceed_DestroyLocalMap == false) {
+		//Exception Warning LocalMap not destroyed
+		m_Container_LocalMap.Remove(_id_LocalMap);
+		return false;
+	}
+
+	m_Container_LocalMap.Remove(_id_LocalMap);
 	return true;
 }
 
@@ -218,7 +255,7 @@ int32 AHHM_Manager_LocalMap::Find_AvailiableIndex_LocalMap(void)
 	
 
 	//Find Availiable index
-	for (int32	Index_Availiable_Found = 0; Index_Availiable_Found < 1000; ++Index_Availiable_Found) {
+	for (int32	Index_Availiable_Found = 0; Index_Availiable_Found < 100; ++Index_Availiable_Found) {
 		bool isIndexAvailiable = !(m_Container_LocalMap.Contains(Index_Availiable_Found));
 		if (isIndexAvailiable == true) {
 			m_AvailiableIndex_LocalMap = Index_Availiable_Found + 1;
@@ -228,10 +265,6 @@ int32 AHHM_Manager_LocalMap::Find_AvailiableIndex_LocalMap(void)
 
 	//Exception existing 1000 localmap same time is neally impossible.
 	return -1;
-}
-
-void AHHM_Manager_LocalMap::Resize_Container_AvailiableIndex_Entity(void)
-{	//Move entity job to LocalMap. work on that
 }
 
 int32 AHHM_Manager_LocalMap::Register_Entity(int32 _index_LocalMap, AHHM_Entity* _pEntity)	//Move entity container to localmap

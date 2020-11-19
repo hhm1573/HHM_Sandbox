@@ -10,7 +10,7 @@ enum class EHHM_MoveType : uint8
 {
 	MT_OnGround					UMETA(DisplayName = "OnGround"),
 	MT_Jump						UMETA(DisplayName = "Jump"),
-	MT_Fall						UMETA(DisplayName = "Fall"),
+	MT_DownJump					UMETA(DisplayName = "DownJump"),
 	MT_HorizontalJump_Left		UMETA(DisplayName = "HorizontalJump_Left"),
 	MT_HorizontalJump_Right		UMETA(DisplayName = "HorizontalJump_Right"),
 	MT_End						UMETA(DisplayName = "End(Dummy)")
