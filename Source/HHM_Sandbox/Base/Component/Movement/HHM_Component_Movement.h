@@ -24,7 +24,7 @@ public:
 
 	//Temporary function
 public:
-	void Temp_Set_MoveData(FHHM_Entity_MovementData& _moveData) { m_MovementData = _moveData; }
+	void Temp_Set_MoveData(FHHM_Entity_MovementData& _moveData);// { m_MovementData = _moveData; }
 	void Temp_Set_DefaultSpeed(float _speed_TilePerSec) { m_Speed_Default = _speed_TilePerSec; }
 
 protected:
@@ -40,6 +40,9 @@ protected:
 		bool						m_bIsFalling = false;
 	UPROPERTY()
 		bool						m_bIsFalling_Before = false;
+
+	UPROPERTY()
+		bool						m_bIsRecovering = false;
 
 
 
@@ -108,18 +111,29 @@ public:
 	//Get speed etc.
 
 public:
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 		float		Get_MoveTimer() { return m_Move_Timer; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 		bool			Get_IsFalling() { return m_bIsFalling; }
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 		bool			Get_IsFalling_Before() { return m_bIsFalling_Before; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
+		bool			Get_IsRecovering() { return m_bIsRecovering; }
+
+	UFUNCTION(BlueprintPure)
+		int32			Get_MoveValue();			//Get MoveValue. when doing jump, move value is bigger as one than actual jump length. Actual Jump Length = MoveValue - 1
+
+	UFUNCTION(BlueprintPure)
 		EHHM_MoveType	Get_MoveType_Current() { return m_MoveType_Current; }
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 		EHHM_MoveType	Get_MoveType_Before() { return m_MoveType_Before; }
+
+	UFUNCTION()
+		FVector			Get_Location();				//Get Location Of UpdatedComponent of UMovementComponent
+	UFUNCTION()
+		FVector			Get_Location_BottomLeft();	//Get Bottom-Center Location of Bottom_Left Entity-Tile
 
 #pragma endregion
 
@@ -146,6 +160,10 @@ public:
 
 protected:
 	virtual void	Update_MovementSpeed(float DeltaTime);
+	//Called when entity is falling. called on TickComponent function
+	virtual void	Update_Falling(float DeltaTime);
+	//Called when entity is recovering from falling or etc. called on TickComponent function
+	virtual void	Update_Recovering(float DeltaTime);
 	virtual void	FollowPath(float DeltaTime);
 
 #pragma region Implement_FollowingPath
@@ -165,7 +183,7 @@ private:
 private:
 	bool			Calculate_MoveTarget_Location(void);
 
-	bool			Check_IsFalling(void);
+	bool			Check_IsBelowFloor_Standable(void);
 
 	void			Abort_Path(void);
 	

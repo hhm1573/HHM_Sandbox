@@ -32,22 +32,22 @@ public:
 		TArray<float>	Jump_Vertical_AnimationDuration;
 
 	UPROPERTY()
-		int32	Fall_MaxHeight = 0;
+		int32	DownJump_MaxHeight = 0;
 	UPROPERTY()
-		int32	Fall_FreeFall_Minimum = 0;
+		int32	DownJump_FreeFall_Minimum = 0;
 	UPROPERTY()
 		//How much time needs before start free fall
-		float	Fall_FreeFall_Duration_Start = 0.0f;
+		float	DownJump_FreeFall_Duration_Start = 0.0f;
 	UPROPERTY()
 		//How much time needs before end free fall
-		float	Fall_FreeFall_Duration_End = 0.0f;
+		float	DownJump_FreeFall_Duration_End = 0.0f;
 	UPROPERTY()
-		float	Fall_FreeFall_Speed = 0.0f;
+		float	DownJump_FreeFall_Speed = 0.0f;
 	UPROPERTY()
 		//Container of animation durations
 		//When entity do fall(except free fall), entity will teleport to target location after duration time.
 		//Element index over 'FreeFall_Minimum' will be ignored and might cause some issue;
-		TArray<float>	Fall_AnimationDuration;
+		TArray<float>	DownJump_AnimationDuration;
 
 	UPROPERTY()
 		int32	Jump_Horizontal_MaxLength = 0;

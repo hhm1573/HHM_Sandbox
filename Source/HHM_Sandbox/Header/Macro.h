@@ -11,3 +11,7 @@ constexpr int32 HHM_NUM_MAX_LOCALMAP_IN_ROW = 10;
 
 constexpr float HHM_DISTANCE_MAX_ACCEPTABLE_FROM_MAP_BORDER = 20.0f;	//Maximum Distance that actor can be far from map's border.
 constexpr int32 HHM_INDEX_MAX_ACCEPTABLE_FROM_MAP_BORDER = 10;
+
+
+
+constexpr float HHM_GRAVITATIONAL_ACCELERATION = 9.764f;

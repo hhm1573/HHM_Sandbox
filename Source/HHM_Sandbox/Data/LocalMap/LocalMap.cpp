@@ -27,7 +27,7 @@
 
 
 
-const FVector Const_TileOffset = FVector(50.0f, 0.0f, 0.0f);
+const FVector Const_TileOffset(50.0f, 0.0f, 0.0f);
 
 
 

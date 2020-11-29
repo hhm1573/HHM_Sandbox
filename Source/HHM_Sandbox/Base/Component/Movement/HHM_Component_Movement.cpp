@@ -22,6 +22,12 @@ UHHM_Component_Movement::UHHM_Component_Movement() {
 
 }
 
+void UHHM_Component_Movement::Temp_Set_MoveData(FHHM_Entity_MovementData& _moveData)
+{
+	m_MovementData = _moveData;
+	return;
+}
+
 void UHHM_Component_Movement::BeginPlay() {
 	Super::BeginPlay();
 
@@ -63,12 +69,34 @@ void UHHM_Component_Movement::TickComponent(float DeltaTime, ELevelTick TickType
 		return;
 	}
 
+
+
 	//Check Is Falling
-	//Do Falling update
-	//Is Falling Started
-	//If Falling started set falling true and do some falling job
-	//Is Falling End
-	//If True Set falling false and do some falling end job
+	if (m_bIsFalling == false) {
+		bool IsFloor_Standalbe = Check_IsBelowFloor_Standable();
+		m_bIsFalling = !(IsFloor_Standalbe);
+	}
+
+	
+	if (m_bIsFalling == true) {												//If Falling, Do Some Falling job
+		//If It just start to falling abort path
+		if (m_bIsFalling_Before == false) {
+			Abort_Path();
+		}
+
+		Update_Falling(DeltaTime);
+
+		//Update IsFalling_Before
+		m_bIsFalling_Before = m_bIsFalling;
+
+		return;
+	}
+	else if (m_bIsRecovering == true) {										//If Falling ended, do recover
+		Update_Recovering(DeltaTime);										//Recovering will be ended by state machine, after playing recovering animations.
+		//HHM Note: Remove this part
+		m_bIsRecovering = false;
+		return;
+	}
 
 
 
@@ -156,7 +184,7 @@ bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _ind
 	}
 	FVector2D Vec_Location_End = FVector2D(_index_Horizontal, _index_Vertical);
 
-	TArray<FHHM_PathNodeData> Path_Find = pManager_Navigation->Search_Path(pLocalMap, Vec_Location_Start, Vec_Location_End, m_EntitySize_Horizontal, m_EntitySize_Vertical, m_MovementData.Jump_Vertical_MaxHeight, m_MovementData.Fall_MaxHeight, m_MovementData.Jump_Horizontal_MaxLength);
+	TArray<FHHM_PathNodeData> Path_Find = pManager_Navigation->Search_Path(pLocalMap, Vec_Location_Start, Vec_Location_End, m_EntitySize_Horizontal, m_EntitySize_Vertical, m_MovementData.Jump_Vertical_MaxHeight, m_MovementData.DownJump_MaxHeight, m_MovementData.Jump_Horizontal_MaxLength);
 	//pManager_Navigation->Search_Path(pLocalMap, )
 	m_FollowingPath = Path_Find;
 
@@ -170,6 +198,57 @@ bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _ind
 
 	return true;
 }
+
+
+
+#pragma region Getter
+
+
+
+int32 UHHM_Component_Movement::Get_MoveValue()
+{
+	int32 Num_Path_Remaining = m_FollowingPath.Num();
+	return Num_Path_Remaining == 0 ? -1 : m_FollowingPath[0].MoveValue;
+}
+
+FVector UHHM_Component_Movement::Get_Location()
+{
+	if (Super::UpdatedComponent == nullptr) {
+		//Exception
+		return FVector::ZeroVector;
+	}
+	
+	FVector Vec_Location = Super::UpdatedComponent->GetComponentLocation();
+	return Vec_Location;
+}
+
+FVector UHHM_Component_Movement::Get_Location_BottomLeft()
+{
+	//Below code is for getting BottomLeft corner location of bottomleft tile.
+	/*FVector Vec_Location = Super::UpdatedComponent->GetComponentLocation();
+	FVector Vec_Size_Half_Entity_HorizontalOnly = FVector(m_EntitySize_Horizontal * HHM_TILE_SIZE * 0.5f, 0.0f, 0.0f);
+	FVector Vec_Location_BottomLeft = Vec_Location - Vec_Size_Half_Entity_HorizontalOnly;
+
+	return Vec_Location_BottomLeft;*/
+
+
+
+	//Get Bottom-Center location of Bottom-Left tile
+	if (Super::UpdatedComponent == nullptr) {
+		//Exception
+		return FVector::ZeroVector;
+	}
+
+	FVector Vec_Location = Super::UpdatedComponent->GetComponentLocation();
+	float Distance_To_BottomLeft_EntityTile = (m_EntitySize_Horizontal - 1) * (HHM_TILE_SIZE * 0.5f);
+	FVector Vec_Location_BottomLeft = FVector(Vec_Location.X - Distance_To_BottomLeft_EntityTile, Vec_Location.Y, Vec_Location.Z);
+
+	return Vec_Location_BottomLeft;
+}
+
+
+
+#pragma endregion
 
 
 
@@ -291,6 +370,108 @@ void UHHM_Component_Movement::Update_MovementSpeed(float DeltaTime) {
 
 
 
+void UHHM_Component_Movement::Update_Falling(float DeltaTime)
+{
+	//Get MapInfo
+	AActor* pOwner_Raw = nullptr;
+	pOwner_Raw = GetOwner();
+	if (pOwner_Raw == nullptr) {
+		//Exception
+		return;
+	}
+
+	AHHM_Entity* pOwner = nullptr;
+	pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+	if (pOwner == nullptr) {
+		//Exception
+		return;
+	}
+
+	const ALocalMap* pLocalMap = pOwner->Get_LocalMap_Const();
+	if (pLocalMap == nullptr) {
+		//Exception
+		return;
+	}
+
+	const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+
+
+
+	//If recovering is true, set it false.
+	if (m_bIsRecovering == true) {
+		m_bIsRecovering = false;
+	}
+
+	//Get After Location for this tick
+	FVector Vec_Location_Current = Get_Location();
+
+	FVector Vec_Location_After_GravitationalFall = Vec_Location_Current;
+	Vec_Location_After_GravitationalFall.Z = Vec_Location_After_GravitationalFall.Z - (HHM_GRAVITATIONAL_ACCELERATION * DeltaTime);
+
+
+
+	//If Entity is currently located on standable area, check if it goes through tile. and if it goes through block the movement and start recovering proccess
+	bool IsBelowFloor_Standable = Check_IsBelowFloor_Standable();
+	if (IsBelowFloor_Standable == true) {
+		FVector Vec_Location_BottomLeft = Get_Location_BottomLeft();
+
+		FVector2D IndexLocation_BottomLeft = FVector2D(-1.0f, -1.0f);
+		bool IsConvert_Succeed = AHHM_Manager_Math_Grid::Convert_Translation_To_IndexLocation(IndexLocation_BottomLeft, Vec_Location_BottomLeft, MapInfo);
+		if (IsConvert_Succeed == false) {
+			//Exception
+			return;
+		}
+
+		FVector Vec_Location_Tile_BottomLeftCorner = FVector(-1.0f);
+		bool IsSucceed_ReverseConvert = AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(Vec_Location_Tile_BottomLeftCorner, IndexLocation_BottomLeft, MapInfo);
+		if (IsSucceed_ReverseConvert == false) {
+			//Exception
+			return;
+		}
+
+		float FloorHeight = Vec_Location_Tile_BottomLeftCorner.Z;
+
+		if (Vec_Location_After_GravitationalFall.Z <= FloorHeight) {	//Falling End
+			FVector Vec_Location_AfterTick = Vec_Location_After_GravitationalFall;
+			Vec_Location_AfterTick.Z = FloorHeight;
+			
+			FVector Vec_Delta = Vec_Location_AfterTick - Vec_Location_Current;
+			FRotator Rotator_Current = Super::UpdatedComponent->GetComponentRotation();
+			FHitResult HitResult = FHitResult();
+			bool IsSucceed_Move = SafeMoveUpdatedComponent(Vec_Delta, Rotator_Current, false, HitResult);
+			if (IsSucceed_Move == false) {
+				//Exception
+				return;
+			}
+
+			m_bIsFalling = false;
+			m_bIsRecovering = true;
+
+			return;
+		}
+	}
+
+
+
+	FVector Vec_Delta = Vec_Location_After_GravitationalFall - Vec_Location_Current;
+	FRotator Rotator_Current = Super::UpdatedComponent->GetComponentRotation();
+	FHitResult HitResult = FHitResult();
+	bool IsSucceed_Move = SafeMoveUpdatedComponent(Vec_Delta, Rotator_Current, false, HitResult);
+	if (IsSucceed_Move == false) {
+		//Exception
+		return;
+	}
+
+
+	
+	//If below area is standable and after tick location is going through that area, set after-tick location on surface of that area and set falling false and recovery as true
+	//If below area is not standable, move to after location
+}
+
+void UHHM_Component_Movement::Update_Recovering(float DeltaTime)
+{
+}
+
 void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 
 	FVector Location_Current = GetActorLocation();
@@ -390,7 +571,7 @@ void UHHM_Component_Movement::FollowPath_Jump(float DeltaTime) {
 
 	//if jump just started, reset MoveTimer
 	if (m_MoveType_Before != EHHM_MoveType::MT_Jump) {
-		float Duration_Animation = m_MovementData.Jump_Vertical_AnimationDuration[JumpLength_Current];
+		float Duration_Animation = m_MovementData.Jump_Vertical_AnimationDuration[JumpLength_Current - 1];	// 1 block jump = 1 JumpLength_Current
 		m_Move_Timer = Duration_Animation;
 	}
 
@@ -603,7 +784,7 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 void UHHM_Component_Movement::FollowPath_DownJump(float DeltaTime) {
 	int32 JumpDownLength_Current = m_FollowingPath[0].MoveValue - 1;	//Because MoveValue is set as 1 more value than actaul jump length
 
-	if (JumpDownLength_Current >= m_MovementData.Fall_FreeFall_Minimum) {	//if JumpDownLength is same or higher than free JumpDown minimum length, do free JumpDown
+	if (JumpDownLength_Current >= m_MovementData.DownJump_FreeFall_Minimum) {	//if JumpDownLength is same or higher than free JumpDown minimum length, do free JumpDown
 		UHHM_Component_Movement::FollowPath_DownJump_Free(DeltaTime);
 		return;
 	}
@@ -612,7 +793,7 @@ void UHHM_Component_Movement::FollowPath_DownJump(float DeltaTime) {
 
 	//if JumpDown just started, reset MoveTimer
 	if (m_MoveType_Before != EHHM_MoveType::MT_DownJump) {
-		float Duration_Animation = m_MovementData.Fall_AnimationDuration[JumpDownLength_Current];
+		float Duration_Animation = m_MovementData.DownJump_AnimationDuration[JumpDownLength_Current - 1];
 		m_Move_Timer = Duration_Animation;
 	}
 
@@ -621,7 +802,7 @@ void UHHM_Component_Movement::FollowPath_DownJump(float DeltaTime) {
 	if (MoveTimer_AfterTick <= 0.0f) {
 		FVector Location_Current = GetActorLocation();
 		FVector	Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
-		FQuat		Rotator = FQuat();
+		FQuat		Rotator = FQuat();	//HHM Note :: make it to get current rotation.
 		FHitResult	HitResult = FHitResult();
 
 		SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator, false, HitResult);
@@ -643,7 +824,7 @@ void UHHM_Component_Movement::FollowPath_DownJump_Free(float DeltaTime) {
 	//if JumpDown just started reset MoveTimer and MoveState, and also fix move target location
 	if (m_MoveType_Before != EHHM_MoveType::MT_DownJump) {
 		//Reset MoveTimer
-		float Duration_Animation_Begin = m_MovementData.Fall_FreeFall_Duration_Start;
+		float Duration_Animation_Begin = m_MovementData.DownJump_FreeFall_Duration_Start;
 		m_Move_Timer = Duration_Animation_Begin;
 
 		//Reset MoveState
@@ -710,7 +891,7 @@ void UHHM_Component_Movement::FollowPath_DownJump_Free(float DeltaTime) {
 
 
 void UHHM_Component_Movement::FollowPath_HorizontalJump(float DeltaTime) {
-
+	// 작업하기 전에 위의 점프 부분의 로테이터 부분 수정. (노트 참조)
 }
 
 void UHHM_Component_Movement::FollowPath_HorizontalJump_Free(float DeltaTime) {
@@ -760,6 +941,8 @@ void UHHM_Component_Movement::FollowPath_Walk(float DeltaTime) {
 }
 #pragma endregion
 
+
+
 bool UHHM_Component_Movement::Calculate_MoveTarget_Location(void) {
 	int32 Num_FollowingPath = m_FollowingPath.Num();
 	if (Num_FollowingPath <= 0) {
@@ -805,9 +988,48 @@ bool UHHM_Component_Movement::Calculate_MoveTarget_Location(void) {
 	
 }
 
-bool UHHM_Component_Movement::Check_IsFalling(void)
+bool UHHM_Component_Movement::Check_IsBelowFloor_Standable(void)
 {
-	return false;
+	AActor* pOwner_Raw = nullptr;
+	pOwner_Raw = GetOwner();
+	if (pOwner_Raw == nullptr) {
+		//Exception
+		return false;
+	}
+
+	AHHM_Entity* pOwner = nullptr;
+	pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+	if (pOwner == nullptr) {
+		//Exception
+		return false;
+	}
+
+	ALocalMap* pLocalMap = nullptr;
+	pLocalMap = pOwner->Get_LocalMap();
+	if (pLocalMap == nullptr) {
+		//Exception
+		return false;
+	}
+
+
+	
+	//Get MapInfo
+	const FHHM_MapInfo MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+
+	//Get LeftBottom Location
+	FVector Vec_Location_BottomLeft = Get_Location_BottomLeft();
+
+	//Get Index Of BottomLeft's location
+	int32 Index_BottomLeft = -1;
+	bool IsConvertSucceed = AHHM_Manager_Math_Grid::Convert_Translation_To_Index(Index_BottomLeft, Vec_Location_BottomLeft, MapInfo);
+	if (IsConvertSucceed == false) {
+		//Exception
+		return false;
+	}
+
+	bool IsAreaStandable = pLocalMap->IsAreaStandable(Index_BottomLeft, m_EntitySize_Horizontal, m_EntitySize_Vertical);
+
+	return IsAreaStandable;
 }
 
 void UHHM_Component_Movement::Abort_Path(void) {

@@ -27,6 +27,13 @@ private:
 	UPROPERTY(Category = "HHM_Entity", VisibleAnywhere)
 		UHHM_Component_Movement* m_pComponent_Movement = nullptr;
 
+
+
+public:
+	virtual void BeginPlay() override;
+
+
+
 public:
 	//Add Move Function
 	UFUNCTION(BlueprintCallable)

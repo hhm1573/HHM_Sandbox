@@ -20,10 +20,11 @@ AHHM_Entity_Walkable::AHHM_Entity_Walkable() {
 
 
 
-	// HHM Note To Me : Fix this later if has better idea.
+	// HHM Note To Me : Fix this later if has better idea. 
+	// Delete this later. when you change variables of component in constructor, it will be wiped out and set as zero for some reason.
 	FHHM_Entity_MovementData MoveData = FHHM_Entity_MovementData();
 	MoveData.Jump_Vertical_MaxHeight = 3;
-	MoveData.Fall_MaxHeight = 3;
+	MoveData.DownJump_MaxHeight = 3;
 	MoveData.Jump_Horizontal_MaxLength = 3;
 	MoveData.Jump_Vertical_FreeJump_Minimum = 10;
 	MoveData.Jump_Vertical_AnimationDuration.Add(1.5f);
@@ -34,6 +35,26 @@ AHHM_Entity_Walkable::AHHM_Entity_Walkable() {
 }
 
 
+
+void AHHM_Entity_Walkable::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// HHM Note To Me : Fix this later if has better idea.
+	FHHM_Entity_MovementData MoveData = FHHM_Entity_MovementData();
+	MoveData.Jump_Vertical_MaxHeight = 3;
+	MoveData.DownJump_MaxHeight = 3;
+	MoveData.Jump_Horizontal_MaxLength = 3;
+	MoveData.Jump_Vertical_FreeJump_Minimum = 10;
+	MoveData.Jump_Vertical_AnimationDuration.Add(1.5f);
+	MoveData.Jump_Vertical_AnimationDuration.Add(2.0f);
+	MoveData.DownJump_FreeFall_Minimum = 10;
+	MoveData.DownJump_AnimationDuration.Add(1.0f);
+	MoveData.DownJump_AnimationDuration.Add(1.5f);
+	m_pComponent_Movement->Temp_Set_MoveData(MoveData);
+
+	m_pComponent_Movement->Temp_Set_DefaultSpeed(1.0f);
+}
 
 bool AHHM_Entity_Walkable::Order_MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical) {
 	if (m_pComponent_Movement == nullptr) {
