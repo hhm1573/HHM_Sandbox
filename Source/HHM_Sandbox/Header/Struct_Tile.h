@@ -6,7 +6,7 @@
 
 
 USTRUCT(BlueprintType)
-struct FHHM_TileData_Base {
+struct FHHM_TileData_Base {		//For passing basic information to TileData on initialize
 	GENERATED_USTRUCT_BODY()
 		
 public:

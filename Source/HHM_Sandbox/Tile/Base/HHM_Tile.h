@@ -67,6 +67,7 @@ public:	//LocalMap, TileInfo, ~~~, MapInfo
 	virtual int32					On_Damaged(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, int32 damage, EHHM_DamageType damage_Type, class APawn* pAttackPawn, const FHHM_MapInfo& mapInfo);	//Called when tile got damage. return the health point after damaged
 	virtual FHHM_TileData			On_Destruct(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, const FHHM_MapInfo& mapInfo);		//Called when tile destructed. return tile will replace current tile.
 
+	//Update Render Info Based on inserted tileInfo(Data of updating tile). Called from LocalMap whenever tile's data has changed (for example, Damaged)
 	virtual bool					Update_Render(int32& index_Instance, FTransform& transform_Local, class ALocalMap* pLocalMap, const FHHM_TileData& tileInfo);
 	
 

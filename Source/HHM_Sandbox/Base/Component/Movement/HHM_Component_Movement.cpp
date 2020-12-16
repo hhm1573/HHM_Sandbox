@@ -122,6 +122,8 @@ void UHHM_Component_Movement::TickComponent(float DeltaTime, ELevelTick TickType
 	}
 }
 
+
+
 bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical) {
 	// HHM Note : Add Location Check whether entity can reach/stand or not
 	// HHM Note : Save Manager's pointer if that kind of thing needed
@@ -199,6 +201,33 @@ bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _ind
 	return true;
 }
 
+bool UHHM_Component_Movement::Change_Face_Direction(bool _toLeft)
+{
+	if (Super::UpdatedComponent == nullptr) {
+		return false;
+	}
+
+	FVector Scale = Super::UpdatedComponent->GetComponentScale();
+	float Scale_X = Scale.X;
+
+	if (_toLeft == true) {
+		if (Scale_X < 0.0f) {
+			FVector Scale_After = Scale;
+			Scale_After.X = Scale_X * -1.0f;
+			Super::UpdatedComponent->SetWorldScale3D(Scale_After);
+		}
+	}
+	else {
+		if (Scale_X > 0.0f) {
+			FVector Scale_After = Scale;
+			Scale_After.X = Scale_X * -1.0f;
+			Super::UpdatedComponent->SetWorldScale3D(Scale_After);
+		}
+	}
+
+	return true;
+}
+
 
 
 #pragma region Getter
@@ -244,6 +273,17 @@ FVector UHHM_Component_Movement::Get_Location_BottomLeft()
 	FVector Vec_Location_BottomLeft = FVector(Vec_Location.X - Distance_To_BottomLeft_EntityTile, Vec_Location.Y, Vec_Location.Z);
 
 	return Vec_Location_BottomLeft;
+}
+
+FRotator UHHM_Component_Movement::Get_Rotation_Safe()
+{
+	FRotator Rotator_Return = FRotator(0.0f);
+
+	if (Super::UpdatedComponent != nullptr) {
+		Rotator_Return = Super::UpdatedComponent->GetComponentRotation();
+	}
+
+	return Rotator_Return;
 }
 
 
@@ -488,9 +528,10 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 
 	//Check is entity at target point
 	FVector Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
+	Vec_CurrentToTarget.Y = 0.0f;
 	float	Distance_Target = Vec_CurrentToTarget.Size();
 	//HHM Note : Change this Value later ---- ---- ---- ----
-	float	Acceptable_Distance = 10.0f;
+	float	Acceptable_Distance = 0.1f;
 
 	//Return if entity is already at target point
 	if (Distance_Target <= Acceptable_Distance) {
@@ -513,6 +554,16 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 		}*/
 
 		return;
+	}
+
+
+
+	//Update Face Direction
+	if (Vec_CurrentToTarget.X <= 0.0f) {
+		Change_Face_Direction(true);
+	}
+	else {
+		Change_Face_Direction(false);
 	}
 
 
@@ -580,7 +631,7 @@ void UHHM_Component_Movement::FollowPath_Jump(float DeltaTime) {
 	if (MoveTimer_AfterTick <= 0.0f) {
 		FVector Location_Current = GetActorLocation();
 		FVector Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
-		FQuat		Rotator = FQuat(0.0f, 0.0f, 0.0f, 1.0f);
+		FRotator	Rotator = Get_Rotation_Safe();
 		FHitResult	HitResult = FHitResult();
 
 		SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator, false, HitResult);
@@ -693,10 +744,9 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 				Abort_Path();
 				return;
 			}
-			FRotator	Rotator_Current = pActor_Owner->GetActorRotation();
-			FQuat		Quat_Current = Rotator_Current.Quaternion();
+			FRotator	Rotator_Current = Get_Rotation_Safe();
 			FHitResult	HitResult = FHitResult();
-			bool IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToTarget, Quat_Current, false, HitResult);
+			bool IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator_Current, false, HitResult);
 			if (IsSucceed_Move == false) {
 				//Exception
 				Abort_Path();
@@ -728,11 +778,10 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 				Abort_Path();
 				return;
 			}
-			FRotator	Rotator_Current = pActor_Owner->GetActorRotation();
-			FQuat		Quat_Current = Rotator_Current.Quaternion();
+			FRotator	Rotator_Current = Get_Rotation_Safe();
 
 			FHitResult	HitResult = FHitResult();
-			bool		IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToTarget, Quat_Current, false, HitResult);
+			bool		IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator_Current, false, HitResult);
 			if (IsSucceed_Move == false) {
 				//Exception
 				Abort_Path();
@@ -761,11 +810,10 @@ void UHHM_Component_Movement::FollowPath_Jump_Free(float DeltaTime) {
 				Abort_Path();
 				return;
 			}
-			FRotator	Rotator_Current = pActor_Owner->GetActorRotation();
-			FQuat		Quat_Current = Rotator_Current.Quaternion();
+			FRotator	Rotator_Current = Get_Rotation_Safe();
 
 			FHitResult	HitResult = FHitResult();
-			bool		IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToAfterTick, Quat_Current, false, HitResult);
+			bool		IsSucceed_Move = SafeMoveUpdatedComponent(Vec_CurrentToAfterTick, Rotator_Current, false, HitResult);
 			if (IsSucceed_Move == false) {
 				//Exception
 				Abort_Path();
@@ -802,7 +850,7 @@ void UHHM_Component_Movement::FollowPath_DownJump(float DeltaTime) {
 	if (MoveTimer_AfterTick <= 0.0f) {
 		FVector Location_Current = GetActorLocation();
 		FVector	Vec_CurrentToTarget = m_MoveTarget_Current - Location_Current;
-		FQuat		Rotator = FQuat();	//HHM Note :: make it to get current rotation.
+		FRotator	Rotator = Get_Rotation_Safe();
 		FHitResult	HitResult = FHitResult();
 
 		SafeMoveUpdatedComponent(Vec_CurrentToTarget, Rotator, false, HitResult);
@@ -886,12 +934,14 @@ void UHHM_Component_Movement::FollowPath_DownJump_Free(float DeltaTime) {
 	}
 
 	float MoveTimer_AfterTick = m_Move_Timer - DeltaTime;
+
+	//HHM Note : Note Finished
 }
 
 
 
 void UHHM_Component_Movement::FollowPath_HorizontalJump(float DeltaTime) {
-	// 작업하기 전에 위의 점프 부분의 로테이터 부분 수정. (노트 참조)
+	// 작업하기 전에 위의 점프 부분의 로테이터 부분 수정. (노트 참조) 완료.
 }
 
 void UHHM_Component_Movement::FollowPath_HorizontalJump_Free(float DeltaTime) {
@@ -929,14 +979,13 @@ void UHHM_Component_Movement::FollowPath_Walk(float DeltaTime) {
 		Abort_Path();
 		return;
 	}
-	FRotator Rotator_Current = pActor_Owner->GetActorRotation();
-	FQuat Quat_Current = Rotator_Current.Quaternion();
+	FRotator Rotator_Current = Get_Rotation_Safe();
 	FHitResult HitResult = FHitResult();
 	if (Distance_Current_To_AfterTick > Distance_Current_To_Target) {
-		SafeMoveUpdatedComponent(Vec_Current_To_Target, Quat_Current, false, HitResult);
+		SafeMoveUpdatedComponent(Vec_Current_To_Target, Rotator_Current, false, HitResult);
 	}
 	else {
-		SafeMoveUpdatedComponent(Vec_Current_To_AfterTick, Quat_Current, false, HitResult);
+		SafeMoveUpdatedComponent(Vec_Current_To_AfterTick, Rotator_Current, false, HitResult);
 	}
 }
 #pragma endregion
@@ -982,7 +1031,7 @@ bool UHHM_Component_Movement::Calculate_MoveTarget_Location(void) {
 	//Make it center of tile
 	FVector Location_Offset_TileCenter = FVector(HHM_TILE_SIZE * 0.5f, 0.0f, 0.0f);
 	
-	m_MoveTarget_Current = TargetLocation;
+	m_MoveTarget_Current = TargetLocation + Location_Offset_TileCenter;
 
 	return IsCalculationSucceed;
 	

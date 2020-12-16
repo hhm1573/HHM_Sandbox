@@ -76,4 +76,6 @@ private:
 		bool Attack_Tile(int32 index_Horizontal, int32 index_Vertical, int32 damage);
 	UFUNCTION(BlueprintCallable)	//Temporary function will be replaced with Use_Item or place_Item so that it can request is it placeable tile and if it is what is it's Tile info
 		bool Place_Tile(int32 index_Horizontal, int32 index_Vertical, int32 tileID);
+
+	//Protected Use_Item. Use item and consume item
 };

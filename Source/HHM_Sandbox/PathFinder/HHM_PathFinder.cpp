@@ -444,7 +444,8 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 				//패스파인딩 과정에서 낙하를 실행할경우 1.낙하하는 방향으로 멀리뛰기 수행 2.멀리뛰기 실행후 바로 밑에 (이동거리가 1일경우) 지면이 있을경우 OnGround 상태로 변환됨
 				//의 과정을 거침으로 인해 탐색경로를 구축하는 과정에서 (바로 아래의 Container_PathNodeData_Return.Add 부분) 1칸 낙하하는 경우에 이동 방식이 잘못 입력됨
 				if ((eMoveType_Parent == EHHM_MoveType::MT_HorizontalJump_Left || eMoveType_Parent == EHHM_MoveType::MT_HorizontalJump_Right)
-					&& MoveValue == 1) {
+					&& eMoveType_Current == EHHM_MoveType::MT_OnGround
+					&& MoveValue <= 1) {
 					eMoveType_FilteredNode = EHHM_MoveType::MT_DownJump;
 				}
 

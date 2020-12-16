@@ -27,10 +27,6 @@
 
 
 
-const FVector Const_TileOffset(50.0f, 0.0f, 0.0f);
-
-
-
 // Sets default values
 ALocalMap::ALocalMap()
 {
@@ -1043,7 +1039,8 @@ bool ALocalMap::RenderInstance_Add(int32 _tileID, int32 _tileSubID, int32 _index
 		//Exception
 		return false;
 	}
-	FVector		Translation = Translation_Raw + Const_TileOffset;
+	FVector		TileOffset = FVector(HHM_TILE_MESH_SIZE * 0.5f, 0.0f, 0.0f);
+	FVector		Translation = Translation_Raw + TileOffset;
 	Transform_Adjusted.SetTranslation(Translation);
 
 	//Add instance and save index to renderinfo

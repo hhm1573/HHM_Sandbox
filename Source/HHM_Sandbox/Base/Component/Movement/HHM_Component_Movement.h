@@ -107,6 +107,9 @@ public:
 	UFUNCTION()
 	bool			MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical);
 
+	UFUNCTION()
+		bool		Change_Face_Direction(bool _toLeft = true);
+
 #pragma region Getter
 	//Get speed etc.
 
@@ -134,6 +137,9 @@ public:
 		FVector			Get_Location();				//Get Location Of UpdatedComponent of UMovementComponent
 	UFUNCTION()
 		FVector			Get_Location_BottomLeft();	//Get Bottom-Center Location of Bottom_Left Entity-Tile
+
+	UFUNCTION()
+		FRotator		Get_Rotation_Safe();			//Get Rotation of Updated Component of UMovementComponent. Do Safety check
 
 #pragma endregion
 
