@@ -12,6 +12,7 @@
 #include "Header/Struct_LocalMap.h"
 #include "Manager/LocalMap/HHM_Manager_LocalMap.h"
 #include "Data/LocalMap/LocalMap.h"
+#include "Manager/Item/HHM_Manager_Item.h"
 
 #include "Base/TouchPanel/TouchPanel.h"
 
@@ -47,6 +48,10 @@ void AHHM_GameMode_LocalMap::BeginPlay() {
 	if (m_pManager_Tile == nullptr) {
 		//m_pManager_Tile = NewObject<AHHM_Manager_Tile>(this, TEXT("Manager_Tile"));
 		m_pManager_Tile = pWorld->SpawnActor<AHHM_Manager_Tile>();
+	}
+
+	if (m_pManager_Item == nullptr) {
+		m_pManager_Item = pWorld->SpawnActor<AHHM_Manager_Item>();
 	}
 
 	if (m_pManager_Navigation == nullptr) {

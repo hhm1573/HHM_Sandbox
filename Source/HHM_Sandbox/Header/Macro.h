@@ -14,4 +14,8 @@ constexpr int32 HHM_INDEX_MAX_ACCEPTABLE_FROM_MAP_BORDER = 10;
 
 
 
+constexpr float HHM_CUBE_MESH_SIZE = 100.0f;
+
+
+
 constexpr float HHM_GRAVITATIONAL_ACCELERATION = 9.764f;

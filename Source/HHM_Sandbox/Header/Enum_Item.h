@@ -6,8 +6,10 @@
 UENUM(BlueprintType)
 enum class EHHM_ItemType : uint8
 {
-	Damage_Melee		UMETA(DisplayName = "Damage_Melee"),
-	Damage_Range		UMETA(DisplayName = "Damage_Range"),
-	Damage_Explosion	UMETA(DisplayName = "Damage_Explosion"),
-	Damage_Unavailiable	UMETA(DisplayName = "Damage_Unavailiable")
+	Item_Material		UMETA(DisplayName = "Item_Material"),
+	Item_Placeable		UMETA(DisplayName = "Item_Placeable"),
+	Item_Consumable		UMETA(DisplayName = "Item_Consumable"),
+	Item_Weapon			UMETA(DisplayName = "Item_Weapon"),
+	Item_Equipment		UMETA(DisplayName = "Item_Equipment"),
+	Item_Unavailiable	UMETA(DisplayName = "Item_Unavailiable")
 };

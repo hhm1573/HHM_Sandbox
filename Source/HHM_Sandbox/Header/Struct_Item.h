@@ -1,6 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "Data/DataBundle/HHM_DataBundle.h"
+
 #include "Struct_Item.generated.h"
 
 USTRUCT(BlueprintType)
@@ -17,6 +20,8 @@ public:
 		class UHHM_Item*	Item = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemData")
 		int32				Remain_UseCount = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemData")
+		FHHM_DataBundle		DataBundle;
 
 public:
 	FHHM_ItemData() {

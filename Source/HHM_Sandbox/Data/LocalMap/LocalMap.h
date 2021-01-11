@@ -10,6 +10,7 @@
 #include "Header/Struct_Renderer.h"
 #include "Header/Struct_LocalMap.h"
 #include "Header/Struct_Navigation.h"
+#include "Header/Struct_Item.h"
 #include "Header/Enum.h"
 
 #include "LocalMap.generated.h"
@@ -44,6 +45,8 @@ private:
 		class AHHM_Manager_Tile*		m_pManager_Tile = nullptr;
 	UPROPERTY()
 		class AHHM_Manager_LocalMap*	m_pManager_LocalMap = nullptr;
+	UPROPERTY()
+		class AHHM_Manager_Item*		m_pManager_Item = nullptr;
 
 
 
@@ -98,6 +101,7 @@ public:
 private:
 	void	Clear_Map(void);
 	void	Request_TileManager(void);
+	void	Request_ItemManager(void);
 
 	//Movement Data
 public:
@@ -175,6 +179,7 @@ public:
 
 private:
 	bool	Check_IsValidPos(int32 Index_Horizontal, int32 Index_Vertical) const;
+	bool	Check_IsLocation_InMap(const FVector& _location) const;
 	bool	Check_IsValidIndex(int32 _index) const ;
 	void	Translate_TileInfo_To_MovementData(const FHHM_TileData& tileInfo, FHHM_TileMovementInfo& tileMovementInfo);
 
@@ -209,17 +214,17 @@ private:
 
 
 
-	public:
-		UFUNCTION(BlueprintCallable, Category = Rendering)
-			bool Render_Reset();
+public:
+	UFUNCTION(BlueprintCallable, Category = Rendering)
+		bool Render_Reset();
 
-		UFUNCTION(BlueprintCallable, Category = Rendering)
-			bool Set_TileRenderData(int32 _index, int32 _tileID, int32 _tileSubID, FTransform& _transform);
-		UFUNCTION(BlueprintCallable, Category = Rendering)
-			//Call this function when certain tile needs to change it's render state. ex) placed,destroyed,etc.
-			//해당 인덱스의 타일에게 새로운 렌더상태에 대한 값을 요청하고, 해당 인덱스의 기존 렌더데이터를 삭제후 새로 얻은 렌더값을 렌더합니다.
-			//인덱스의 타일에 어떠한 변동사항이 생길경우 호출되어야 합니다.
-			bool Update_TileRenderData(const FHHM_TileData& _tileData);
+	UFUNCTION(BlueprintCallable, Category = Rendering)
+		bool Set_TileRenderData(int32 _index, int32 _tileID, int32 _tileSubID, FTransform& _transform);
+	UFUNCTION(BlueprintCallable, Category = Rendering)
+		//Call this function when certain tile needs to change it's render state. ex) placed,destroyed,etc.
+		//해당 인덱스의 타일에게 새로운 렌더상태에 대한 값을 요청하고, 해당 인덱스의 기존 렌더데이터를 삭제후 새로 얻은 렌더값을 렌더합니다.
+		//인덱스의 타일에 어떠한 변동사항이 생길경우 호출되어야 합니다.
+		bool Update_TileRenderData(const FHHM_TileData& _tileData);
 
 private:
 	bool	RenderInstance_Add(int32 _tileID, int32 _tileSubID, int32 _index_Tile, FTransform& _tileTransform);
@@ -298,6 +303,20 @@ private:
 
 		//Spawn Entity?
 		//Despawn Entity?
+
+#pragma endregion
+
+#pragma region ItemActor
+
+public:
+	UFUNCTION(BlueprintCallable, Category = ItemActor)
+		bool Spawn_Item_At_Pos_ByID(int32 _index_Horizontal, int32 _index_Vertical, FVector _force_Initial, int32 _item_ID);
+	UFUNCTION(BlueprintCallable, Category = ItemActor)
+		bool Spawn_Item_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, FVector _force_Initial, FHHM_ItemData& _itemData);
+	UFUNCTION(BlueprintCallable, Category = ItemActor)
+		bool Spawn_Item_At_Location_ByID(const FVector& _location, const FVector& _force_Initial, int32 _item_ID);
+	UFUNCTION(BlueprintCallable, Category = ItemActor)
+		bool Spawn_Item_At_Location(const FVector& _location, const FVector& _force_Initial, FHHM_ItemData& _itemData);
 
 #pragma endregion
 };

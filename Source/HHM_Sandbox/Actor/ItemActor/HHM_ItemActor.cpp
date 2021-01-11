@@ -4,6 +4,7 @@
 #include "HHM_ItemActor.h"
 
 #include "Components/StaticMeshComponent.h"
+#include "Header/Macro.h"
 
 #include "UObject/ConstructorHelpers.h"
 
@@ -27,7 +28,9 @@ AHHM_ItemActor::AHHM_ItemActor()
 		if (StaticMesh_Asset.Succeeded() == true) {
 			pComponent_StaticMesh->SetStaticMesh(StaticMesh_Asset.Object);
 			m_pComponent_StaticMesh = pComponent_StaticMesh;
-			m_pComponent_StaticMesh->SetupAttachment(RootComponent);
+			RootComponent = m_pComponent_StaticMesh;
+			//m_pComponent_StaticMesh->SetupAttachment(RootComponent);
+			m_pComponent_StaticMesh->SetSimulatePhysics(true);
 		}
 		else {
 			//Exception No Mesh Asset Found
@@ -47,5 +50,39 @@ void AHHM_ItemActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+bool AHHM_ItemActor::Set_ItemData(const FHHM_ItemData& _itemData, UMaterialInterface* _material, FVector2D _actorSize)
+{
+	if (_itemData.Item == nullptr) {
+		//Exception
+		return false;
+	}
+
+	if (_material == nullptr) {
+		//Exception
+		return false;
+	}
+
+	if (_actorSize.X <= 0 || _actorSize.Y <= 0) {
+		//Exception
+	}
+
+
+
+	m_ItemData = _itemData;
+	m_pComponent_StaticMesh->SetMaterial(0, _material);
+	float Scale_X = _actorSize.X / HHM_CUBE_MESH_SIZE;
+	float Scale_Y = _actorSize.Y / HHM_CUBE_MESH_SIZE;
+	m_pComponent_StaticMesh->SetWorldScale3D(FVector(Scale_X, 0.05f, Scale_Y));
+
+
+
+	return true;
+}
+
+void AHHM_ItemActor::Add_Force(FVector _force)
+{
+	m_pComponent_StaticMesh->AddForce(_force);
 }
 

@@ -41,18 +41,11 @@ int32 AHHM_Manager_Tile::Register_Tile(AHHM_Tile* pTile) {
 
 void AHHM_Manager_Tile::Register_All_Tile(void) {
 	
-	//Register_Tile(NewObject<AHHM_Tile_Air>(this, TEXT("Origin_Tile_Air")));
-	//Register_Tile(NewObject<AHHM_Tile_Stone>(this, TEXT("Origin_Tile_Stone")));
-	//Register_Tile(NewObject<AHHM_Tile_Dirt>(this, TEXT("Origin_Tile_Dirt")));
 	UWorld* pWorld = GetWorld();
 	if (pWorld == nullptr) {
 		//Exception
 		return;
 	}
-
-	/*Register_Tile(pWorld->SpawnActor<AHHM_Tile_Air>());
-	Register_Tile(pWorld->SpawnActor<AHHM_Tile_Stone>());
-	Register_Tile(pWorld->SpawnActor<AHHM_Tile_Dirt>());*/
 
 	for (TObjectIterator<UClass> Iterator; Iterator; ++Iterator) {
 		if (Iterator->IsChildOf(AHHM_Tile::StaticClass()) && !Iterator->HasAnyClassFlags(EClassFlags::CLASS_Abstract)) {

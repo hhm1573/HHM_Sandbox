@@ -23,6 +23,11 @@
 
 #include "Entity/HHM_Entity.h"
 
+#include "Manager/Item/HHM_Manager_Item.h"
+#include "Data/Item/HHM_Item.h"
+#include "Actor/ItemActor/HHM_ItemActor.h"
+#include "Materials/MaterialInterface.h"
+
 #include "Manager/Navigation/NavLink/HHM_NavLinkProxy.h"
 
 
@@ -88,6 +93,14 @@ bool ALocalMap::Initialize_LocalMap(void){
 	if (m_pManager_Tile == nullptr) {
 		Request_TileManager();
 		if (m_pManager_Tile == nullptr) {
+			//Exception
+			return false;
+		}
+	}
+
+	if (m_pManager_Item == nullptr) {
+		Request_ItemManager();
+		if (m_pManager_Item == nullptr) {
 			//Exception
 			return false;
 		}
@@ -235,6 +248,37 @@ void ALocalMap::Request_TileManager(void) {
 
 	m_pManager_Tile = pGameMode->Get_Manager_Tile();
 
+}
+
+void ALocalMap::Request_ItemManager(void)
+{
+	UWorld* pWorld = nullptr;
+	pWorld = GetWorld();
+	if (pWorld == nullptr) {
+		//Exception
+		return;
+	}
+
+	AGameModeBase* pGameMode_Raw = nullptr;
+	pGameMode_Raw = pWorld->GetAuthGameMode();
+	if (pGameMode_Raw == nullptr) {
+		//Exception
+		return;
+	}
+
+	AHHM_GameMode_LocalMap* pGameMode = nullptr;
+	pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
+	if (pGameMode == nullptr) {
+		//Exception
+		return;
+	}
+
+	m_pManager_Item = pGameMode->Get_Manager_Item();
+
+	if (m_pManager_Item == nullptr) {
+		//Exception
+		return;
+	}
 }
 
 
@@ -760,6 +804,21 @@ bool ALocalMap::Check_IsValidPos(int32 Index_Horizontal, int32 Index_Vertical) c
 
 	if (Index_Horizontal >= m_MapInfo.MapSize_Horizontal || Index_Vertical >= m_MapInfo.MapSize_Vertical)
 		return false;
+
+	return true;
+}
+
+bool ALocalMap::Check_IsLocation_InMap(const FVector& _location) const
+{
+	float Location_LocalMap_Left = m_Index_Horizontal * HHM_OFFSET_LOCALMAP;
+	float Location_LocalMap_Bottom = m_Index_Vertical * HHM_OFFSET_LOCALMAP;
+	float Location_LocalMap_Right = Location_LocalMap_Left + (m_MapInfo.MapSize_Horizontal * HHM_TILE_SIZE);
+	float Location_LocalMap_Top = Location_LocalMap_Bottom + (m_MapInfo.MapSize_Vertical * HHM_TILE_SIZE);
+
+	if (_location.X < Location_LocalMap_Left || _location.X > Location_LocalMap_Right
+		|| _location.Z < Location_LocalMap_Bottom || _location.Z > Location_LocalMap_Top) {
+		return false;
+	}
 
 	return true;
 }
@@ -1328,6 +1387,8 @@ void ALocalMap::Entity_Clear(void) {
 	m_Container_AvailiableIndex_Entity.Empty();
 }
 
+
+
 #pragma endregion
 
 #pragma region Navigation
@@ -1680,5 +1741,92 @@ void ALocalMap::Fill_EmptyRegion(const FHHM_MapInfo& MapInfo, int32 StartIndex)
 		Arr_Fill_IndexQueue.RemoveAt(0);
 	}
 }
+
+#pragma endregion
+
+#pragma region ItemActor
+
+
+
+bool ALocalMap::Spawn_Item_At_Pos_ByID(int32 _index_Horizontal, int32 _index_Vertical, FVector _force_Initial, int32 _item_ID)
+{
+	//Check Location
+	bool IsValidIndex = Check_IsValidPos(_index_Horizontal, _index_Vertical);
+	if (IsValidIndex == false) {
+		//Exception
+		return false;
+	}
+
+	//Get Item DefaultData
+	if (m_pManager_Item == nullptr) {
+		//Exception
+		return false;
+	}
+	const FHHM_ItemData& DefaultItemData = m_pManager_Item->Get_DefaultItemData_By_ID(_item_ID);
+	//Item DefaultData Valid Check
+	if (DefaultItemData.Item == nullptr) {
+		//Exception
+		return false;
+	}
+
+
+
+	//Spawn Item Actor
+	UWorld* pWorld = nullptr;
+	pWorld = GetWorld();
+	if (pWorld == nullptr) {
+		//Exception
+		return false;
+	}
+
+	FVector SpawnLocation = FVector::ZeroVector;
+	bool IsSucceed_CalculateTranslation = AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(SpawnLocation, FVector2D(_index_Horizontal, _index_Vertical), m_MapInfo);
+	FRotator SpawnRotator = FRotator::ZeroRotator;
+	AHHM_ItemActor* pItemActor = nullptr;
+	pItemActor = pWorld->SpawnActor<AHHM_ItemActor>(SpawnLocation, SpawnRotator);
+
+	if (pItemActor == nullptr) {
+		//Exception
+		return false;
+	}
+
+	UMaterialInterface* pMaterialInterface = nullptr;
+	FVector2D Size_ItemActor = FVector2D::ZeroVector;
+	DefaultItemData.Item->Get_RenderData_ItemActor(pMaterialInterface, Size_ItemActor, this, DefaultItemData);
+	if (pMaterialInterface == nullptr) {
+		//Exception Item Is Not fully implemented
+		pItemActor->Destroy();
+		return false;
+	}
+
+	bool IsSucceed_ItemDataSet = pItemActor->Set_ItemData(DefaultItemData, pMaterialInterface, Size_ItemActor);
+	if (IsSucceed_ItemDataSet == false) {
+		//Exception
+		pItemActor->Destroy();
+		return false;
+	}
+	pItemActor->Add_Force(_force_Initial);
+
+	
+	
+	return true;
+}
+
+bool ALocalMap::Spawn_Item_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, FVector _force_Initial, FHHM_ItemData& _itemData)
+{
+	return false;
+}
+
+bool ALocalMap::Spawn_Item_At_Location_ByID(const FVector& _location, const FVector& _force_Initial, int32 _item_ID)
+{
+	return false;
+}
+
+bool ALocalMap::Spawn_Item_At_Location(const FVector& _location, const FVector& _force_Initial, FHHM_ItemData& _itemData)
+{
+	return false;
+}
+
+
 
 #pragma endregion

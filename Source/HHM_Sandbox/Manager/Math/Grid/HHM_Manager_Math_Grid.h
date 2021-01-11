@@ -25,6 +25,7 @@ public:
 
 	//Those function's are use for tile render system. may be deleted at some point
 	static bool		Convert_Index_To_Translation_Relative(FVector& _vec_Translation_Return, int32 _index, const FHHM_MapInfo& _mapInfo);
+	//Those function's are use for tile render system. may be deleted at some point
 	static bool		Convert_Translation_To_Index_Relative(int32& _index_Return, const FVector& _vec_Translation, const FHHM_MapInfo& _mapInfo);
 
 	/*

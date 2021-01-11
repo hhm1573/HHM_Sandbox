@@ -27,6 +27,8 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 		class AHHM_Manager_Tile*		m_pManager_Tile = nullptr;
 	UPROPERTY(VisibleAnywhere)
+		class AHHM_Manager_Item*		m_pManager_Item = nullptr;
+	UPROPERTY(VisibleAnywhere)
 		class AHHM_Manager_Navigation*	m_pManager_Navigation = nullptr;
 	UPROPERTY(VisibleAnywhere)
 		class AHHM_Manager_LocalMap*	m_pManager_LocalMap = nullptr;
@@ -60,6 +62,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		class AHHM_Manager_Tile*				Get_Manager_Tile() { return m_pManager_Tile; }
 		const class AHHM_Manager_Tile*			Get_Manager_Tile_Const() const { return m_pManager_Tile; }
+	UFUNCTION(BlueprintCallable)
+		class AHHM_Manager_Item*				Get_Manager_Item() { return m_pManager_Item; }
+	const class AHHM_Manager_Item*				Get_Manager_Item_Const() const { return m_pManager_Item; }
 	UFUNCTION(BlueprintCallable)
 		class AHHM_Manager_LocalMap*			Get_Manager_LocalMap() { return m_pManager_LocalMap; }
 		const class AHHM_Manager_LocalMap*		Get_Manager_LocalMap_Const() const { return m_pManager_LocalMap; }

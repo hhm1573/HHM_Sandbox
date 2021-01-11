@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
+#include "Header/Struct_Item.h"
+
 #include "HHM_ItemActor.generated.h"
 
 UCLASS()
@@ -18,7 +21,10 @@ public:
 
 
 private:
-	class UStaticMeshComponent* m_pComponent_StaticMesh = nullptr;
+	UPROPERTY()
+		class UStaticMeshComponent*		m_pComponent_StaticMesh = nullptr;
+	UPROPERTY()
+		FHHM_ItemData					m_ItemData;
 
 
 
@@ -34,5 +40,7 @@ public:
 
 public:
 	//Set Item Data
+	bool Set_ItemData(const FHHM_ItemData& _itemData, class UMaterialInterface* _material, FVector2D _actorSize);
+	void Add_Force(FVector _force);
 
 };
