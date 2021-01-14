@@ -52,9 +52,14 @@ void AHHM_ItemActor::Tick(float DeltaTime)
 
 }
 
-bool AHHM_ItemActor::Set_ItemData(const FHHM_ItemData& _itemData, UMaterialInterface* _material, FVector2D _actorSize)
+bool AHHM_ItemActor::Set_ItemData(const TSharedPtr<UHHM_ItemData>& _pItemData, UMaterialInterface* _material, FVector2D _actorSize)
 {
-	if (_itemData.Item == nullptr) {
+	if (_pItemData == nullptr) {
+		//Exception
+		return false;
+	}
+
+	if (_pItemData->Get_Item() == nullptr) {
 		//Exception
 		return false;
 	}
@@ -66,11 +71,12 @@ bool AHHM_ItemActor::Set_ItemData(const FHHM_ItemData& _itemData, UMaterialInter
 
 	if (_actorSize.X <= 0 || _actorSize.Y <= 0) {
 		//Exception
+		return false;
 	}
 
 
 
-	m_ItemData = _itemData;
+	m_pItemData = _pItemData;
 	m_pComponent_StaticMesh->SetMaterial(0, _material);
 	float Scale_X = _actorSize.X / HHM_CUBE_MESH_SIZE;
 	float Scale_Y = _actorSize.Y / HHM_CUBE_MESH_SIZE;

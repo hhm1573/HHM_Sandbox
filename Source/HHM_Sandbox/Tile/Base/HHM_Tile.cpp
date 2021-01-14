@@ -16,6 +16,7 @@ void AHHM_Tile::BeginPlay()
 	Super::BeginPlay();
 	
 	m_DefaultTileData = FHHM_TileData(this, m_BaseTileData);
+	m_DefaultTileData.ID = m_ID;
 }
 
 // Called every frame

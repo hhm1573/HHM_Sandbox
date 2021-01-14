@@ -53,11 +53,17 @@ void AHHM_Manager_Tile::Register_All_Tile(void) {
 			UClass* pClass = *Iterator;
 			pTile = Cast<AHHM_Tile>(pWorld->SpawnActor(pClass));
 			
-			int32 TileID = pTile->Get_TileID();
-			const bool IsIDTaken = m_Container_Tile.Contains(TileID);
-			if (IsIDTaken == true) {
-				//Exception
-				return;
+			int32 TileID = pTile->Get_TileID();										
+
+			if (TileID < 0) {
+				continue;
+			}
+																					// HHM Note : 현재 타일 생성 방식에서는 ID가 이미 점유되어있을 경우 타일을 생성자체를 안해버린다.
+			const bool IsIDTaken = m_Container_Tile.Contains(TileID);				// 추후 다양한 모드의 호환성을 염두해 ModA-TileA 같은 대체 ID 시스템을 만들경우 이부분을 수정하고,
+			if (IsIDTaken == true) {												// AHHM_Tile 에서 m_ID를 ID_Desired로 변경하고 실제 ID는 대체 시스템에 따르는 형식으로 따로 저장하게끔 한 후
+				//Exception															// BeginPlay에 DefaultTileData를 생성하는 부분을 Initialize 함수로 이동한 후 Initialize 함수에서 실제 저장되는 ID
+				pTile->Destroy();													// 를 입력할수 있게끔 설정. 타일의 유효성 검사도 따로 필요해짐.
+				continue;
 			}
 
 			m_Container_Tile.Add(TileID, pTile);

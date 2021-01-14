@@ -11,8 +11,6 @@ struct FHHM_TileData_Base {		//For passing basic information to TileData on init
 		
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TileDataBase)
-		int32				ID = 0;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TileDataBase)
 		float				HP_Max = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TileDataBase)
 		bool				IsPassable = true;
@@ -54,7 +52,7 @@ public:
 	}
 
 	FHHM_TileData(class AHHM_Tile* _pTile, FHHM_TileData_Base& _tileData_Base) {
-		ID = _tileData_Base.ID;
+		//ID = _pTile->Get_TileID();
 		Tile = _pTile;
 				
 		HP_Max = _tileData_Base.HP_Max;

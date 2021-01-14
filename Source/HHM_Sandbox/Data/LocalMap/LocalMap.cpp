@@ -874,22 +874,22 @@ bool ALocalMap::Initialize_Container_InstancedMesh(void)
 
 
 	//iterate container and if tile's render type is 'instanced', create render info based on tile's info
-	const int32 Num_TileContainer = Ref_TileContainer.Num();
+	//const int32 Num_TileContainer = Ref_TileContainer.Num();
 
-	for (int32 index_Tile = 0; index_Tile < Num_TileContainer; ++index_Tile) {
-		if (Ref_TileContainer[index_Tile] == nullptr) {
+	for (auto& TilePair : Ref_TileContainer) {
+		if (Ref_TileContainer[TilePair.Key] == nullptr) {
 			//Exception
 			return false;
 		}
 
 		//Get Tile's render info data
-		const FHHM_RenderInfo& TileRenderInfo = Ref_TileContainer[index_Tile]->Get_RenderInfo();
+		const FHHM_RenderInfo& TileRenderInfo = Ref_TileContainer[TilePair.Key]->Get_RenderInfo();
 		if (TileRenderInfo.eRenderType != EHHM_RenderType::RType_Instanced) {
 			continue;
 		}
 
 		//Check if tile is already registered
-		bool IsTileAlreadyRegistered = m_Container_Comp_InstancedMesh.Contains(Ref_TileContainer[index_Tile]->Get_TileID());
+		bool IsTileAlreadyRegistered = m_Container_Comp_InstancedMesh.Contains(Ref_TileContainer[TilePair.Key]->Get_TileID());
 		if (IsTileAlreadyRegistered == true) {
 			//Exception
 			return false;
@@ -898,14 +898,14 @@ bool ALocalMap::Initialize_Container_InstancedMesh(void)
 
 
 		//make some place on map for tile
-		m_Container_Comp_InstancedMesh.Add(index_Tile, FHHM_InstancedMeshArray());
+		m_Container_Comp_InstancedMesh.Add(TilePair.Key, FHHM_InstancedMeshArray());
 
 		//Filling render manager's instance map based on tile's material
 		int32 Num_TileMaterial = TileRenderInfo.Num_Material;
 		for (int32 index_Material = 0; index_Material < Num_TileMaterial; ++index_Material) {
 
 			//Check tile's material is already registered
-			int32 Num_Registered_Material = m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh.Num();
+			int32 Num_Registered_Material = m_Container_Comp_InstancedMesh[TilePair.Key].Arr_pInstancedStaticMesh.Num();
 			if (index_Material < Num_Registered_Material) {
 				//Exception;
 				continue;
@@ -918,7 +918,7 @@ bool ALocalMap::Initialize_Container_InstancedMesh(void)
 			}
 
 			//Create Mesh Component than set mesh and material
-			FString Name_InstancedMesh = FString::Printf(TEXT("InstancedMesh_%d_%d"), index_Tile, index_Material);
+			FString Name_InstancedMesh = FString::Printf(TEXT("InstancedMesh_%d_%d"), TilePair.Key, index_Material);
 			UInstancedStaticMeshComponent* pInstancedStaticMeshComponent = nullptr;
 			//pInstancedStaticMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(*Name_InstancedMesh);
 			pInstancedStaticMeshComponent = NewObject<UInstancedStaticMeshComponent>(this, *Name_InstancedMesh);
@@ -931,7 +931,7 @@ bool ALocalMap::Initialize_Container_InstancedMesh(void)
 			pInstancedStaticMeshComponent->SetWorldScale3D(FVector(Scale_InstancedStaticMesh));
 
 			//Collision Setting
-			const bool IsPassable = Ref_TileContainer[index_Tile]->Get_IsPassable();
+			const bool IsPassable = Ref_TileContainer[TilePair.Key]->Get_IsPassable();
 			if (IsPassable) {
 				pInstancedStaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
 			}
@@ -946,8 +946,8 @@ bool ALocalMap::Initialize_Container_InstancedMesh(void)
 			}
 
 			//Register instanced static mesh component on renderer's map
-			m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh.Add(pInstancedStaticMeshComponent);
-			m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh[index_Material]->RegisterComponent();
+			m_Container_Comp_InstancedMesh[TilePair.Key].Arr_pInstancedStaticMesh.Add(pInstancedStaticMeshComponent);
+			m_Container_Comp_InstancedMesh[TilePair.Key].Arr_pInstancedStaticMesh[index_Material]->RegisterComponent();
 			//m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh[index_Material]->RegisterComponent();
 		}
 	}
@@ -1762,10 +1762,21 @@ bool ALocalMap::Spawn_Item_At_Pos_ByID(int32 _index_Horizontal, int32 _index_Ver
 		//Exception
 		return false;
 	}
-	const FHHM_ItemData& DefaultItemData = m_pManager_Item->Get_DefaultItemData_By_ID(_item_ID);
+	UHHM_Item* pItem = m_pManager_Item->Get_Item_By_ID(_item_ID);
 	//Item DefaultData Valid Check
-	if (DefaultItemData.Item == nullptr) {
+	if (pItem == nullptr) {
 		//Exception
+		return false;
+	}
+
+	TSharedPtr<UHHM_ItemData> pItemData = nullptr;
+	bool IsSucceed_CreateNewItemData = pItem->Create_NewItemData(pItemData);
+	if (IsSucceed_CreateNewItemData == false || pItemData == nullptr) {
+		//Exception
+		/*if (pItemData != nullptr) {
+			pItemData->Destroy
+		}*/
+		pItemData.Reset();
 		return false;
 	}
 
@@ -1792,14 +1803,14 @@ bool ALocalMap::Spawn_Item_At_Pos_ByID(int32 _index_Horizontal, int32 _index_Ver
 
 	UMaterialInterface* pMaterialInterface = nullptr;
 	FVector2D Size_ItemActor = FVector2D::ZeroVector;
-	DefaultItemData.Item->Get_RenderData_ItemActor(pMaterialInterface, Size_ItemActor, this, DefaultItemData);
+	pItem->Get_RenderData_ItemActor(pMaterialInterface, Size_ItemActor, this, pItemData.Get());
 	if (pMaterialInterface == nullptr) {
 		//Exception Item Is Not fully implemented
 		pItemActor->Destroy();
 		return false;
 	}
 
-	bool IsSucceed_ItemDataSet = pItemActor->Set_ItemData(DefaultItemData, pMaterialInterface, Size_ItemActor);
+	bool IsSucceed_ItemDataSet = pItemActor->Set_ItemData(pItemData, pMaterialInterface, Size_ItemActor);
 	if (IsSucceed_ItemDataSet == false) {
 		//Exception
 		pItemActor->Destroy();
@@ -1812,7 +1823,7 @@ bool ALocalMap::Spawn_Item_At_Pos_ByID(int32 _index_Horizontal, int32 _index_Ver
 	return true;
 }
 
-bool ALocalMap::Spawn_Item_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, FVector _force_Initial, FHHM_ItemData& _itemData)
+bool ALocalMap::Spawn_Item_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, FVector _force_Initial, UHHM_ItemData* _itemData)
 {
 	return false;
 }
@@ -1822,7 +1833,7 @@ bool ALocalMap::Spawn_Item_At_Location_ByID(const FVector& _location, const FVec
 	return false;
 }
 
-bool ALocalMap::Spawn_Item_At_Location(const FVector& _location, const FVector& _force_Initial, FHHM_ItemData& _itemData)
+bool ALocalMap::Spawn_Item_At_Location(const FVector& _location, const FVector& _force_Initial, UHHM_ItemData* _itemData)
 {
 	return false;
 }

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 
-#include "Header/Struct_Item.h"
+#include "Data/Item/ItemData/HHM_ItemData.h"
 #include "Header/Enum_Item.h"
 #include "Data/Item/RenderData/HHM_RenderData_Item.h"
 
@@ -25,9 +25,14 @@ public:
 protected:
 	//UI 에 아이템 렌더용 텍스쳐 변수 필요. Textrue2D UTexture 등 여러 텍스쳐 타입중 어느것이 필요할줄 몰라 추후 UI작업시에 확정예정.
 	UPROPERTY()
-		int32						m_ItemID = 0;		//Desired Item ID. Should be set by it self.
+		int32						m_ItemID = -1;		//Desired Item ID. Should be set by item self.
 	UPROPERTY()
-		FHHM_ItemData				m_DefaultItemData;
+		int32						m_ItemSize_Horizontal = 1;		//On Inventory
+	UPROPERTY()
+		int32						m_ItemSize_Vertical = 1;
+
+	UPROPERTY()
+		UHHM_ItemData*				m_DefaultItemData = nullptr;	//필요없을수도?
 	UPROPERTY()
 		EHHM_ItemType				m_ItemType = EHHM_ItemType::Item_Unavailiable;
 
@@ -40,20 +45,15 @@ protected:
 	UPROPERTY()
 		TArray<FString>				m_Container_Descriptions;
 
-	UPROPERTY()
-		bool						m_bUnlimited_Usage = 0;
-	UPROPERTY()
-		float						m_Distance_ItemUsable = 0.0f;
-
-	UPROPERTY()
-		FVector2D					m_Size_Actor = FVector2D::ZeroVector;
-
 
 
 public:
 	int32					Get_ItemID() { return m_ItemID; }
-	const FHHM_ItemData&	Get_DefaultItemData() { return m_DefaultItemData; }
-	float					Get_ItemUsableDistance() { return m_Distance_ItemUsable; }
+	FIntPoint				Get_ItemSize() { return FIntPoint(m_ItemSize_Horizontal, m_ItemSize_Vertical); }
+	const UHHM_ItemData*	Get_DefaultItemData() const { return m_DefaultItemData; }
+
+public:
+	virtual bool			Create_NewItemData(TSharedPtr<UHHM_ItemData>& _pReturn);		//Return DefaultItemData
 
 public:
 	/*
@@ -61,11 +61,11 @@ public:
 	no need to set valid value on both _targetLocaiton and _pTarget. because depends on item, item will use only one of them.
 	return true will reduce item use count and might consume item.
 	*/
-	virtual bool	On_ItemUsed(class ALocalMap* _pLocalMap, class AEntity* _pUser, FHHM_ItemData& _itemUsed, FVector _targetLocation, class AEntity* _pTarget); // HHM Note : Make it as pure virtual
+	virtual bool	On_ItemUsed(class ALocalMap* _pLocalMap, class AEntity* _pUser, UHHM_ItemData* _itemUsed, FVector _targetLocation, class AEntity* _pTarget); // HHM Note : Make it as pure virtual
 
 
 
 	//Return RenderData that ItemActor can use.
-	virtual void	Get_RenderData_ItemActor(class UMaterialInterface*& _material_Return, FVector2D& _cubeSize_Return, class ALocalMap* _pLocalMap, const FHHM_ItemData& _itemData);
+	virtual void	Get_RenderData_ItemActor(class UMaterialInterface*& _material_Return, FVector2D& _cubeSize_Return, class ALocalMap* _pLocalMap, const UHHM_ItemData* _itemData);
 	
 };

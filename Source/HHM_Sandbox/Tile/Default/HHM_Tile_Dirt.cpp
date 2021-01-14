@@ -8,7 +8,7 @@
 
 
 AHHM_Tile_Dirt::AHHM_Tile_Dirt(void) {
-	m_BaseTileData.ID = 2;
+	m_ID = 2;
 	m_BaseTileData.IsPassable = false;
 
 	m_BaseTileData.HP_Max = 10.0f;

@@ -10,7 +10,7 @@
 #include "Header/Struct_Renderer.h"
 #include "Header/Struct_LocalMap.h"
 #include "Header/Struct_Navigation.h"
-#include "Header/Struct_Item.h"
+#include "Data/Item/ItemData/HHM_ItemData.h"
 #include "Header/Enum.h"
 
 #include "LocalMap.generated.h"
@@ -312,11 +312,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = ItemActor)
 		bool Spawn_Item_At_Pos_ByID(int32 _index_Horizontal, int32 _index_Vertical, FVector _force_Initial, int32 _item_ID);
 	UFUNCTION(BlueprintCallable, Category = ItemActor)
-		bool Spawn_Item_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, FVector _force_Initial, FHHM_ItemData& _itemData);
+		bool Spawn_Item_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, FVector _force_Initial, UHHM_ItemData* _itemData);
 	UFUNCTION(BlueprintCallable, Category = ItemActor)
 		bool Spawn_Item_At_Location_ByID(const FVector& _location, const FVector& _force_Initial, int32 _item_ID);
 	UFUNCTION(BlueprintCallable, Category = ItemActor)
-		bool Spawn_Item_At_Location(const FVector& _location, const FVector& _force_Initial, FHHM_ItemData& _itemData);
+		bool Spawn_Item_At_Location(const FVector& _location, const FVector& _force_Initial, UHHM_ItemData* _itemData);
 
 #pragma endregion
 };

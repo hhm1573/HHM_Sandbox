@@ -41,7 +41,7 @@ protected:
 		AHHM_Manager_Tile*		m_pManager_Tile = nullptr;
 
 	UPROPERTY()
-		int32			m_ID = -1;
+		int32			m_ID = -1;	//Desired ID for regist tile
 
 	UPROPERTY()
 		FHHM_TileData_Base	m_BaseTileData;
@@ -51,7 +51,7 @@ protected:
 		FHHM_RenderInfo		m_RenderInfo;
 
 public:		//Getter
-	int32					Get_TileID(void) const { return m_BaseTileData.ID; }
+	int32					Get_TileID(void) const { return m_ID; }
 	bool					Get_IsPassable(void) const { return !m_BaseTileData.IsPassable; }
 	int32					Get_MaxHealthPoint(void) const { return m_BaseTileData.HP_Max; }
 	const FHHM_TileData&	Get_DefaultTileInfo(void) const { return m_DefaultTileData; }

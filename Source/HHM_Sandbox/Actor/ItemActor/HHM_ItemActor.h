@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
-#include "Header/Struct_Item.h"
+#include "Data/Item/ItemData/HHM_ItemData.h"
 
 #include "HHM_ItemActor.generated.h"
 
@@ -23,8 +23,8 @@ public:
 private:
 	UPROPERTY()
 		class UStaticMeshComponent*		m_pComponent_StaticMesh = nullptr;
-	UPROPERTY()
-		FHHM_ItemData					m_ItemData;
+
+	TSharedPtr<UHHM_ItemData>		m_pItemData = nullptr;
 
 
 
@@ -40,7 +40,7 @@ public:
 
 public:
 	//Set Item Data
-	bool Set_ItemData(const FHHM_ItemData& _itemData, class UMaterialInterface* _material, FVector2D _actorSize);
+	bool Set_ItemData(const TSharedPtr<UHHM_ItemData>& _pItemData, class UMaterialInterface* _material, FVector2D _actorSize);
 	void Add_Force(FVector _force);
 
 };

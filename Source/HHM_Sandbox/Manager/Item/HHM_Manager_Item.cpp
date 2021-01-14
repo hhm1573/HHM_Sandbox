@@ -45,7 +45,7 @@ const UHHM_Item* AHHM_Manager_Item::Get_Item_By_ID_Const(int32 _id) const
 	return nullptr;
 }
 
-const FHHM_ItemData& AHHM_Manager_Item::Get_DefaultItemData_By_ID(int32 _id) const
+const UHHM_ItemData* AHHM_Manager_Item::Get_DefaultItemData_By_ID(int32 _id) const
 {
 	bool IsRegisteredID = m_Container_Item.Contains(_id);
 	if (IsRegisteredID == true) {
