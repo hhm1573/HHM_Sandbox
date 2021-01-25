@@ -2,6 +2,10 @@
 
 #include "HHM_Tile.h"
 
+#include "Data/LocalMap/LocalMap.h"
+
+
+
 // Sets default values
 AHHM_Tile::AHHM_Tile()
 {
@@ -28,13 +32,14 @@ void AHHM_Tile::Tick(float DeltaTime)
 
 
 
-FHHM_TileData AHHM_Tile::On_Placed(ALocalMap * pLocalMap, FHHM_TileData& tileInfo, AEntity * pEntity, const FHHM_MapInfo & mapInfo)
+FHHM_TileData AHHM_Tile::On_Placed(ALocalMap * pLocalMap, FHHM_TileData& tileInfo, AEntity * pEntity)
 {
 	// TODO: 여기에 반환 구문을 삽입합니다.
-	return m_DefaultTileData;
+	//return m_DefaultTileData;
+	return tileInfo;
 }
 
-int32 AHHM_Tile::On_Damaged(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, int32 damage, EHHM_DamageType damage_Type, class APawn* pAttackPawn, const FHHM_MapInfo& mapInfo) {
+int32 AHHM_Tile::On_Damaged(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, int32 damage, EHHM_DamageType damage_Type, class APawn* pAttackPawn) {
 	int32 Health_Return = tileInfo.HP - damage;
 	if (GEngine) {
 		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("TileDamaged"));
@@ -42,13 +47,39 @@ int32 AHHM_Tile::On_Damaged(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo,
 	return Health_Return;
 }
 
-FHHM_TileData AHHM_Tile::On_Destruct(ALocalMap* pLocalMap, FHHM_TileData& tileInfo, const FHHM_MapInfo& mapInfo) {
+FHHM_TileData AHHM_Tile::On_Destruct(ALocalMap* pLocalMap, FHHM_TileData& tileInfo) {
 	if (GEngine) {
 		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Tile Destructed"));
 	}
 
+	if (pLocalMap == nullptr) {
+		//Exception Input LocalMap Is Nullptr
+	}
+	else {
+		bool IsSucceed_ClearTileEntityData = pLocalMap->Set_TileEntity_At(tileInfo.Index_Horizontal, tileInfo.Index_Vertical, nullptr);
+		if (IsSucceed_ClearTileEntityData == false) {
+			//Exception Clear TileEntity Data failed
+		}
+	}
+
 	return m_pManager_Tile->Get_DefaultTileInfo_ByID(0);
 	//return FHHM_TileInfo();
+}
+
+void AHHM_Tile::On_Delete(ALocalMap* _pLocalMap, FHHM_TileData& _tileInfo)
+{
+	if (_pLocalMap == nullptr) {
+		//Exception Input LocalMap Is Nullptr
+		return;
+	}
+
+	bool IsSucceed_ClearTileEntityData = _pLocalMap->Set_TileEntity_At(_tileInfo.Index_Horizontal, _tileInfo.Index_Vertical, nullptr);
+	if (IsSucceed_ClearTileEntityData == false) {
+		//Exception Clear TileEntity Data Failed
+		return;
+	}
+
+	return;
 }
 
 

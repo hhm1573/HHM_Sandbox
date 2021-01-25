@@ -205,12 +205,14 @@ const ALocalMap* AHHM_Manager_LocalMap::Get_LocalMap_const(int32 _index_LocalMap
 
 bool AHHM_Manager_LocalMap::Construct_MapData_Empty(FHHM_LocalMap_MapData* _mapData, const FHHM_MapInfo& _mapInfo) {
 	_mapData->Container_TileData.Empty();
+	_mapData->Container_TileEntity.Empty();
 	
 	FHHM_TileData TileData_Air = m_pManager_Tile->Get_DefaultTileInfo_ByID(0);
 
 	int32 Num_TotalTile = _mapInfo.MapSize_Horizontal * _mapInfo.MapSize_Vertical;
 
 	_mapData->Container_TileData.Init(TileData_Air, Num_TotalTile);
+	_mapData->Container_TileEntity.Init(nullptr, Num_TotalTile);
 
 	return true;
 }
@@ -226,7 +228,7 @@ bool AHHM_Manager_LocalMap::Construct_MapData_TestMap(FHHM_LocalMap_MapData* _ma
 
 	_mapData->Empty();
 
-	AGenerator_LocalMap::Generate_DebugMap(_mapData->Container_TileData, _mapInfo, m_pManager_Tile);
+	AGenerator_LocalMap::Generate_DebugMap(*_mapData, _mapInfo, m_pManager_Tile);
 
 
 	return true;

@@ -42,6 +42,8 @@ protected:
 
 	UPROPERTY()
 		int32			m_ID = -1;	//Desired ID for regist tile
+	UPROPERTY()
+		int32			m_SubID = -1;
 
 	UPROPERTY()
 		FHHM_TileData_Base	m_BaseTileData;
@@ -52,6 +54,7 @@ protected:
 
 public:		//Getter
 	int32					Get_TileID(void) const { return m_ID; }
+	int32					Get_TileSubID(void) const { return m_SubID; }
 	bool					Get_IsPassable(void) const { return !m_BaseTileData.IsPassable; }
 	int32					Get_MaxHealthPoint(void) const { return m_BaseTileData.HP_Max; }
 	const FHHM_TileData&	Get_DefaultTileInfo(void) const { return m_DefaultTileData; }
@@ -63,9 +66,11 @@ public:		//Setter
 
 
 public:	//LocalMap, TileInfo, ~~~, MapInfo
-	virtual FHHM_TileData			On_Placed(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, class AEntity* pEntity, const FHHM_MapInfo& mapInfo);	//Call when Entity place tile on map
-	virtual int32					On_Damaged(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, int32 damage, EHHM_DamageType damage_Type, class APawn* pAttackPawn, const FHHM_MapInfo& mapInfo);	//Called when tile got damage. return the health point after damaged
-	virtual FHHM_TileData			On_Destruct(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, const FHHM_MapInfo& mapInfo);		//Called when tile destructed. return tile will replace current tile.
+	virtual FHHM_TileData			On_Placed(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, class AEntity* pEntity);	//Call when Entity place tile on map. 해당 타일 클래스의 DefaultTileData등이 인자로 입력될 수 있고, 리턴하는 TileData를 맵에 저장합니다.
+	virtual int32					On_Damaged(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, int32 damage, EHHM_DamageType damage_Type, class APawn* pAttackPawn);	//Called when tile got damage. return the health point after damaged
+	virtual FHHM_TileData			On_Destruct(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo);		//Called when tile destructed. return tile will replace current tile.
+	//Called when tile deleted. it normally doesn't called often. 디버그툴을 이용하여 타일을 덮어쓰거나 하는 등, 타일의 파괴나 회수 함수가 호출되지 않는 특수한 경우에만 호출됩니다.
+	virtual void					On_Delete(class ALocalMap* _pLocalMap, FHHM_TileData& _tileInfo);		
 
 	//Update Render Info Based on inserted tileInfo(Data of updating tile). Called from LocalMap whenever tile's data has changed (for example, Damaged)
 	virtual bool					Update_Render(int32& index_Instance, FTransform& transform_Local, class ALocalMap* pLocalMap, const FHHM_TileData& tileInfo);

@@ -5,10 +5,16 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
-#include "Data/Item/HHM_Item.h"
+#include "Base/Component/Inventory/HHM_InventoryItemData.h"
+#include "Data/Item/ItemData/HHM_ItemData.h"
 #include "Data/InventorySlotData/HHM_InventorySlotData_Row.h"
 
 #include "HHM_Component_Inventory.generated.h"
+
+
+
+// Note : FIntPoint 가 왠지 미완성된 구조체인듯한 찝찝한 기분이 들어 앵간하면 안쓰려고 했음.
+
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -35,7 +41,7 @@ protected:
 	UPROPERTY()
 		TArray<FHHM_InventorySlotData_Row>		m_InventorySlotData;
 	// 아이템 데이터
-		TMap<int32, TSharedPtr<UHHM_Item>>		m_Container_Item;
+		TMap<int32, FHHM_InventoryItemData>		m_Container_Item;
 	// 인벤토리 사이즈 변수
 	UPROPERTY()
 		int32									m_InventorySize_Horizontal = 0;
@@ -48,19 +54,45 @@ public:
 	// 초기화
 	bool	Initialize_Inventory(int32 _size_Horizontal, int32 _size_Vertical);
 
+public:
+	TSharedPtr<UHHM_ItemData>	Get_ItemPtr(int32 _index_Horizontal, int32 _index_Vertical);
+
+	TMap<int32, FHHM_InventoryItemData>&	Get_ItemContainer_Ref() { return m_Container_Item; }
+
+	FIntPoint								Get_InventorySize() { return FIntPoint(m_InventorySize_Horizontal, m_InventorySize_Vertical); }
+
+public:
+	bool	Check_IsValidIndex(int32 _index_Horizontal, int32 _index_Vertical);
+
+	bool	Check_IsItemSwappable(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<UHHM_ItemData>& _pItemData_Swap);
+
+	bool	Check_IsItemInsertable(TSharedPtr<UHHM_ItemData>& _pItemData);
+
+	bool	Check_IsItemInsertableAt(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<UHHM_ItemData>& _pItemData_Insert);
+
 
 	
+public:
 	// 아이템 삽입삭제 이동등의 인터페이스
-	bool	Insert_Item_At(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<UHHM_Item>& _pItem);
+	bool	Item_Insert_At(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<UHHM_ItemData>& _pItemData);
 	
 	/*
 	* Return - 1=General Error / 2=Inventory Full
 	*/
-	int32	Intert_Item(TSharedPtr<UHHM_Item>& _pItem);
+	int32	Item_Insert(TSharedPtr<UHHM_ItemData>& _pItemData);
+
+	/*
+	* _pItemData_Return - nullptr is fine. no need to make new object to get return data
+	*/
+	bool	Item_Pop_At(TSharedPtr<UHHM_ItemData>& _pItemData_Return, int32 _index_Horizontal, int32 _index_Vertical);
+
+	bool	Item_Remove(TSharedPtr<UHHM_ItemData>& _pItemData_Remove);
 
 
 
 	FIntPoint	Convert_IndexToIndexPoint(int32 _index);
+
+	int32		Convert_IndexPointToIndex(FIntPoint _indexPoint);
 
 	
 
@@ -70,10 +102,22 @@ protected:
 	// 아이템 삽입가능 공간 요청 (없으면 -1)
 	int32		Find_FreeRoom(int32 _size_Horizontal, int32 _size_Vertical);
 
-	bool		Check_IsValidIndex(int32 _index_Horizontal, int32 _index_Vertical);
+
+
 
 	int32		Find_ValidItemKey();
-	bool		Set_RoomOccupied(int32 _index_Horizontal, int32 _index_Vertical, int32 _size_Horizontal, int32 _size_Vertical, int32 _itemKey);
+
+
+
+	bool		Find_FirstSlot_ItemOccupied(FIntPoint& _indexPoint_Return, int32 _index_Item);
+
+
+
+	bool		Set_RoomOccupied(int32 _index_Horizontal, int32 _index_Vertical, int32 _size_Horizontal, int32 _size_Vertical, int32 _itemKey, FHHM_InventoryItemData* _inventoryItemData);
+
 	//bForceFree = true 일경우 입력된 공간이 인벤토리 밖을 포함하거나 슬롯의 아이템 키값이 다른경우 등의 예외상황에도 공간점유를 해제함.
 	void		Set_RoomFree(int32 _index_Horizontal, int32 _index_Vertical, int32 _size_Horizontal, int32 _size_Vertical, bool _bForceFree = false);
+
+	//search input indexpoint and if that slot is occupied, trace item. then free the room that item occupied and remove item from container.
+	//void		CleanUp_At(int32 _index_Horizontal, int32 _index_Vertical);
 };

@@ -13,6 +13,8 @@
 #include "Data/Item/ItemData/HHM_ItemData.h"
 #include "Header/Enum.h"
 
+#include "Data/Item/ItemData/HHM_ItemData.h"
+
 #include "LocalMap.generated.h"
 
 UCLASS()
@@ -73,7 +75,7 @@ private:
 	UPROPERTY()
 		TArray<FHHM_TileMovementInfo>	m_Arr_MovementData;*/
 	UPROPERTY()
-		FHHM_LocalMap_MapData			m_MapData;
+		FHHM_LocalMap_MapData			m_MapData;		//MapData Initialized on localmap manager while it creates local map
 	//TileMovementData Array
 
 //private:
@@ -186,6 +188,18 @@ private:
 #pragma endregion
 
 
+
+#pragma region Tile
+
+	//TArray<TSharedPtr<UHHM_ItemData>> m_Container_TileEntity;
+
+public:
+	bool	Get_TileEntity_At(TSharedPtr<AHHM_TileEntity>& _pTileEntity_Return, int32 _index_Horizontal, int32 _index_Vertical);
+
+public:
+	bool	Set_TileEntity_At(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<AHHM_TileEntity> _pTileEntity);
+	
+#pragma endregion
 
 #pragma region Rendering
 

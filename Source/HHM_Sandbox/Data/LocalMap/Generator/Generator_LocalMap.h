@@ -7,6 +7,7 @@
 
 #include "Header/Struct.h"
 #include "Header/Struct_Tile.h"
+#include "Header/Struct_LocalMap.h"
 
 #include "Generator_LocalMap.generated.h"
 
@@ -36,6 +37,6 @@ public:
 
 
 public:
-	static void Generate_DebugMap(TArray<FHHM_TileData>& mapData, const FHHM_MapInfo& mapInfo, const AHHM_Manager_Tile* pManager_Tile);
+	static void Generate_DebugMap(FHHM_LocalMap_MapData& _mapData, const FHHM_MapInfo& mapInfo, const AHHM_Manager_Tile* pManager_Tile);
 
 };

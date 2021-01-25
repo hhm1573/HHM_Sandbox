@@ -26,7 +26,21 @@ public:
 
 
 protected:
+	/*UPROPERTY()
+		FIntPoint	m_Index = FIntPoint::ZeroValue;*/
 	UPROPERTY()
-		FIntPoint	m_Index = FIntPoint::ZeroValue;
+		class ALocalMap*	m_pLocalMap = nullptr;
+	UPROPERTY()
+		int32				m_Index_Horizontal = -1;
+	UPROPERTY()
+		int32				m_Index_Vertical = -1;
+	UPROPERTY()
+		int32				m_Tile_ID = -1;
+	UPROPERTY()
+		int32				m_Tile_SubID = -1;
 
+
+
+public:
+	virtual bool Initialize_TileEntity(class AHHM_Tile* _pTile, class ALocalMap* _pLocalMap, int32 _index_Horizontal, int32 _index_Vertical);
 };

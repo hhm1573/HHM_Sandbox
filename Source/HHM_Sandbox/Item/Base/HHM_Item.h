@@ -27,6 +27,8 @@ protected:
 	UPROPERTY()
 		int32						m_ItemID = -1;		//Desired Item ID. Should be set by item self.
 	UPROPERTY()
+		int32						m_ItemSubID = 0;
+	UPROPERTY()
 		int32						m_ItemSize_Horizontal = 1;		//On Inventory
 	UPROPERTY()
 		int32						m_ItemSize_Vertical = 1;
@@ -49,6 +51,7 @@ protected:
 
 public:
 	int32					Get_ItemID() { return m_ItemID; }
+	int32					Get_ItemSubID() { return m_ItemSubID; }
 	FIntPoint				Get_ItemSize() { return FIntPoint(m_ItemSize_Horizontal, m_ItemSize_Vertical); }
 	const UHHM_ItemData*	Get_DefaultItemData() const { return m_DefaultItemData; }
 

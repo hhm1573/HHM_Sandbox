@@ -11,7 +11,7 @@
 
 
 UHHM_Item::UHHM_Item(void) {
-	m_DefaultItemData = NewObject<UHHM_ItemData>(this);
+	m_DefaultItemData = CreateDefaultSubobject<UHHM_ItemData>(TEXT("DefaultItemData"));
 
 	
 
@@ -43,7 +43,7 @@ bool UHHM_Item::Create_NewItemData(TSharedPtr<UHHM_ItemData>& _pReturn)
 	}
 
 	_pReturn->Set_ID(m_ItemID);
-	_pReturn->Set_SubID(0);
+	_pReturn->Set_SubID(m_ItemSubID);
 	_pReturn->Set_Item(this);
 
 	return true;

@@ -7,6 +7,8 @@
 
 #include "Header/Enum_LocalMap.h"
 
+#include "TileEntity/HHM_TileEntity.h"
+
 #include "Struct_LocalMap.generated.h"
 
 USTRUCT(BlueprintType)
@@ -64,12 +66,14 @@ struct FHHM_LocalMap_MapData
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MapData")
-		TArray<FHHM_TileData>			Container_TileData;
+		TArray<FHHM_TileData>				Container_TileData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MapData")
-		TArray<FHHM_TileMovementInfo>	Container_TileMovementData;
+		TArray<FHHM_TileMovementInfo>		Container_TileMovementData;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MapData")
+		TArray<TSharedPtr<AHHM_TileEntity>>	Container_TileEntity;
 
 public:
-	void Empty(void) { Container_TileData.Empty(); Container_TileMovementData.Empty(); }
+	void Empty(void) { Container_TileData.Empty(); Container_TileMovementData.Empty(); Container_TileEntity.Empty(); }
 };
 
 

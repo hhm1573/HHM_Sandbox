@@ -31,79 +31,80 @@ void AGenerator_LocalMap::Tick(float DeltaTime)
 
 
 
-void AGenerator_LocalMap::Generate_DebugMap(TArray<FHHM_TileData>& mapData, const FHHM_MapInfo& mapInfo, const AHHM_Manager_Tile* pManager_Tile) {
+void AGenerator_LocalMap::Generate_DebugMap(FHHM_LocalMap_MapData& _mapData, const FHHM_MapInfo& mapInfo, const AHHM_Manager_Tile* pManager_Tile) {
 	FHHM_TileData TileInfo_Air = pManager_Tile->Get_DefaultTileInfo_ByID(0);
 	FHHM_TileData TileInfo_Floor = pManager_Tile->Get_DefaultTileInfo_ByID(1);
 
 	int32 Num_TotalTile = mapInfo.MapSize_Horizontal * mapInfo.MapSize_Vertical;
-	mapData.Init(TileInfo_Air, Num_TotalTile);
+	_mapData.Container_TileData.Init(TileInfo_Air, Num_TotalTile);
+	_mapData.Container_TileEntity.Init(nullptr, Num_TotalTile);
 
 	//Generate Floor
 	for (int32 CurIndex = 0; CurIndex < mapInfo.MapSize_Horizontal; ++CurIndex) {
-		mapData[CurIndex] = TileInfo_Floor;
+		_mapData.Container_TileData[CurIndex] = TileInfo_Floor;
 	}
 
 	//mapData[1 + mapInfo.MapSize_Horizontal] = TileInfo_Floor;
 	if (mapInfo.MapSize_Vertical >= 1) {
 		for (int32 CurIndex = 1; CurIndex < mapInfo.MapSize_Horizontal; CurIndex += 2) {
-			mapData[CurIndex + mapInfo.MapSize_Horizontal] = TileInfo_Floor;
+			_mapData.Container_TileData[CurIndex + mapInfo.MapSize_Horizontal] = TileInfo_Floor;
 		}
 	}
 
 	if (mapInfo.MapSize_Vertical >= 3) {
 		for (int32 CurIndex = 2; CurIndex < mapInfo.MapSize_Horizontal; CurIndex += 4) {
-			mapData[CurIndex + (mapInfo.MapSize_Horizontal * 3)] = TileInfo_Floor;
-			mapData[CurIndex + (mapInfo.MapSize_Horizontal * 3) + 1] = TileInfo_Floor;
-			mapData[CurIndex + (mapInfo.MapSize_Horizontal * 3) + 2] = TileInfo_Floor;
+			_mapData.Container_TileData[CurIndex + (mapInfo.MapSize_Horizontal * 3)] = TileInfo_Floor;
+			_mapData.Container_TileData[CurIndex + (mapInfo.MapSize_Horizontal * 3) + 1] = TileInfo_Floor;
+			_mapData.Container_TileData[CurIndex + (mapInfo.MapSize_Horizontal * 3) + 2] = TileInfo_Floor;
 		}
 	}
 
 	if (mapInfo.MapSize_Vertical >= 6) {
 		for (int32 CurIndex = 0; CurIndex < mapInfo.MapSize_Horizontal; ++CurIndex) {
-			mapData[CurIndex + (mapInfo.MapSize_Horizontal * 6)] = TileInfo_Floor;
+			_mapData.Container_TileData[CurIndex + (mapInfo.MapSize_Horizontal * 6)] = TileInfo_Floor;
 		}
 	}
 
 	if (mapInfo.MapSize_Vertical >= 9 && mapInfo.MapSize_Horizontal >= 9) {
-		mapData[2 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
-		mapData[3 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
-		mapData[4 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[2 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[3 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[4 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
 		
-		mapData[7 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
-		mapData[8 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
-		mapData[9 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
-		mapData[7 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
-		mapData[8 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
-		mapData[9 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
+		_mapData.Container_TileData[7 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[8 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[9 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[7 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
+		_mapData.Container_TileData[8 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
+		_mapData.Container_TileData[9 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
 
-		mapData[12 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
-		mapData[13 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
-		mapData[14 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
-		mapData[12 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
-		mapData[13 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
-		mapData[14 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
-		mapData[12 + (mapInfo.MapSize_Horizontal * 9)] = TileInfo_Floor;
-		mapData[13 + (mapInfo.MapSize_Horizontal * 9)] = TileInfo_Floor;
-		mapData[14 + (mapInfo.MapSize_Horizontal * 9)] = TileInfo_Floor;
+		_mapData.Container_TileData[12 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[13 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[14 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[12 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
+		_mapData.Container_TileData[13 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
+		_mapData.Container_TileData[14 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
+		_mapData.Container_TileData[12 + (mapInfo.MapSize_Horizontal * 9)] = TileInfo_Floor;
+		_mapData.Container_TileData[13 + (mapInfo.MapSize_Horizontal * 9)] = TileInfo_Floor;
+		_mapData.Container_TileData[14 + (mapInfo.MapSize_Horizontal * 9)] = TileInfo_Floor;
 		//mapData[14 + (mapInfo.MapSize_Horizontal * 10)] = TileInfo_Floor;
 
-		mapData[16 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
-		mapData[17 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
-		mapData[18 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[16 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[17 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
+		_mapData.Container_TileData[18 + (mapInfo.MapSize_Horizontal * 7)] = TileInfo_Floor;
 	}
 
-	mapData[23 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
-	mapData[24 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
-	mapData[25 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
-	mapData[26 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
+	_mapData.Container_TileData[23 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
+	_mapData.Container_TileData[24 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
+	_mapData.Container_TileData[25 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
+	_mapData.Container_TileData[26 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
 	//mapData[27 + (mapInfo.MapSize_Horizontal * 8)] = TileInfo_Floor;
-	mapData[207] = TileInfo_Air;
+	_mapData.Container_TileData[207] = TileInfo_Air;
 
 
 
-	mapData[93] = TileInfo_Air;
-	mapData[92] = TileInfo_Air;
-	mapData[90] = TileInfo_Floor;
+	_mapData.Container_TileData[93] = TileInfo_Air;
+	_mapData.Container_TileData[92] = TileInfo_Air;
+	_mapData.Container_TileData[90] = TileInfo_Floor;
 
 	//mapData[117] = TileInfo_Air;
 	//mapData[87] = TileInfo_Floor;

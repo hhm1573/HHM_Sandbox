@@ -24,7 +24,7 @@
 #include "Entity/HHM_Entity.h"
 
 #include "Manager/Item/HHM_Manager_Item.h"
-#include "Data/Item/HHM_Item.h"
+#include "Item/Base/HHM_Item.h"
 #include "Actor/ItemActor/HHM_ItemActor.h"
 #include "Materials/MaterialInterface.h"
 
@@ -328,7 +328,7 @@ void ALocalMap::Set_Tile_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, 
 	const int32 Index_Input = _index_Vertical * m_MapInfo.MapSize_Horizontal + _index_Horizontal;
 	m_MapData.Container_TileData[Index_Input] = _tileData;
 
-	//Save Location data
+	//Save Location data		// HHM Note : Place Tile 함수에서도 설정을 하긴 함.
 	m_MapData.Container_TileData[Index_Input].Index_Horizontal = _index_Horizontal;
 	m_MapData.Container_TileData[Index_Input].Index_Vertical = _index_Vertical;
 
@@ -367,7 +367,7 @@ bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AEnti
 	}
 
 	// This is actual tile that will be placed
-	FHHM_TileData TileData_Place = _tileData.Tile->On_Placed(this, _tileData, _pPlacer, m_MapInfo);
+	FHHM_TileData TileData_Place = _tileData.Tile->On_Placed(this, _tileData, _pPlacer);
 
 	ALocalMap::Set_Tile_At_Pos(_index_Horizontal, _index_Vertical, TileData_Place);
 
@@ -396,8 +396,12 @@ bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AEnti
 	}
 
 	FHHM_TileData TileData_Default = m_pManager_Tile->Get_DefaultTileInfo_ByID(_tile_ID);
+	//Set Location Data
+	FHHM_TileData TileData_LocationSet = TileData_Default;
+	TileData_LocationSet.Index_Horizontal = _index_Horizontal;
+	TileData_LocationSet.Index_Vertical = _index_Vertical;
 
-	FHHM_TileData TileData_Place = TileData_Default.Tile->On_Placed(this, TileData_Default, _pPlacer, m_MapInfo);
+	FHHM_TileData TileData_Place = TileData_Default.Tile->On_Placed(this, TileData_LocationSet, _pPlacer);
 
 	ALocalMap::Set_Tile_At_Pos(_index_Horizontal, _index_Vertical, TileData_Place);
 
@@ -452,12 +456,12 @@ bool ALocalMap::Damage_Tile(int32 damage, EHHM_DamageType damage_Type, class APa
 	
 	//Call tile's On_Damaged function and get "after HP"
 	const int32 TileHP_Before = m_MapData.Container_TileData[index_Tile].HP;
-	int32 TileHP_After = m_MapData.Container_TileData[index_Tile].Tile->On_Damaged(this, m_MapData.Container_TileData[index_Tile], damage, damage_Type, attack_Pawn, m_MapInfo);
+	int32 TileHP_After = m_MapData.Container_TileData[index_Tile].Tile->On_Damaged(this, m_MapData.Container_TileData[index_Tile], damage, damage_Type, attack_Pawn);
 
 	//if "after HP" is lower than zero, call tile's destruction function and get after tile info and replace it
 	if (TileHP_After <= 0) {
 		//Call Damaged Tile's Destruct function and get result tile info
-		FHHM_TileData	TileInfo_After = m_MapData.Container_TileData[index_Tile].Tile->On_Destruct(this, m_MapData.Container_TileData[index_Tile], m_MapInfo);
+		FHHM_TileData	TileInfo_After = m_MapData.Container_TileData[index_Tile].Tile->On_Destruct(this, m_MapData.Container_TileData[index_Tile]);
 
 		//Set location information of result tile info
 		TileInfo_After.Index_Horizontal = index_Horizontal;
@@ -838,6 +842,49 @@ void ALocalMap::Translate_TileInfo_To_MovementData(const FHHM_TileData& tileInfo
 }
 
 
+
+#pragma region Tile
+
+bool ALocalMap::Get_TileEntity_At(TSharedPtr<AHHM_TileEntity>& _pTileEntity_Return, int32 _index_Horizontal, int32 _index_Vertical)
+{
+	bool IsValid_Index = Check_IsValidPos(_index_Horizontal, _index_Vertical);
+	if (IsValid_Index == false) {
+		//Exception Input IndexLocation Is invalid
+		return false;
+	}
+
+	int32 Index_Target = AHHM_Manager_Math_Grid::Index_Combine(_index_Horizontal, _index_Vertical, m_MapInfo);
+	int32 Num_TileEntity = m_MapData.Container_TileEntity.Num();
+	if (Index_Target < 0 || Index_Target >= Num_TileEntity) {
+		//Exception Cant Access Target TileEntity data
+		return false;
+	}
+
+	_pTileEntity_Return = m_MapData.Container_TileEntity[Index_Target];
+	return true;
+}
+
+bool ALocalMap::Set_TileEntity_At(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<AHHM_TileEntity> _pTileEntity)
+{
+	bool IsValid_Index = Check_IsValidPos(_index_Horizontal, _index_Vertical);
+	if (IsValid_Index == false) {
+		//Exception Input IndexPos Is invalid
+		return false;
+	}
+
+	int32 Index_Target = AHHM_Manager_Math_Grid::Index_Combine(_index_Horizontal, _index_Vertical, m_MapInfo);
+	int32 Num_TileEntity = m_MapData.Container_TileEntity.Num();
+	if (Index_Target < 0 || Index_Target >= Num_TileEntity) {
+		//Exception Cant access to target index's tileentity data
+		return false;
+	}
+
+	m_MapData.Container_TileEntity[Index_Target] = _pTileEntity;
+
+	return true;
+}
+
+#pragma endregion
 
 #pragma region Rendering
 
