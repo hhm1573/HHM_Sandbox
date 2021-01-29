@@ -19,7 +19,6 @@ AHHM_TileEntity_ItemContainer::AHHM_TileEntity_ItemContainer() {
 	if (m_pComponent_Inventory == nullptr) {
 		m_pComponent_Inventory = CreateDefaultSubobject<UHHM_Component_Inventory>(TEXT("HHM_InventoryComponent"));
 	}
-
 }
 
 void AHHM_TileEntity_ItemContainer::BeginPlay()

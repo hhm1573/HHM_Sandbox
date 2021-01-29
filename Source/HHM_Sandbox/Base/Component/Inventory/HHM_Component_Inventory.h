@@ -17,6 +17,9 @@
 
 
 
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHHM_Delegate_InventoryUpdate, const TMap<int32, FHHM_InventoryItemData>&, ItemContainer);
+DECLARE_EVENT_OneParam(UHHM_Component_Inventory, FHHM_Event_InventoryUpdate, int32);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HHM_SANDBOX_API UHHM_Component_Inventory : public UActorComponent
 {
@@ -34,6 +37,10 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	FHHM_Event_InventoryUpdate& On_InventoryUpdate() { return Event_InventoryUpdate; }
+
+	FHHM_Event_InventoryUpdate Event_InventoryUpdate;
+
 
 
 protected:
@@ -41,6 +48,7 @@ protected:
 	UPROPERTY()
 		TArray<FHHM_InventorySlotData_Row>		m_InventorySlotData;
 	// 아이템 데이터
+	UPROPERTY()
 		TMap<int32, FHHM_InventoryItemData>		m_Container_Item;
 	// 인벤토리 사이즈 변수
 	UPROPERTY()
