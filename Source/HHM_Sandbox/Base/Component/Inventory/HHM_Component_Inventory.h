@@ -18,7 +18,7 @@
 
 
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHHM_Delegate_InventoryUpdate, const TMap<int32, FHHM_InventoryItemData>&, ItemContainer);
-DECLARE_EVENT_OneParam(UHHM_Component_Inventory, FHHM_Event_InventoryUpdate, int32);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHHM_Delegate_InventoryUpdate, int32, Container_ItemData);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HHM_SANDBOX_API UHHM_Component_Inventory : public UActorComponent
@@ -37,9 +37,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	FHHM_Event_InventoryUpdate& On_InventoryUpdate() { return Event_InventoryUpdate; }
-
-	FHHM_Event_InventoryUpdate Event_InventoryUpdate;
+	UPROPERTY(BlueprintAssignable, Category = "HHM_Event")
+		FHHM_Delegate_InventoryUpdate OnInventoryUpdate;
 
 
 
@@ -49,7 +48,7 @@ protected:
 		TArray<FHHM_InventorySlotData_Row>		m_InventorySlotData;
 	// 아이템 데이터
 	UPROPERTY()
-		TMap<int32, FHHM_InventoryItemData>		m_Container_Item;
+		TMap<int32, FHHM_InventoryItemData>		m_Container_ItemData;
 	// 인벤토리 사이즈 변수
 	UPROPERTY()
 		int32									m_InventorySize_Horizontal = 0;
@@ -63,38 +62,38 @@ public:
 	bool	Initialize_Inventory(int32 _size_Horizontal, int32 _size_Vertical);
 
 public:
-	TSharedPtr<UHHM_ItemData>	Get_ItemPtr(int32 _index_Horizontal, int32 _index_Vertical);
+	UHHM_ItemData*							Get_ItemDataPtr(int32 _index_Horizontal, int32 _index_Vertical);
 
-	TMap<int32, FHHM_InventoryItemData>&	Get_ItemContainer_Ref() { return m_Container_Item; }
+	TMap<int32, FHHM_InventoryItemData>&	Get_ItemDataContainer_Ref() { return m_Container_ItemData; }
 
 	FIntPoint								Get_InventorySize() { return FIntPoint(m_InventorySize_Horizontal, m_InventorySize_Vertical); }
 
 public:
 	bool	Check_IsValidIndex(int32 _index_Horizontal, int32 _index_Vertical);
 
-	bool	Check_IsItemSwappable(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<UHHM_ItemData>& _pItemData_Swap);
+	bool	Check_IsItemSwappable(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData_Swap);
 
-	bool	Check_IsItemInsertable(TSharedPtr<UHHM_ItemData>& _pItemData);
+	bool	Check_IsItemInsertable(UHHM_ItemData*& _pItemData);
 
-	bool	Check_IsItemInsertableAt(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<UHHM_ItemData>& _pItemData_Insert);
+	bool	Check_IsItemInsertableAt(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData_Insert);
 
 
 	
 public:
 	// 아이템 삽입삭제 이동등의 인터페이스
-	bool	Item_Insert_At(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<UHHM_ItemData>& _pItemData);
+	bool	Item_Insert_At(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData);
 	
 	/*
 	* Return - 1=General Error / 2=Inventory Full
 	*/
-	int32	Item_Insert(TSharedPtr<UHHM_ItemData>& _pItemData);
+	int32	Item_Insert(UHHM_ItemData*& _pItemData);
 
 	/*
 	* _pItemData_Return - nullptr is fine. no need to make new object to get return data
 	*/
-	bool	Item_Pop_At(TSharedPtr<UHHM_ItemData>& _pItemData_Return, int32 _index_Horizontal, int32 _index_Vertical);
+	bool	Item_Pop_At(UHHM_ItemData*& _pItemData_Return, int32 _index_Horizontal, int32 _index_Vertical);
 
-	bool	Item_Remove(TSharedPtr<UHHM_ItemData>& _pItemData_Remove);
+	bool	Item_Remove(UHHM_ItemData*& _pItemData_Remove);
 
 
 

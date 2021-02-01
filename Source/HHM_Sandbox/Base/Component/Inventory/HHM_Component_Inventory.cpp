@@ -78,7 +78,7 @@ bool UHHM_Component_Inventory::Initialize_Inventory(int32 _size_Horizontal, int3
 
 
 
-TSharedPtr<UHHM_ItemData> UHHM_Component_Inventory::Get_ItemPtr(int32 _index_Horizontal, int32 _index_Vertical)
+UHHM_ItemData* UHHM_Component_Inventory::Get_ItemDataPtr(int32 _index_Horizontal, int32 _index_Vertical)
 {
 	bool IsValidIndex = Check_IsValidIndex(_index_Horizontal, _index_Vertical);
 	if (IsValidIndex == false) {
@@ -92,13 +92,13 @@ TSharedPtr<UHHM_ItemData> UHHM_Component_Inventory::Get_ItemPtr(int32 _index_Hor
 	}
 
 	int32 Index_Item = m_InventorySlotData[_index_Vertical].SlotDataRow[_index_Horizontal].ItemID_Occupied;
-	bool IsItemExisting = m_Container_Item.Contains(Index_Item);
+	bool IsItemExisting = m_Container_ItemData.Contains(Index_Item);
 	if (IsItemExisting == false) {
 		//Exception Inventory slot set as occupied but item key is invalid
 		return nullptr;
 	}
 
-	return m_Container_Item[Index_Item].pItem;
+	return m_Container_ItemData[Index_Item].pItemData;
 }
 
 
@@ -109,7 +109,7 @@ bool UHHM_Component_Inventory::Check_IsValidIndex(int32 _index_Horizontal, int32
 		|| _index_Vertical < 0 || _index_Vertical >= m_InventorySize_Vertical ? false : true;
 }
 
-bool UHHM_Component_Inventory::Check_IsItemSwappable(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<UHHM_ItemData>& _pItemData_Swap)
+bool UHHM_Component_Inventory::Check_IsItemSwappable(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData_Swap)
 {
 	if (_pItemData_Swap == nullptr) {
 		//Exception Input ItemData Is Nullptr
@@ -127,18 +127,18 @@ bool UHHM_Component_Inventory::Check_IsItemSwappable(int32 _index_Horizontal, in
 	}
 
 	int32 ItemKey_TargetSlot = m_InventorySlotData[_index_Vertical].SlotDataRow[_index_Horizontal].ItemID_Occupied;
-	bool IsContainItem = m_Container_Item.Contains(ItemKey_TargetSlot);
+	bool IsContainItem = m_Container_ItemData.Contains(ItemKey_TargetSlot);
 	if (IsContainItem == false) {
 		//Exception ItemData Missing
 		return false;
 	}
 
-	if (m_Container_Item[ItemKey_TargetSlot].pItem == nullptr) {
+	if (m_Container_ItemData[ItemKey_TargetSlot].pItemData == nullptr) {
 		//Exception NULL ItemData Inserted Warning
 		return false;
 	}
 
-	int32 Num_Slot_ItemOccupying = m_Container_Item[ItemKey_TargetSlot].Container_Index_Occupied.Num();
+	int32 Num_Slot_ItemOccupying = m_Container_ItemData[ItemKey_TargetSlot].Container_Index_Occupied.Num();
 	if (Num_Slot_ItemOccupying <= 0) {
 		//Exception No Occupying Index Data At InventoryItemData
 		return false;
@@ -147,9 +147,9 @@ bool UHHM_Component_Inventory::Check_IsItemSwappable(int32 _index_Horizontal, in
 
 
 	//Get Lowest Index item currently occupying
-	int32 Index_Occupying_Lowest = m_Container_Item[ItemKey_TargetSlot].Container_Index_Occupied[0];
+	int32 Index_Occupying_Lowest = m_Container_ItemData[ItemKey_TargetSlot].Container_Index_Occupied[0];
 	for (int32 index = 0; index < Num_Slot_ItemOccupying; ++index) {
-		int32 Index_Compare = m_Container_Item[ItemKey_TargetSlot].Container_Index_Occupied[index];
+		int32 Index_Compare = m_Container_ItemData[ItemKey_TargetSlot].Container_Index_Occupied[index];
 		if (Index_Occupying_Lowest > Index_Compare) {
 			Index_Occupying_Lowest = Index_Compare;
 		}
@@ -165,7 +165,7 @@ bool UHHM_Component_Inventory::Check_IsItemSwappable(int32 _index_Horizontal, in
 	
 
 	//Check Is Item Fit in remaining space
-	FIntPoint ItemSize = m_Container_Item[ItemKey_TargetSlot].pItem->Get_Item()->Get_ItemSize();
+	FIntPoint ItemSize = m_Container_ItemData[ItemKey_TargetSlot].pItemData->Get_Item()->Get_ItemSize();
 	FIntPoint IndexPoint_Occupying_RightBottom = FIntPoint(IndexPoint_Occupying_LeftTop.X + ItemSize.X - 1, IndexPoint_Occupying_LeftTop.Y + ItemSize.Y - 1);
 	FIntPoint ItemSize_Source = _pItemData_Swap->Get_Item()->Get_ItemSize();
 	FIntPoint IndexPoint_Source_RightBottom = FIntPoint(_index_Horizontal + ItemSize_Source.X - 1, _index_Vertical + ItemSize_Source.Y - 1);
@@ -177,7 +177,7 @@ bool UHHM_Component_Inventory::Check_IsItemSwappable(int32 _index_Horizontal, in
 	return true;
 }
 
-bool UHHM_Component_Inventory::Check_IsItemInsertable(TSharedPtr<UHHM_ItemData>& _pItemData)
+bool UHHM_Component_Inventory::Check_IsItemInsertable(UHHM_ItemData*& _pItemData)
 {
 	if (_pItemData == nullptr) {
 		//Exception input item is nullptr
@@ -203,7 +203,7 @@ bool UHHM_Component_Inventory::Check_IsItemInsertable(TSharedPtr<UHHM_ItemData>&
 	return true;
 }
 
-bool UHHM_Component_Inventory::Check_IsItemInsertableAt(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<UHHM_ItemData>& _pItemData_Insert)
+bool UHHM_Component_Inventory::Check_IsItemInsertableAt(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData_Insert)
 {
 	if (_pItemData_Insert == nullptr) {
 		return false;
@@ -227,7 +227,7 @@ bool UHHM_Component_Inventory::Check_IsItemInsertableAt(int32 _index_Horizontal,
 
 
 
-bool UHHM_Component_Inventory::Item_Insert_At(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<UHHM_ItemData>& _pItemData)
+bool UHHM_Component_Inventory::Item_Insert_At(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData)
 {
 	if (_pItemData == nullptr) {
 		//Exception no item
@@ -264,7 +264,7 @@ bool UHHM_Component_Inventory::Item_Insert_At(int32 _index_Horizontal, int32 _in
 		return false;
 	}
 
-	bool IsKeyOccupied = m_Container_Item.Contains(ValidItemKey);
+	bool IsKeyOccupied = m_Container_ItemData.Contains(ValidItemKey);
 	if (IsKeyOccupied == true) {
 		//Exception Internal structure error if it happens fix Find_ValidItemKey Func
 		return false;
@@ -279,12 +279,12 @@ bool UHHM_Component_Inventory::Item_Insert_At(int32 _index_Horizontal, int32 _in
 		return false;
 	}
 
-	m_Container_Item.Add(ValidItemKey, InventoryItemData);
+	m_Container_ItemData.Add(ValidItemKey, InventoryItemData);
 
 	return true;
 }
 
-int32 UHHM_Component_Inventory::Item_Insert(TSharedPtr<UHHM_ItemData>& _pItemData)
+int32 UHHM_Component_Inventory::Item_Insert(UHHM_ItemData*& _pItemData)
 {
 	if (_pItemData == nullptr) {
 		//Exception Input Item Is Nullptr
@@ -316,7 +316,7 @@ int32 UHHM_Component_Inventory::Item_Insert(TSharedPtr<UHHM_ItemData>& _pItemDat
 		return -1;
 	}
 
-	bool IsKeyOccupied = m_Container_Item.Contains(ValidItemKey);
+	bool IsKeyOccupied = m_Container_ItemData.Contains(ValidItemKey);
 	if (IsKeyOccupied == true) {
 		//Exception internal structure error
 		return -1;
@@ -335,14 +335,14 @@ int32 UHHM_Component_Inventory::Item_Insert(TSharedPtr<UHHM_ItemData>& _pItemDat
 		return -1;
 	}
 
-	m_Container_Item.Add(ValidItemKey, InventoryItemData);
+	m_Container_ItemData.Add(ValidItemKey, InventoryItemData);
 
 	return Index_Found;
 }
 
 
 
-bool UHHM_Component_Inventory::Item_Pop_At(TSharedPtr<UHHM_ItemData>& _pItemData_Return, int32 _index_Horizontal, int32 _index_Vertical)
+bool UHHM_Component_Inventory::Item_Pop_At(UHHM_ItemData*& _pItemData_Return, int32 _index_Horizontal, int32 _index_Vertical)
 {
 	bool IsValidIndex = Check_IsValidIndex(_index_Horizontal, _index_Vertical);
 	if (IsValidIndex == false) {
@@ -356,13 +356,13 @@ bool UHHM_Component_Inventory::Item_Pop_At(TSharedPtr<UHHM_ItemData>& _pItemData
 	}
 
 	int32 Index_Item = m_InventorySlotData[_index_Vertical].SlotDataRow[_index_Horizontal].ItemID_Occupied;
-	bool IsItemExist = m_Container_Item.Contains(Index_Item);
+	bool IsItemExist = m_Container_ItemData.Contains(Index_Item);
 	if (IsItemExist == false) {
 		//Exception [Warning] 슬롯을 점유하고 있는 아이템이 존재하지 않습니다. 아이템을 삭제하는 과정에서 공간점유를 해제하는 부분에 문제가 생겼을 가능성이 높습니다.
 		return false;
 	}
 
-	int32 Num_Occupied = m_Container_Item[Index_Item].Container_Index_Occupied.Num();
+	int32 Num_Occupied = m_Container_ItemData[Index_Item].Container_Index_Occupied.Num();
 	if (Num_Occupied <= 0) {
 		//Exception [Warning] 어떠한 슬롯도 차지하고있지 않는 아이템이 존재합니다. 찌꺼기 아이템일 확률이 높습니다.
 		return false;
@@ -371,7 +371,7 @@ bool UHHM_Component_Inventory::Item_Pop_At(TSharedPtr<UHHM_ItemData>& _pItemData
 
 
 	for (int32 index = 0; index < Num_Occupied; ++index) {
-		FIntPoint IndexPoint_TobeFree = Convert_IndexToIndexPoint(m_Container_Item[Index_Item].Container_Index_Occupied[index]);
+		FIntPoint IndexPoint_TobeFree = Convert_IndexToIndexPoint(m_Container_ItemData[Index_Item].Container_Index_Occupied[index]);
 		bool IsValid_Index_ToBeFree = Check_IsValidIndex(IndexPoint_TobeFree.X, IndexPoint_TobeFree.Y);
 		if (IsValid_Index_ToBeFree == false) {
 			//Exception [Warning] Item occupied invalid index
@@ -382,15 +382,15 @@ bool UHHM_Component_Inventory::Item_Pop_At(TSharedPtr<UHHM_ItemData>& _pItemData
 
 
 
-	_pItemData_Return = m_Container_Item[Index_Item].pItem;
-	m_Container_Item.Remove(Index_Item);
+	_pItemData_Return = m_Container_ItemData[Index_Item].pItemData;
+	m_Container_ItemData.Remove(Index_Item);
 
 	
 
 	return true;
 }
 
-bool UHHM_Component_Inventory::Item_Remove(TSharedPtr<UHHM_ItemData>& _pItemData_Remove)
+bool UHHM_Component_Inventory::Item_Remove(UHHM_ItemData*& _pItemData_Remove)
 {
 	if (_pItemData_Remove == nullptr) {
 		//Exception input pointer is nullptr
@@ -400,8 +400,8 @@ bool UHHM_Component_Inventory::Item_Remove(TSharedPtr<UHHM_ItemData>& _pItemData
 
 
 	int32 Index_Remove = -1;
-	for (auto& pair : m_Container_Item) {
-		if (_pItemData_Remove == pair.Value.pItem) {
+	for (auto& pair : m_Container_ItemData) {
+		if (_pItemData_Remove == pair.Value.pItemData) {
 			Index_Remove = pair.Key;
 			break;
 		}
@@ -414,14 +414,14 @@ bool UHHM_Component_Inventory::Item_Remove(TSharedPtr<UHHM_ItemData>& _pItemData
 
 
 	//Begin CleanUp Process
-	int32 Num_ItemOccupying = m_Container_Item[Index_Remove].Container_Index_Occupied.Num();
+	int32 Num_ItemOccupying = m_Container_ItemData[Index_Remove].Container_Index_Occupied.Num();
 	if (Num_ItemOccupying <= 0) {
 		//Exception [Warning] Item that not occupying any slot is on container. this item may a garbage item.
 		return false;
 	}
 
 	for (int32 index = 0; index < Num_ItemOccupying; ++index) {
-		FIntPoint IndexPoint_ToBeFree = Convert_IndexToIndexPoint(m_Container_Item[Index_Remove].Container_Index_Occupied[index]);
+		FIntPoint IndexPoint_ToBeFree = Convert_IndexToIndexPoint(m_Container_ItemData[Index_Remove].Container_Index_Occupied[index]);
 		bool IsValid_Index_ToBeFree = Check_IsValidIndex(IndexPoint_ToBeFree.X, IndexPoint_ToBeFree.Y);
 		if (IsValid_Index_ToBeFree == false) {
 			//Exception [Warning] Item Occupying Invalid Slot Index.
@@ -432,7 +432,7 @@ bool UHHM_Component_Inventory::Item_Remove(TSharedPtr<UHHM_ItemData>& _pItemData
 
 
 
-	m_Container_Item.Remove(Index_Remove);
+	m_Container_ItemData.Remove(Index_Remove);
 
 	
 
@@ -501,7 +501,7 @@ int32 UHHM_Component_Inventory::Find_ValidItemKey()
 {
 	int32 Index_Searching = 0;
 	while (Index_Searching < 5000) {
-		bool Is_KeyOccupied = m_Container_Item.Contains(Index_Searching);
+		bool Is_KeyOccupied = m_Container_ItemData.Contains(Index_Searching);
 		if (Is_KeyOccupied == false) {
 			return Index_Searching;
 		}
@@ -515,21 +515,21 @@ int32 UHHM_Component_Inventory::Find_ValidItemKey()
 
 bool UHHM_Component_Inventory::Find_FirstSlot_ItemOccupied(FIntPoint& _indexPoint_Return, int32 _index_Item)
 {
-	bool IsItemExist = m_Container_Item.Contains(_index_Item);
+	bool IsItemExist = m_Container_ItemData.Contains(_index_Item);
 	if (IsItemExist == false) {
 		//Exception Invalid Item Key
 		return false;
 	}
 
-	int32 Num_ItemOccupied = m_Container_Item[_index_Item].Container_Index_Occupied.Num();
+	int32 Num_ItemOccupied = m_Container_ItemData[_index_Item].Container_Index_Occupied.Num();
 	if (Num_ItemOccupied <= 0) {
 		//Exception Warning Item did not occupied any slot. how it even added on inventory? 아무슬롯에도 할당되지않은 찌꺼기 아이템일 확률이 높다.
 		return false;
 	}
 
-	int32 Index_SlotOccupied_Lowest = m_Container_Item[_index_Item].Container_Index_Occupied[0];
+	int32 Index_SlotOccupied_Lowest = m_Container_ItemData[_index_Item].Container_Index_Occupied[0];
 	for (int32 index = 1; index < Num_ItemOccupied; ++index) {
-		int32 Index_SlotOccupied_Compare = m_Container_Item[_index_Item].Container_Index_Occupied[index];
+		int32 Index_SlotOccupied_Compare = m_Container_ItemData[_index_Item].Container_Index_Occupied[index];
 		if (Index_SlotOccupied_Lowest > Index_SlotOccupied_Compare) {
 			Index_SlotOccupied_Lowest = Index_SlotOccupied_Compare;
 		}
@@ -545,7 +545,7 @@ bool UHHM_Component_Inventory::Find_FirstSlot_ItemOccupied(FIntPoint& _indexPoin
 
 bool UHHM_Component_Inventory::Set_RoomOccupied(int32 _index_Horizontal, int32 _index_Vertical, int32 _size_Horizontal, int32 _size_Vertical, int32 _itemKey, FHHM_InventoryItemData* _inventoryItemData)
 {
-	bool IsValidKey = m_Container_Item.Contains(_itemKey);							// HHM Note : 변수체크 부분이 중복될 수 있음.
+	bool IsValidKey = m_Container_ItemData.Contains(_itemKey);							// HHM Note : 변수체크 부분이 중복될 수 있음.
 	if (IsValidKey == false) {
 		return false;
 	}

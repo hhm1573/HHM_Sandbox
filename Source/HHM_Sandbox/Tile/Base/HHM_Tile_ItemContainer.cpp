@@ -66,7 +66,7 @@ FHHM_TileData AHHM_Tile_ItemContainer::On_Destruct(ALocalMap* _pLocalMap, FHHM_T
 
 
 
-bool AHHM_Tile_ItemContainer::On_Item_Add(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, TSharedPtr<UHHM_ItemData> _pItemData)
+bool AHHM_Tile_ItemContainer::On_Item_Add(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, UHHM_ItemData* _pItemData)
 {
 	if (_pItemData == nullptr) {
 		//Exception ItemData is nullptr
@@ -111,7 +111,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Add(ALocalMap* _pLocalMap, FHHM_TileData& 
 	return true;
 }
 
-bool AHHM_Tile_ItemContainer::On_Item_Add_At(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, TSharedPtr<UHHM_ItemData> _pItemData, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
+bool AHHM_Tile_ItemContainer::On_Item_Add_At(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, UHHM_ItemData* _pItemData, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
 {
 	if (_pItemData == nullptr) {
 		//Exception Input item is nullptr
@@ -162,7 +162,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Add_At(ALocalMap* _pLocalMap, FHHM_TileDat
 	return true;
 }
 
-bool AHHM_Tile_ItemContainer::On_Item_Remove(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, TSharedPtr<UHHM_ItemData> _pItemData_Remove)
+bool AHHM_Tile_ItemContainer::On_Item_Remove(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, UHHM_ItemData* _pItemData_Remove)
 {
 	if (_pItemData_Remove == nullptr) {
 		//Exception Input ItemData is nullptr
@@ -207,7 +207,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Remove(ALocalMap* _pLocalMap, FHHM_TileDat
 	return true;
 }
 
-bool AHHM_Tile_ItemContainer::On_Item_Remove_At(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, TSharedPtr<UHHM_ItemData>& _pItemData_Return, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
+bool AHHM_Tile_ItemContainer::On_Item_Remove_At(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, UHHM_ItemData*& _pItemData_Return, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
 {
 	bool IsValidIndex_Inventory = Check_InventoryIndex(_index_Inventory_Horizontal, _index_Inventory_Vertical);
 	if (IsValidIndex_Inventory == false) {
@@ -242,7 +242,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Remove_At(ALocalMap* _pLocalMap, FHHM_Tile
 
 
 
-	TSharedPtr<UHHM_ItemData> pItemData_Remove = nullptr;
+	UHHM_ItemData* pItemData_Remove = nullptr;
 	bool IsSucceed_ItemRemove = pTileEntity->Inventory_Item_Remove_At(pItemData_Remove, _pEntity, _index_Inventory_Horizontal, _index_Inventory_Vertical);
 	if (IsSucceed_ItemRemove == false) {
 		//Exception Remove item from inventory failed (pop item)
@@ -257,7 +257,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Remove_At(ALocalMap* _pLocalMap, FHHM_Tile
 	return true;
 }
 
-bool AHHM_Tile_ItemContainer::On_Item_Delete(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, TSharedPtr<UHHM_ItemData> _pItemData_Delete)
+bool AHHM_Tile_ItemContainer::On_Item_Delete(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, UHHM_ItemData* _pItemData_Delete)
 {
 	if (_pItemData_Delete == nullptr) {
 		//Exception Input Item Data is nullptr

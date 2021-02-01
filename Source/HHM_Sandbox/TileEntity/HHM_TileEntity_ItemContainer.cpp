@@ -50,7 +50,7 @@ bool AHHM_TileEntity_ItemContainer::Initialize_TileEntity(AHHM_Tile* _pTile, ALo
 	return true;
 }
 
-bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add(AEntity* _pEntity_Interact, TSharedPtr<UHHM_ItemData>& _pItemData)
+bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add(AEntity* _pEntity_Interact, UHHM_ItemData*& _pItemData)
 {
 	if (m_pComponent_Inventory == nullptr) {
 		//Exception [Warning] inventory component not created
@@ -87,7 +87,7 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add(AEntity* _pEntity_Interac
 	return true;
 }
 
-bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add_At(AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical, TSharedPtr<UHHM_ItemData>& _pItemData)
+bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add_At(AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical, UHHM_ItemData*& _pItemData)
 {
 	if (m_pComponent_Inventory == nullptr) {
 		//Exception Inventory Component not created
@@ -124,7 +124,7 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add_At(AEntity* _pEntity_Inte
 	return true;
 }
 
-bool AHHM_TileEntity_ItemContainer::Inventory_Item_Remove_At(TSharedPtr<UHHM_ItemData>& _pItemData_Return, AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
+bool AHHM_TileEntity_ItemContainer::Inventory_Item_Remove_At(UHHM_ItemData*& _pItemData_Return, AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
 {
 	if (m_pComponent_Inventory == nullptr) {
 		//Exception [Warning] Inventoy Component not created
@@ -140,7 +140,7 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Remove_At(TSharedPtr<UHHM_Ite
 		return false;
 	}
 
-	TSharedPtr<UHHM_ItemData> ItemData_Remove = nullptr;
+	UHHM_ItemData* ItemData_Remove = nullptr;
 	bool IsSucceed_RemoveItem = m_pComponent_Inventory->Item_Pop_At(ItemData_Remove, _index_Inventory_Horizontal, _index_Inventory_Vertical);
 	if (IsSucceed_RemoveItem == false) {
 		//Exception Remove item from inventory failed
@@ -151,7 +151,7 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Remove_At(TSharedPtr<UHHM_Ite
 	return true;
 }
 
-bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete(AEntity* _pEntity_Interact, TSharedPtr<UHHM_ItemData>& _pItemData_Delete)
+bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete(AEntity* _pEntity_Interact, UHHM_ItemData*& _pItemData_Delete)
 {
 	if (m_pComponent_Inventory == nullptr) {
 		//Exception Inventory component not created
@@ -184,8 +184,8 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete_At(AEntity* _pEntity_I
 		return false;
 	}
 
-	TSharedPtr<UHHM_ItemData> ItemData_Delete = nullptr;
-	ItemData_Delete = m_pComponent_Inventory->Get_ItemPtr(_index_Inventory_Horizontal, _index_Inventory_Vertical);
+	UHHM_ItemData* ItemData_Delete = nullptr;
+	ItemData_Delete = m_pComponent_Inventory->Get_ItemDataPtr(_index_Inventory_Horizontal, _index_Inventory_Vertical);
 	if (ItemData_Delete == nullptr) {
 		//Exception No item on target index
 		return false;
@@ -205,7 +205,7 @@ FIntPoint AHHM_TileEntity_ItemContainer::Get_InventorySize() const
 	return m_pComponent_Inventory == nullptr ? FIntPoint(-1, -1) : m_pComponent_Inventory->Get_InventorySize();
 }
 
-bool AHHM_TileEntity_ItemContainer::Check_InventoryHasRoomForItem(TSharedPtr<UHHM_ItemData>& _pItemData)
+bool AHHM_TileEntity_ItemContainer::Check_InventoryHasRoomForItem(UHHM_ItemData*& _pItemData)
 {
 	if (m_pComponent_Inventory == nullptr) {
 		//Exception [Warning] Inventory component not created
