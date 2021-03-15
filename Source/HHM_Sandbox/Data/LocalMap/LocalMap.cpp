@@ -7,6 +7,7 @@
 #include "Header/Macro.h"
 #include "Header/Struct_Tile.h"
 #include "Tile/Base/HHM_Tile.h"
+#include "Data/Tile/HHM_Container_SubTile.h"
 
 #include "Base/Component/HHM_Component_LocalMapRender.h"
 
@@ -285,10 +286,20 @@ void ALocalMap::Request_ItemManager(void)
 
 bool ALocalMap::Clear_MeshComponent(void)
 {
-	for (auto& pair : m_Container_Comp_InstancedMesh) {
+	/*for (auto& pair : m_Container_Comp_InstancedMesh) {
 		for (UInstancedStaticMeshComponent* pInstancedMesh : pair.Value.Arr_pInstancedStaticMesh) {
 			if (pInstancedMesh != nullptr) {
 				pInstancedMesh->ClearInstances();
+			}
+		}
+	}*/
+
+	for (auto& Pair_SubTileContainer : m_Container_RenderInstance) {
+		for (auto& Pair_RenderInstanceArr : Pair_SubTileContainer.Value.Container_SubTileRenderInstance) {
+			for (UInstancedStaticMeshComponent* pInstancedMesh : Pair_RenderInstanceArr.Value.Arr_pInstancedStaticMesh) {
+				if (pInstancedMesh != nullptr) {
+					pInstancedMesh->ClearInstances();
+				}
 			}
 		}
 	}
@@ -304,7 +315,7 @@ bool ALocalMap::Clear_RenderData(void)
 
 #pragma endregion
 
-#pragma region Interact with map
+
 
 const FHHM_TileData& ALocalMap::Get_TileInfo(int32 index_Horizontal, int32 index_Vertical) const {
 	int32 Index = AHHM_Manager_Math_Grid::Index_Combine(index_Horizontal, index_Vertical, m_MapInfo);
@@ -316,6 +327,21 @@ const FHHM_TileData& ALocalMap::Get_TileInfo(int32 index_Horizontal, int32 index
 
 	return m_MapData.Container_TileData[Index];
 }
+
+const FHHM_TileData& ALocalMap::Get_TileInfo_Const(int32 _index) const
+{
+	int32 Num_TileData = m_MapData.Container_TileData.Num();
+	if (_index < 0 || _index >= Num_TileData) {
+		//Exception
+		return m_MapData.Container_TileData[0];
+	}
+
+	return m_MapData.Container_TileData[_index];
+}
+
+
+
+#pragma region Interact with map
 
 void ALocalMap::Set_Tile_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, const FHHM_TileData& _tileData) {
 	//Get Info from LocalMap Manager.
@@ -339,14 +365,14 @@ void ALocalMap::Set_Tile_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, 
 	ALocalMap::Update_TileRenderData(m_MapData.Container_TileData[Index_Input]);
 }
 
-void ALocalMap::Set_Tile_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, int32 _tile_ID)
+void ALocalMap::Set_Tile_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, int32 _tile_ID, int32 _tile_SubID)
 {
 	if (m_pManager_Tile == nullptr) {
 		//Exception
 		return;
 	}
 
-	const FHHM_TileData& TileData = m_pManager_Tile->Get_DefaultTileInfo_ByID(_tile_ID);
+	const FHHM_TileData& TileData = m_pManager_Tile->Get_DefaultTileInfo_ByID(_tile_ID, _tile_SubID);
 
 	ALocalMap::Set_Tile_At_Pos(_index_Horizontal, _index_Vertical, TileData);
 }
@@ -374,7 +400,7 @@ bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AEnti
 	return true;
 }
 
-bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AEntity* _pPlacer, int32 _tile_ID)
+bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AEntity* _pPlacer, int32 _tile_ID, int32 _tile_SubID)
 {
 	const bool IsValidIndex = Check_IsValidPos(_index_Horizontal, _index_Vertical);
 	if (IsValidIndex == false) {
@@ -395,7 +421,7 @@ bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AEnti
 		}
 	}
 
-	FHHM_TileData TileData_Default = m_pManager_Tile->Get_DefaultTileInfo_ByID(_tile_ID);
+	FHHM_TileData TileData_Default = m_pManager_Tile->Get_DefaultTileInfo_ByID(_tile_ID, _tile_SubID);
 	//Set Location Data
 	FHHM_TileData TileData_LocationSet = TileData_Default;
 	TileData_LocationSet.Index_Horizontal = _index_Horizontal;
@@ -491,8 +517,8 @@ bool ALocalMap::Damage_Tile(int32 damage, EHHM_DamageType damage_Type, class APa
 
 #pragma region Location Check
 
-bool ALocalMap::IsLocationStandable(int32 _index) const {
-	const bool isLocationPassable = ALocalMap::IsLocationPassable(_index);
+bool ALocalMap::IsLocationStandable(int32 _index, int32 _entitySize_Height) const {
+	const bool isLocationPassable = ALocalMap::IsLocationPassable(_index, _entitySize_Height);
 	if (isLocationPassable == false) {
 		return false;
 	}
@@ -505,14 +531,25 @@ bool ALocalMap::IsLocationStandable(int32 _index) const {
 	return true;
 }
 
-bool ALocalMap::IsLocationPassable(int32 _index) const {
-	const bool isValidIndex = ALocalMap::Check_IsValidIndex(_index);
-	if (isValidIndex == false) {
+bool ALocalMap::IsLocationPassable(int32 _index, int32 _entitySize_Height) const {
+	if (_entitySize_Height <= 0) {
 		//Exception
 		return false;
 	}
 
-	return m_MapData.Container_TileData[_index].IsPassable;
+	for (int32 index_Height = 0; index_Height < _entitySize_Height; ++index_Height) {
+		int32 Index_Check = _index + (index_Height * m_MapInfo.MapSize_Horizontal);
+		const bool IsValid_Index = Check_IsValidIndex(Index_Check);
+		if (IsValid_Index == false) {
+			return false;
+		}
+		const bool IsPassable_Tile = m_MapData.Container_TileData[Index_Check].IsPassable;
+		if (IsPassable_Tile == false) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool ALocalMap::IsOnGround(int32 _index_Horizontal, int32 _index_Vertical) const {
@@ -527,7 +564,11 @@ bool ALocalMap::IsOnGround(int32 _index_Horizontal, int32 _index_Vertical) const
 
 	const int32 Index_Below = AHHM_Manager_Math_Grid::Index_Combine(_index_Horizontal, _index_Vertical - 1, m_MapInfo);
 	
-	return !m_MapData.Container_TileData[Index_Below].IsPassable;
+	if (m_MapData.Container_TileData[Index_Below].IsPassable == false) {
+		return true;
+	}
+
+	return m_MapData.Container_TileData[Index_Below].IsScaffold;
 }
 
 bool ALocalMap::IsOnGround(int32 _index) const {
@@ -542,7 +583,11 @@ bool ALocalMap::IsOnGround(int32 _index) const {
 
 	const int32 Index_Below = _index - m_MapInfo.MapSize_Horizontal;
 
-	return !m_MapData.Container_TileData[Index_Below].IsPassable;
+	if (m_MapData.Container_TileData[Index_Below].IsPassable == false) {
+		return true;
+	}
+
+	return m_MapData.Container_TileData[Index_Below].IsScaffold;
 }
 
 bool ALocalMap::IsAtCeiling(int32 _index_Horizontal, int32 _index_Vertical, int8 _entity_Height) const {
@@ -590,6 +635,77 @@ bool ALocalMap::IsAtCeiling(int32 _index, int8 _entity_Height) const {
 
 }
 
+bool ALocalMap::IsOnLadder(int32 _index_Horizontal, int32 _index_Vertical) const
+{
+	const bool IsValidLocation = ALocalMap::Check_IsValidPos(_index_Horizontal, _index_Vertical);
+	if (IsValidLocation == false) {
+		//Exception
+		return false;
+	}
+
+	int32 Index_Vertical_Below = _index_Vertical - 1;
+	if (Index_Vertical_Below < 0) {
+		return false;
+	}
+
+	int32 TileIndex_Below = AHHM_Manager_Math_Grid::Index_Combine(_index_Horizontal, Index_Vertical_Below, m_MapInfo);
+	bool IsValid_Index = Check_IsValidIndex(TileIndex_Below);
+	if (IsValid_Index == false) {	//checking location is at the bottom
+		return false;
+	}
+
+	bool IsLadder_Tile_Below = m_MapData.Container_TileData[TileIndex_Below].IsLadder;
+	return IsLadder_Tile_Below;
+}
+
+bool ALocalMap::IsOnLadder(int32 _index) const
+{
+	const bool IsValid_Index_Check = Check_IsValidIndex(_index);
+	if (IsValid_Index_Check == false) {
+		//Exception
+		return false;
+	}
+
+	int32 Index_Below = _index - m_MapInfo.MapSize_Horizontal;
+	const bool IsValid_Index_Below = Check_IsValidIndex(Index_Below);
+	if (IsValid_Index_Below == false) {	//Checking location is at the bottom
+		return false;
+	}
+
+	bool IsLadder_Tile_Below = m_MapData.Container_TileData[Index_Below].IsLadder;
+	return IsLadder_Tile_Below;
+}
+
+bool ALocalMap::IsOnScaffold(int32 _index) const
+{
+	const bool IsValid_Index = Check_IsValidIndex(_index);
+	if (IsValid_Index == false) {
+		return false;
+	}
+
+	int32 Index_Below = _index - m_MapInfo.MapSize_Horizontal;
+	const bool IsValid_Index_Below = Check_IsValidIndex(Index_Below);
+	if (IsValid_Index_Below == false) {
+		return false;
+	}
+	
+	bool IsScaffold = m_MapData.Container_TileData[Index_Below].IsScaffold;
+	return IsScaffold;
+}
+
+
+
+bool ALocalMap::IsTarget_Ladder(int32 _index) const
+{
+	int32 Num_MapData = m_MapData.Container_TileData.Num();
+	if (_index < 0 || _index >= Num_MapData) {
+		//Exception
+		return false;
+	}
+
+	return m_MapData.Container_TileData[_index].IsLadder;
+}
+
 
 
 bool ALocalMap::Check_Location_TilePlaceable(int32 _index_Horizontal, int32 _index_Vertical) {
@@ -632,7 +748,7 @@ bool ALocalMap::IsAreaPassable(int32 _index, int8 _entity_Width, int8 _entity_He
 
 
 	//-------- Ground check --------//
-	const bool isStandable_LeftBottom = ALocalMap::IsLocationStandable(_index);
+	const bool isStandable_LeftBottom = ALocalMap::IsLocationStandable(_index, _entity_Height);
 	if (isStandable_LeftBottom == false) {
 		return false;
 	}
@@ -653,7 +769,7 @@ bool ALocalMap::IsAreaPassable(int32 _index, int8 _entity_Width, int8 _entity_He
 		for (int32 index_Vertical = 1; index_Vertical >= -1; --index_Vertical) {
 			FVector2D	Location_Check = Location_Check_Before + FVector2D(1.0f, index_Vertical);
 			int32		Index_Check = AHHM_Manager_Math_Grid::Index_Combine(Location_Check.X, Location_Check.Y, m_MapInfo);
-			const bool	isStandable_Check = ALocalMap::IsLocationStandable(Index_Check);
+			const bool	isStandable_Check = ALocalMap::IsLocationStandable(Index_Check, _entity_Height);
 
 			if (isStandable_Check == true) {
 
@@ -688,7 +804,7 @@ bool ALocalMap::IsAreaPassable(int32 _index, int8 _entity_Width, int8 _entity_He
 	//-------- Air Check --------//
 	const int32 Size_PassableCheckQueue = Container_Index_NeedCheck_IsPassable.Num();
 	for (int32 index = 0; index < Size_PassableCheckQueue; ++index) {
-		const bool isIndexPassable = ALocalMap::IsLocationPassable(Container_Index_NeedCheck_IsPassable[index]);
+		const bool isIndexPassable = ALocalMap::IsLocationPassable(Container_Index_NeedCheck_IsPassable[index], 1);
 		if (isIndexPassable == false) {
 			return false;
 		}
@@ -725,7 +841,7 @@ bool ALocalMap::IsAreaStandable(int32 _index, int8 _entity_Width, int8 _entity_H
 
 
 	//-------- Ground check --------//
-	const bool isStandable_LeftBottom = ALocalMap::IsLocationStandable(_index);
+	const bool isStandable_LeftBottom = ALocalMap::IsLocationStandable(_index, _entity_Height);
 	if (isStandable_LeftBottom == false) {
 		return false;
 	}
@@ -747,7 +863,7 @@ bool ALocalMap::IsAreaStandable(int32 _index, int8 _entity_Width, int8 _entity_H
 		for (int32 index_Vertical = 1; index_Vertical >= -1; --index_Vertical) {
 			FVector2D	Location_Check = Location_Check_Before + FVector2D(1.0f, index_Vertical);
 			int32		Index_Check = AHHM_Manager_Math_Grid::Index_Combine(Location_Check.X, Location_Check.Y, m_MapInfo);
-			const bool	isStandable_Check = ALocalMap::IsLocationStandable(Index_Check);
+			const bool	isStandable_Check = ALocalMap::IsLocationStandable(Index_Check, _entity_Height);
 
 			if (isStandable_Check == true) {
 				bool isGroundSmooth = HeightGap * index_Vertical < 0 ? false : true;
@@ -786,7 +902,7 @@ bool ALocalMap::IsAreaStandable(int32 _index, int8 _entity_Width, int8 _entity_H
 	//-------- Air Check --------//
 	const int32 Size_PassableCheckQueue = Container_Index_NeedCheck_IsPassable.Num();
 	for (int32 index = 0; index < Size_PassableCheckQueue; ++index) {
-		const bool isIndexPassable = ALocalMap::IsLocationPassable(Container_Index_NeedCheck_IsPassable[index]);
+		const bool isIndexPassable = ALocalMap::IsLocationPassable(Container_Index_NeedCheck_IsPassable[index], 1);
 		if (isIndexPassable == false) {
 			return false;
 		}
@@ -916,90 +1032,110 @@ bool ALocalMap::Initialize_Container_InstancedMesh(void)
 		}
 	}
 
-	TMap<int32, AHHM_Tile*>& Ref_TileContainer = m_pManager_Tile->Get_TileArr_Ref();
+	TMap<int32, FHHM_Container_SubTile>& Ref_TileContainer = m_pManager_Tile->Get_TileArr_Ref();
 
 
 
 	//iterate container and if tile's render type is 'instanced', create render info based on tile's info
 	//const int32 Num_TileContainer = Ref_TileContainer.Num();
 
-	for (auto& TilePair : Ref_TileContainer) {
-		if (Ref_TileContainer[TilePair.Key] == nullptr) {
-			//Exception
-			return false;
-		}
+	for (auto& Pair_Container_SubTile : Ref_TileContainer) {
+		for (auto& TilePair : Pair_Container_SubTile.Value.Container_SubTile) {
+			AHHM_Tile* pTile_Register = TilePair.Value;
+			if (pTile_Register == nullptr) {
+				//Exception
+			}
 
-		//Get Tile's render info data
-		const FHHM_RenderInfo& TileRenderInfo = Ref_TileContainer[TilePair.Key]->Get_RenderInfo();
-		if (TileRenderInfo.eRenderType != EHHM_RenderType::RType_Instanced) {
-			continue;
-		}
+			int32 TileID = pTile_Register->Get_TileID();
+			int32 TileSubID = pTile_Register->Get_TileSubID();
 
-		//Check if tile is already registered
-		bool IsTileAlreadyRegistered = m_Container_Comp_InstancedMesh.Contains(Ref_TileContainer[TilePair.Key]->Get_TileID());
-		if (IsTileAlreadyRegistered == true) {
-			//Exception
-			return false;
-		}
-
-
-
-		//make some place on map for tile
-		m_Container_Comp_InstancedMesh.Add(TilePair.Key, FHHM_InstancedMeshArray());
-
-		//Filling render manager's instance map based on tile's material
-		int32 Num_TileMaterial = TileRenderInfo.Num_Material;
-		for (int32 index_Material = 0; index_Material < Num_TileMaterial; ++index_Material) {
-
-			//Check tile's material is already registered
-			int32 Num_Registered_Material = m_Container_Comp_InstancedMesh[TilePair.Key].Arr_pInstancedStaticMesh.Num();
-			if (index_Material < Num_Registered_Material) {
-				//Exception;
+			//Get Tile's render info data
+			const FHHM_RenderInfo& TileRenderInfo = pTile_Register->Get_RenderInfo();
+			if (TileRenderInfo.eRenderType != EHHM_RenderType::RType_Instanced) {
 				continue;
 			}
 
-			//Check is material is availiable
-			if (TileRenderInfo.Arr_Material[index_Material] == nullptr) {
+			//if current tile is the first sub tile for that id, prepare some rooms for it
+			bool IsSubTileContainerExist = m_Container_RenderInstance.Contains(TileID);
+			if (IsSubTileContainerExist == false) {
+				m_Container_RenderInstance.Add(TileID, FHHM_Container_SubTileRenderInstance());
+				m_Container_RenderInstance[TileID].Container_SubTileRenderInstance.Empty();
+			}
+
+			//Check if sub-tile is already registered
+			bool IsTileAlreadyRegistered = m_Container_RenderInstance[TileID].Container_SubTileRenderInstance.Contains(TileSubID);
+			if (IsTileAlreadyRegistered == true) {
 				//Exception
 				return false;
 			}
 
-			//Create Mesh Component than set mesh and material
-			FString Name_InstancedMesh = FString::Printf(TEXT("InstancedMesh_%d_%d"), TilePair.Key, index_Material);
-			UInstancedStaticMeshComponent* pInstancedStaticMeshComponent = nullptr;
-			//pInstancedStaticMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(*Name_InstancedMesh);
-			pInstancedStaticMeshComponent = NewObject<UInstancedStaticMeshComponent>(this, *Name_InstancedMesh);
-			pInstancedStaticMeshComponent->SetupAttachment(RootComponent);
-			pInstancedStaticMeshComponent->SetStaticMesh(m_pStaticMesh);
-			pInstancedStaticMeshComponent->SetMaterial(0, TileRenderInfo.Arr_Material[index_Material]);
 
-			//HHM Note : Tile Size Scaling Part.
-			float Scale_InstancedStaticMesh = HHM_TILE_SIZE / HHM_TILE_MESH_SIZE;
-			pInstancedStaticMeshComponent->SetWorldScale3D(FVector(Scale_InstancedStaticMesh));
 
-			//Collision Setting
-			const bool IsPassable = Ref_TileContainer[TilePair.Key]->Get_IsPassable();
-			if (IsPassable) {
-				pInstancedStaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
+			//Prepare room for sub-tile
+			m_Container_RenderInstance[TileID].Container_SubTileRenderInstance.Add(TileSubID, FHHM_InstancedMeshArray());
+			m_Container_RenderInstance[TileID].Container_SubTileRenderInstance[TileSubID].Arr_pInstancedStaticMesh.Empty();
+
+
+
+			////make some place on map for tile
+			//m_Container_RenderInstance[TileID].Container_SubTileRenderInstance[TileSubID]
+
+			//Filling render manager's instance map based on tile's material
+			int32 Num_TileMaterial = TileRenderInfo.Num_Material;
+			for (int32 index_Material = 0; index_Material < Num_TileMaterial; ++index_Material) {
+
+				//Check tile's material is already registered
+				int32 Num_Registered_Material = m_Container_RenderInstance[TileID].Container_SubTileRenderInstance[TileSubID].Arr_pInstancedStaticMesh.Num();
+				if (index_Material < Num_Registered_Material) {
+					//Exception;
+					continue;
+				}
+
+				//Check is material is availiable
+				if (TileRenderInfo.Arr_Material[index_Material] == nullptr) {
+					//Exception
+					return false;
+				}
+
+				//Create Mesh Component than set mesh and material
+				FString Name_InstancedMesh = FString::Printf(TEXT("InstancedMesh_%d_%d_%d"), Pair_Container_SubTile.Key, TilePair.Key, index_Material);
+				UInstancedStaticMeshComponent* pInstancedStaticMeshComponent = nullptr;
+				//pInstancedStaticMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(*Name_InstancedMesh);
+				pInstancedStaticMeshComponent = NewObject<UInstancedStaticMeshComponent>(this, *Name_InstancedMesh);
+				pInstancedStaticMeshComponent->SetupAttachment(RootComponent);
+				pInstancedStaticMeshComponent->SetStaticMesh(m_pStaticMesh);
+				pInstancedStaticMeshComponent->SetMaterial(0, TileRenderInfo.Arr_Material[index_Material]);
+
+				//HHM Note : Tile Size Scaling Part.
+				float Scale_InstancedStaticMesh = HHM_TILE_SIZE / HHM_TILE_MESH_SIZE;
+				pInstancedStaticMeshComponent->SetWorldScale3D(FVector(Scale_InstancedStaticMesh));
+
+				//Collision Setting
+				const bool IsPassable = pTile_Register->Get_IsPassable();
+				if (IsPassable) {
+					pInstancedStaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
+				}
+				else {
+					pInstancedStaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+				}
+
+				//Rendering Setting
+				const bool IsNeedToRender = TileRenderInfo.IsNeedToRender;
+				if (IsNeedToRender == false) {
+					pInstancedStaticMeshComponent->bHiddenInGame = true;
+				}
+
+				//Register instanced static mesh component on renderer's map
+				m_Container_RenderInstance[TileID].Container_SubTileRenderInstance[TileSubID].Arr_pInstancedStaticMesh.Add(pInstancedStaticMeshComponent);
+				m_Container_RenderInstance[TileID].Container_SubTileRenderInstance[TileSubID].Arr_pInstancedStaticMesh[index_Material]->RegisterComponent();
+				//m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh[index_Material]->RegisterComponent();
 			}
-			else {
-				pInstancedStaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-			}
-
-			//Rendering Setting
-			const bool IsNeedToRender = TileRenderInfo.IsNeedToRender;
-			if (IsNeedToRender == false) {
-				pInstancedStaticMeshComponent->bHiddenInGame = true;
-			}
-
-			//Register instanced static mesh component on renderer's map
-			m_Container_Comp_InstancedMesh[TilePair.Key].Arr_pInstancedStaticMesh.Add(pInstancedStaticMeshComponent);
-			m_Container_Comp_InstancedMesh[TilePair.Key].Arr_pInstancedStaticMesh[index_Material]->RegisterComponent();
-			//m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh[index_Material]->RegisterComponent();
 		}
+
+		
 	}
 
-	m_pComp_InstancedStaticMesh_Debug = m_Container_Comp_InstancedMesh[1].Arr_pInstancedStaticMesh[0];
+	m_pComp_InstancedStaticMesh_Debug = m_Container_RenderInstance[1].Container_SubTileRenderInstance[0].Arr_pInstancedStaticMesh[0];
 
 	return true;
 }
@@ -1032,13 +1168,13 @@ bool ALocalMap::Render_Reset()
 	//Clear Instances of Mesh and fill with new Render data
 	Clear_MeshComponent();
 	for (int32 CurArrIndex = 0; CurArrIndex < ArrSize_Render; ++CurArrIndex) {
-		if (Check_ValidRenderID(m_Container_RenderData[CurArrIndex].Tile_ID, m_Container_RenderData[CurArrIndex].Tile_SubID) == false) {
+		if (Check_ValidRenderID(m_Container_RenderData[CurArrIndex].Tile_ID, m_Container_RenderData[CurArrIndex].Tile_SubID, m_Container_RenderData[CurArrIndex].Tile_RenderInstanceIndex) == false) {
 			//Exception
 			return false;
 		}
 
 		FTransform Transform = FTransform();
-		RenderInstance_Add(m_Container_RenderData[CurArrIndex].Tile_ID, m_Container_RenderData[CurArrIndex].Tile_SubID, CurArrIndex, Transform);
+		RenderInstance_Add(m_Container_RenderData[CurArrIndex].Tile_ID, m_Container_RenderData[CurArrIndex].Tile_SubID, m_Container_RenderData[CurArrIndex].Tile_RenderInstanceIndex, CurArrIndex, Transform);
 
 		if (m_Container_RenderData[CurArrIndex].Render_Index < 0) {
 			//Exception
@@ -1053,7 +1189,7 @@ bool ALocalMap::Render_Reset()
 
 
 
-bool ALocalMap::Set_TileRenderData(int32 _index, int32 _tileID, int32 _tileSubID, FTransform& _transform)
+bool ALocalMap::Set_TileRenderData(int32 _index, int32 _tileID, int32 _tileRenderInstanceIndex, int32 _tileSubID, FTransform& _transform)
 {
 	const bool isValidIndex = Check_ValidIndex(_index);
 	if (isValidIndex == false) {
@@ -1061,7 +1197,7 @@ bool ALocalMap::Set_TileRenderData(int32 _index, int32 _tileID, int32 _tileSubID
 		return false;
 	}
 
-	const bool isValidTileID = Check_ValidRenderID(_tileID, _tileSubID);
+	const bool isValidTileID = Check_ValidRenderID(_tileID, _tileSubID, _tileRenderInstanceIndex);
 	if (isValidTileID == false) {
 		//Exception
 		return false;
@@ -1075,7 +1211,7 @@ bool ALocalMap::Set_TileRenderData(int32 _index, int32 _tileID, int32 _tileSubID
 		return false;
 	}
 
-	const bool Succeed_AddInstance = RenderInstance_Add(_tileID, _tileSubID, _index, _transform);
+	const bool Succeed_AddInstance = RenderInstance_Add(_tileID, _tileSubID, _tileRenderInstanceIndex, _index, _transform);
 	if (Succeed_AddInstance == false) {
 		//Exception
 		return false;
@@ -1109,7 +1245,7 @@ bool ALocalMap::Update_TileRenderData(const FHHM_TileData& _tileData)
 			return false;
 		}
 
-		const bool isAddSucceed = RenderInstance_Add(_tileData.ID, index_instance, index_Update, Transform_Local);
+		const bool isAddSucceed = RenderInstance_Add(_tileData.ID, _tileData.SubID, index_instance, index_Update, Transform_Local);
 		if (isAddSucceed == false) {
 			//Exception
 			return false;
@@ -1123,9 +1259,9 @@ bool ALocalMap::Update_TileRenderData(const FHHM_TileData& _tileData)
 
 
 
-bool ALocalMap::RenderInstance_Add(int32 _tileID, int32 _tileSubID, int32 _index_Tile, FTransform& _tileTransform)
+bool ALocalMap::RenderInstance_Add(int32 _tileID, int32 _tileSubID, int32 _tileRenderInstanceIndex, int32 _index_Tile, FTransform& _tileTransform)
 {
-	const bool isValidTileID = Check_ValidRenderID(_tileID, _tileSubID);
+	const bool isValidTileID = Check_ValidRenderID(_tileID, _tileSubID, _tileRenderInstanceIndex);
 	if (isValidTileID == false) {
 		//Exception
 		return false;
@@ -1149,8 +1285,18 @@ bool ALocalMap::RenderInstance_Add(int32 _tileID, int32 _tileSubID, int32 _index
 	FVector		Translation = Translation_Raw + TileOffset;
 	Transform_Adjusted.SetTranslation(Translation);
 
+
+
 	//Add instance and save index to renderinfo
-	const int32 index_Instance = m_Container_Comp_InstancedMesh[_tileID].Arr_pInstancedStaticMesh[_tileSubID]->AddInstance(Transform_Adjusted);
+	UInstancedStaticMeshComponent* pComponent_InstancedStaticMesh = nullptr;
+	pComponent_InstancedStaticMesh = m_Container_RenderInstance[_tileID].Container_SubTileRenderInstance[_tileSubID].Arr_pInstancedStaticMesh[_tileRenderInstanceIndex];
+	if (pComponent_InstancedStaticMesh == nullptr) {
+		//Exception
+		return false;
+	}
+
+	//const int32 index_Instance = m_Container_Comp_InstancedMesh[_tileID].Arr_pInstancedStaticMesh[_tileSubID]->AddInstance(Transform_Adjusted);
+	const int32 index_Instance = pComponent_InstancedStaticMesh->AddInstance(Transform_Adjusted);
 	m_Container_RenderData[_index_Tile].Render_Index = index_Instance;
 	m_Container_RenderData[_index_Tile].Tile_ID = _tileID;
 	m_Container_RenderData[_index_Tile].Tile_SubID = _tileSubID;
@@ -1174,9 +1320,10 @@ bool ALocalMap::RenderInstance_Remove(int32 _index_Tile)
 
 	const int32 TileID_Target = m_Container_RenderData[_index_Tile].Tile_ID;
 	const int32 TileSubID_Target = m_Container_RenderData[_index_Tile].Tile_SubID;
+	const int32 TileRenderInstanceIndex_Target = m_Container_RenderData[_index_Tile].Tile_RenderInstanceIndex;
 
 	//Check renderinfo's tileID is valid
-	const bool isValidTileID = Check_ValidRenderID(TileID_Target, TileSubID_Target);
+	const bool isValidTileID = Check_ValidRenderID(TileID_Target, TileSubID_Target, TileRenderInstanceIndex_Target);
 	if (isValidTileID == false) {
 		//Exception
 		return false;
@@ -1184,8 +1331,15 @@ bool ALocalMap::RenderInstance_Remove(int32 _index_Tile)
 
 
 
+	UInstancedStaticMeshComponent* pComponent_InstancedStaticMesh = nullptr;
+	pComponent_InstancedStaticMesh = m_Container_RenderInstance[TileID_Target].Container_SubTileRenderInstance[TileSubID_Target].Arr_pInstancedStaticMesh[TileRenderInstanceIndex_Target];
+	if (pComponent_InstancedStaticMesh == nullptr) {
+		//Exception
+		return false;
+	}
+
 	//Prepare some variables for checking work
-	const int32 Num_Instance_TargetMeshComp = m_Container_Comp_InstancedMesh[TileID_Target].Arr_pInstancedStaticMesh[TileSubID_Target]->GetNumRenderInstances();
+	const int32 Num_Instance_TargetMeshComp = pComponent_InstancedStaticMesh->GetNumRenderInstances();
 	const int32 index_Instance_Last = Num_Instance_TargetMeshComp - 1;
 	const int32 index_Instance_Target = m_Container_RenderData[_index_Tile].Render_Index;
 
@@ -1193,7 +1347,7 @@ bool ALocalMap::RenderInstance_Remove(int32 _index_Tile)
 	if (index_Instance_Target != index_Instance_Last) {
 		//Get the last instance's transform
 		FTransform Transform_LastInstance = FTransform();
-		if (m_Container_Comp_InstancedMesh[TileID_Target].Arr_pInstancedStaticMesh[TileSubID_Target]->GetInstanceTransform(index_Instance_Last, Transform_LastInstance) == false) {
+		if (pComponent_InstancedStaticMesh->GetInstanceTransform(index_Instance_Last, Transform_LastInstance) == false) {
 			//Exception - cant get transform of last instance
 		}
 
@@ -1207,31 +1361,37 @@ bool ALocalMap::RenderInstance_Remove(int32 _index_Tile)
 		}
 
 		//Paste last instance's transform data to target's instance
-		m_Container_Comp_InstancedMesh[TileID_Target].Arr_pInstancedStaticMesh[TileSubID_Target]->UpdateInstanceTransform(index_Instance_Target, Transform_LastInstance);
+		pComponent_InstancedStaticMesh->UpdateInstanceTransform(index_Instance_Target, Transform_LastInstance);
 		//Update renderinfo of last instance's index
 		m_Container_RenderData[index_LastInstance].Render_Index = index_Instance_Target;
 	}
 
 	//Delete last instance of target instanceMeshComp
-	m_Container_Comp_InstancedMesh[TileID_Target].Arr_pInstancedStaticMesh[TileSubID_Target]->RemoveInstance(index_Instance_Last);
+	pComponent_InstancedStaticMesh->RemoveInstance(index_Instance_Last);
 
 	return true;
 }
 
 
 
-bool ALocalMap::Check_ValidRenderID(int32 _tileID, int32 _tileSubID)
+bool ALocalMap::Check_ValidRenderID(int32 _tileID, int32 _tileSubID, int32 _tileRenderInstanceIndex)
 {
 	if (_tileID < 0)	return false;
 	if (_tileSubID < 0) return false;
+	if (_tileRenderInstanceIndex < 0) return false;
 
-	const bool isIDRegistered = m_Container_Comp_InstancedMesh.Contains(_tileID);
+	const bool isIDRegistered = m_Container_RenderInstance.Contains(_tileID);
 	if (isIDRegistered == false) {
 		return false;
 	}
 
-	const int32 Num_SubID = m_Container_Comp_InstancedMesh[_tileID].Arr_pInstancedStaticMesh.Num();
-	if (_tileSubID >= Num_SubID) {
+	const bool isSubIDRegistered = m_Container_RenderInstance[_tileID].Container_SubTileRenderInstance.Contains(_tileSubID);
+	if (isSubIDRegistered == false) {
+		return false;
+	}
+
+	const int32 Num_RenderInstance = m_Container_RenderInstance[_tileID].Container_SubTileRenderInstance[_tileSubID].Arr_pInstancedStaticMesh.Num();
+	if (_tileRenderInstanceIndex >= Num_RenderInstance) {
 		return false;
 	}
 

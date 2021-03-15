@@ -21,8 +21,8 @@
 
 
 AHHM_GameMode_LocalMap::AHHM_GameMode_LocalMap() {
-	m_MapInfo.MapSize_Horizontal = 30;
-	m_MapInfo.MapSize_Vertical = 15;
+	m_MapInfo.MapSize_Horizontal = 64;
+	m_MapInfo.MapSize_Vertical = 64;
 	m_MapInfo.TileSize = 10.0f;
 }
 

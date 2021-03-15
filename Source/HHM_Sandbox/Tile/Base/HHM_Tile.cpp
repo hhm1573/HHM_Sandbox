@@ -12,15 +12,18 @@ AHHM_Tile::AHHM_Tile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	m_DefaultTileData.Tile = this;
 }
 
 // Called when the game starts or when spawned
 void AHHM_Tile::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	m_DefaultTileData = FHHM_TileData(this, m_BaseTileData);
+
 	m_DefaultTileData.ID = m_ID;
+	m_DefaultTileData.SubID = m_SubID;
+
+	m_DefaultTileData.HP = m_DefaultTileData.HP_Max;
 }
 
 // Called every frame
@@ -62,7 +65,7 @@ FHHM_TileData AHHM_Tile::On_Destruct(ALocalMap* pLocalMap, FHHM_TileData& tileIn
 		}
 	}
 
-	return m_pManager_Tile->Get_DefaultTileInfo_ByID(0);
+	return m_pManager_Tile->Get_DefaultTileInfo_ByID(0,0);
 	//return FHHM_TileInfo();
 }
 
@@ -87,5 +90,23 @@ void AHHM_Tile::On_Delete(ALocalMap* _pLocalMap, FHHM_TileData& _tileInfo)
 bool AHHM_Tile::Update_Render(int32& index_instance, FTransform& transform_Local, class ALocalMap* pLocalMap, const FHHM_TileData& tileInfo) {
 	index_instance = 0;
 	transform_Local = FTransform();
+	return true;
+}
+
+bool AHHM_Tile::Data_Set_Ladder(bool _isLadder, float _speedMultiplier)
+{
+	if (_isLadder == true) {
+		if (_speedMultiplier <= 0.0f) {
+			//Exception Invalid Speed multiplier value
+			return false;
+		}
+		m_SpeedMultiplier_Ladder = _speedMultiplier;
+	}
+	else {
+		m_SpeedMultiplier_Ladder = 0.0f;
+	}
+
+	m_DefaultTileData.IsLadder = _isLadder;
+
 	return true;
 }

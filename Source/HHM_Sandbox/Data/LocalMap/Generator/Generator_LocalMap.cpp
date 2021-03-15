@@ -34,6 +34,7 @@ void AGenerator_LocalMap::Tick(float DeltaTime)
 void AGenerator_LocalMap::Generate_DebugMap(FHHM_LocalMap_MapData& _mapData, const FHHM_MapInfo& mapInfo, const AHHM_Manager_Tile* pManager_Tile) {
 	FHHM_TileData TileInfo_Air = pManager_Tile->Get_DefaultTileInfo_ByID(0);
 	FHHM_TileData TileInfo_Floor = pManager_Tile->Get_DefaultTileInfo_ByID(1);
+	FHHM_TileData TileInfo_Ladder = pManager_Tile->Get_DefaultTileInfo_ByID(10000);
 
 	int32 Num_TotalTile = mapInfo.MapSize_Horizontal * mapInfo.MapSize_Vertical;
 	_mapData.Container_TileData.Init(TileInfo_Air, Num_TotalTile);
@@ -115,6 +116,17 @@ void AGenerator_LocalMap::Generate_DebugMap(FHHM_LocalMap_MapData& _mapData, con
 	//		mapData[AHHM_Manager_Math_Grid::Index_Combine(CurIndex_Horizontal, CurIndex_Vertical, mapInfo)] = TileInfo_Floor;
 	//	}
 	//}
-
+	for (int32 i = 0; i < 9; ++i) {
+		_mapData.Container_TileData[i + (mapInfo.MapSize_Horizontal * 13)] = TileInfo_Floor;
+		_mapData.Container_TileData[i + (mapInfo.MapSize_Horizontal * 21)] = TileInfo_Floor;
+	}
+	_mapData.Container_TileData[4 + (mapInfo.MapSize_Horizontal * 14)] = TileInfo_Ladder;
+	_mapData.Container_TileData[4 + (mapInfo.MapSize_Horizontal * 15)] = TileInfo_Ladder;
+	_mapData.Container_TileData[4 + (mapInfo.MapSize_Horizontal * 16)] = TileInfo_Ladder;
+	_mapData.Container_TileData[4 + (mapInfo.MapSize_Horizontal * 17)] = TileInfo_Ladder;
+	_mapData.Container_TileData[4 + (mapInfo.MapSize_Horizontal * 18)] = TileInfo_Ladder;
+	_mapData.Container_TileData[4 + (mapInfo.MapSize_Horizontal * 19)] = TileInfo_Ladder;
+	_mapData.Container_TileData[4 + (mapInfo.MapSize_Horizontal * 20)] = TileInfo_Ladder;
+	_mapData.Container_TileData[4 + (mapInfo.MapSize_Horizontal * 21)] = TileInfo_Ladder;
 
 }

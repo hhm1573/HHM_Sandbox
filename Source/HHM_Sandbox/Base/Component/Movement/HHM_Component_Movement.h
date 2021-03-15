@@ -184,6 +184,7 @@ private:
 	void			FollowPath_HorizontalJump_Free(float DeltaTime);
 
 	void			FollowPath_Walk(float DeltaTime/*, const FVector& _location_Current, const FVector& _location_Target*/);
+	void			FollowPath_Ladder(float DeltaTile);
 #pragma endregion
 
 private:

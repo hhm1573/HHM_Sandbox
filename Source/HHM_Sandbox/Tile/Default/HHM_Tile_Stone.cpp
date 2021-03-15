@@ -10,9 +10,7 @@
 
 AHHM_Tile_Stone::AHHM_Tile_Stone(void) {
 	m_ID = 1;
-	m_BaseTileData.IsPassable = false;
-
-	m_BaseTileData.HP_Max = 20.0f;
+	m_SubID = 0;
 }
 
 void AHHM_Tile_Stone::BeginPlay(void) {
@@ -20,9 +18,10 @@ void AHHM_Tile_Stone::BeginPlay(void) {
 }
 
 void AHHM_Tile_Stone::OnConstruction(const FTransform& Transform) {
-	m_BaseTileData.IsPassable = false;
+	m_DefaultTileData.HP_Max = 20.0f;
+	m_DefaultTileData.HP = m_DefaultTileData.HP_Max;
 
-	m_BaseTileData.HP_Max = 20.0f;
+	m_DefaultTileData.IsPassable = false;
 
 
 

@@ -48,9 +48,11 @@ void AHHM_Entity_Walkable::BeginPlay()
 	MoveData.Jump_Vertical_FreeJump_Minimum = 10;
 	MoveData.Jump_Vertical_AnimationDuration.Add(2.0f);
 	MoveData.Jump_Vertical_AnimationDuration.Add(2.5f);
+	MoveData.Jump_Vertical_AnimationDuration.Add(3.0f);
 	MoveData.DownJump_FreeFall_Minimum = 10;
 	MoveData.DownJump_AnimationDuration.Add(1.0f);
 	MoveData.DownJump_AnimationDuration.Add(1.5f);
+	MoveData.DownJump_AnimationDuration.Add(2.0f);
 	m_pComponent_Movement->Temp_Set_MoveData(MoveData);
 
 	m_pComponent_Movement->Temp_Set_DefaultSpeed(1.0f);

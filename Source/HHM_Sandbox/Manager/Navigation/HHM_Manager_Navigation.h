@@ -9,6 +9,7 @@
 #include "Header/Struct_Tile.h"
 #include "Header/Struct_Navigation.h"
 #include "Header/Struct_Pathfinder.h"
+#include "PathFinder/HHM_Parameter_PathFind.h"
 
 #include "Data/LocalMap/LocalMap.h"
 
@@ -36,7 +37,7 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable)
-		TArray<FHHM_PathNodeData> Search_Path(const ALocalMap* _pLocalMap, FVector2D _location_Start, FVector2D _location_End, int32 _entitySize_Width, int32 _entitySize_Height, int32 _maxJumpLength, int32 _maxFallLength, int32 _maxHorizontalJumpLength) const;
+		TArray<FHHM_PathNodeData> Search_Path(const ALocalMap* _pLocalMap, FVector2D _location_Start, FVector2D _location_End, const FHHM_Parameter_PathFind& _pathfind_Params) const;
 
 
 

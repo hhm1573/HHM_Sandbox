@@ -7,6 +7,7 @@
 
 #include "Data/LocalMap/LocalMap.h"
 #include "Header/Struct_Pathfinder.h"
+#include "PathFinder/HHM_Parameter_PathFind.h"
 
 #include "HHM_PathFinder.generated.h"
 
@@ -19,6 +20,8 @@ class HHM_SANDBOX_API UHHM_PathFinder : public UObject
 	GENERATED_BODY()
 	
 public:
-	static TArray<FHHM_PathNodeData> Search_Path(const ALocalMap* _pLocalMap, FVector2D _location_Start, FVector2D _location_End, int32 _entitySize_Width, int32 _entitySize_Height, int32 _maxJumpLength, int32 _maxFallLength, int32 _maxHorizontalJumpLength = 1);
+	static TArray<FHHM_PathNodeData> Search_Path(const ALocalMap* _pLocalMap, FVector2D _location_Start, FVector2D _location_End, const FHHM_Parameter_PathFind& _pathfindParams);
+
+private:
 
 };

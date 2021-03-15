@@ -186,7 +186,12 @@ bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _ind
 	}
 	FVector2D Vec_Location_End = FVector2D(_index_Horizontal, _index_Vertical);
 
-	TArray<FHHM_PathNodeData> Path_Find = pManager_Navigation->Search_Path(pLocalMap, Vec_Location_Start, Vec_Location_End, m_EntitySize_Horizontal, m_EntitySize_Vertical, m_MovementData.Jump_Vertical_MaxHeight, m_MovementData.DownJump_MaxHeight, m_MovementData.Jump_Horizontal_MaxLength);
+
+
+	//Build Pathfind params
+	FHHM_Parameter_PathFind Pathfind_Params = FHHM_Parameter_PathFind(m_EntitySize_Horizontal, m_EntitySize_Vertical, m_MovementData.Jump_Vertical_MaxHeight, m_MovementData.DownJump_MaxHeight, m_MovementData.Jump_Horizontal_MaxLength);
+
+	TArray<FHHM_PathNodeData> Path_Find = pManager_Navigation->Search_Path(pLocalMap, Vec_Location_Start, Vec_Location_End, Pathfind_Params);
 	//pManager_Navigation->Search_Path(pLocalMap, )
 	m_FollowingPath = Path_Find;
 
@@ -602,8 +607,26 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 
 
 
+	//Determine whether moving direction is horizontal or vertical
+	float Distance_Horizontal = FMath::Abs(Vec_CurrentToTarget.X);
+	float Distance_Vertical = FMath::Abs(Vec_CurrentToTarget.Z);
+	if (Distance_Horizontal < 0 || Distance_Vertical < 0) {
+		//Exception
+		// HHM Note : Remove this if FMath::Abs will always return absolute value
+		return;
+	}
+	
+	bool IsDirection_Vertical = Distance_Vertical > Distance_Horizontal ? true : false;
+
+
+
 	//Following Path
-	UHHM_Component_Movement::FollowPath_Walk(DeltaTime);
+	if (IsDirection_Vertical == false) {
+		UHHM_Component_Movement::FollowPath_Walk(DeltaTime);
+	}
+	else {
+		UHHM_Component_Movement::FollowPath_Ladder(DeltaTime);
+	}
 }
 
 
@@ -987,6 +1010,10 @@ void UHHM_Component_Movement::FollowPath_Walk(float DeltaTime) {
 	else {
 		SafeMoveUpdatedComponent(Vec_Current_To_AfterTick, Rotator_Current, false, HitResult);
 	}
+}
+void UHHM_Component_Movement::FollowPath_Ladder(float DeltaTile)
+{
+	return;
 }
 #pragma endregion
 

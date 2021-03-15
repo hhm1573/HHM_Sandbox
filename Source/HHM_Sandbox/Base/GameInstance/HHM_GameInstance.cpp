@@ -12,6 +12,8 @@
 #include "Manager/Tile/HHM_Manager_Tile.h"
 #include "Manager/Navigation/HHM_Manager_Navigation.h"
 
+#include "Header/Macro.h"
+
 //#include "Manager/Debug/HHM_Manager_Debug.h"
 
 #include "Base/TouchPanel/TouchPanel.h"
@@ -25,9 +27,9 @@ void UHHM_GameInstance::Initialize_Game_Implementation() {
 
 
 void UHHM_GameInstance::Spawn_Manager(void) {
-	m_MapInfo.MapSize_Horizontal = 30;
-	m_MapInfo.MapSize_Vertical = 15;
-	m_MapInfo.TileSize = 100.0f;
+	m_MapInfo.MapSize_Horizontal = 64;
+	m_MapInfo.MapSize_Vertical = 64;
+	m_MapInfo.TileSize = HHM_TILE_SIZE;
 
 	UWorld*	pWorld = GetWorld();
 	if (pWorld == nullptr) {

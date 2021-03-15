@@ -6,10 +6,9 @@
 #include "Manager/HHM_Manager.h"
 
 #include "Header/Struct_Tile.h"
+#include "Data/Tile/HHM_Container_SubTile.h"
 
 #include "HHM_Manager_Tile.generated.h"
-
-class AHHM_Tile;
 
 /**
  * 
@@ -28,20 +27,16 @@ protected:
 
 
 private:
-	UPROPERTY()
-		TArray<AHHM_Tile*>		m_Arr_Tile;
 	UPROPERTY(VisibleAnywhere)
-		TMap<int32, AHHM_Tile*>	m_Container_Tile;
+		TMap<int32, FHHM_Container_SubTile>	m_Container_Tile;
 
-public:
-	int32	Register_Tile(AHHM_Tile* pTile);	//may will be removed
 private:
 	void	Register_All_Tile(void);
 
 public:
-	AHHM_Tile*	Get_Tile_By_ID(int32 TileID);
-	const FHHM_TileData&	Get_DefaultTileInfo_ByID(int32 TileID) const;
+	AHHM_Tile*	Get_Tile_By_ID(int32 _tileID, int32 _tileSubID = 0);
+	const FHHM_TileData&	Get_DefaultTileInfo_ByID(int32 _tileID, int32 _tileSubID = 0) const;
 	
 public:
-	TMap<int32, AHHM_Tile*>&		Get_TileArr_Ref(void) { return m_Container_Tile; }
+	TMap<int32, FHHM_Container_SubTile>&		Get_TileArr_Ref(void) { return m_Container_Tile; }
 };

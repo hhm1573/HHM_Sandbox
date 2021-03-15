@@ -7,6 +7,7 @@
 
 #include "Header/Struct.h"
 #include "Header/Struct_Tile.h"
+#include "Data/LocalMap/HHM_Container_SubTileRenderInstance.h"
 #include "Header/Struct_Renderer.h"
 #include "Header/Struct_LocalMap.h"
 #include "Header/Struct_Navigation.h"
@@ -134,6 +135,8 @@ public:
 	FHHM_LocalMap_MapData&			Get_MapData_Ref(void) { return m_MapData; }
 	UFUNCTION(BlueprintCallable)
 		const FHHM_TileData&		Get_TileInfo(int32 index_Horizontal, int32 index_Vertical) const;
+	UFUNCTION(BlueprintCallable)
+		const FHHM_TileData&		Get_TileInfo_Const(int32 _index) const;
 
 public:
 	//void	Set_MapData(const TArray<FHHM_TileData>& mapData) { m_Arr_MapData = mapData; }
@@ -147,11 +150,11 @@ public:
 		void	Set_Tile_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, const FHHM_TileData& _tileData);
 	//Force to set tile at given position
 	UFUNCTION(BlueprintCallable, Category = TemporaryFunction)
-		void	Set_Tile_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, int32 _tile_ID);
+		void	Set_Tile_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, int32 _tile_ID, int32 _tile_SubID);
 	//void	Set_Tile_At_Pos_Temp(int32 _index_Horizontal, int32 _index_Vertical, int32 _tileID);
 
 	bool	Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, class AEntity* _pPlacer, FHHM_TileData _tileData);
-	bool	Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, class AEntity* _pPlacer, int32 _tile_ID);
+	bool	Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, class AEntity* _pPlacer, int32 _tile_ID, int32 _tile_SubID);
 	
 	//Add damage to target tile. Return true if tile destroyed by damage
 	bool	Damage_Tile(int32 damage, EHHM_DamageType damage_Type, class APawn* attack_Pawn, int32 index_Horizontal, int32 index_Vertical);
@@ -164,13 +167,18 @@ public:
 
 public:
 	//check either index location is passable and onGround
-	bool	IsLocationStandable(int32 _index) const;
+	bool	IsLocationStandable(int32 _index, int32 _entitySize_Height) const;
 	//check only index location is passable (Unlike 'IsLocationStandable' function)
-	bool	IsLocationPassable(int32 _index) const;
+	bool	IsLocationPassable(int32 _index, int32 _entitySize_Height) const;
 	bool	IsOnGround(int32 _index_Horizontal, int32 _index_Vertical) const;
 	bool	IsOnGround(int32 _index) const;
 	bool	IsAtCeiling(int32 _index_Horizontal, int32 _index_Vertical, int8 _entity_Height = 1) const;
 	bool	IsAtCeiling(int32 _index, int8 _entity_Height = 1) const;
+	bool	IsOnLadder(int32 _index_Horizontal, int32 _index_Vertical) const;
+	bool	IsOnLadder(int32 _index) const;
+	bool	IsOnScaffold(int32 _index) const;
+
+	bool	IsTarget_Ladder(int32 _index) const;
 
 	bool	Check_Location_TilePlaceable(int32 _index_Horizontal, int32 _index_Vertical);
 
@@ -189,7 +197,7 @@ private:
 
 
 
-#pragma region Tile
+#pragma region TileEntity
 
 	//TArray<TSharedPtr<UHHM_ItemData>> m_Container_TileEntity;
 
@@ -211,8 +219,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Rendering)
 		class UStaticMesh* m_pStaticMesh = nullptr;
 
+	//TileID - TileSubID - TileRenderInstance Index 순으로 타고들어가는 방식.
+	//맵(맵(배열(인스턴스 메쉬))) 의 구조로 되어있음.
 	UPROPERTY(VisibleAnywhere, Category = Rendering)
-		TMap<int32, FHHM_InstancedMeshArray>		m_Container_Comp_InstancedMesh;
+		TMap<int32, FHHM_Container_SubTileRenderInstance>		m_Container_RenderInstance;	
 	UPROPERTY(VisibleAnywhere, Category = Rendering)
 		TArray<FHHM_RenderData>						m_Container_RenderData;
 
@@ -233,7 +243,7 @@ public:
 		bool Render_Reset();
 
 	UFUNCTION(BlueprintCallable, Category = Rendering)
-		bool Set_TileRenderData(int32 _index, int32 _tileID, int32 _tileSubID, FTransform& _transform);
+		bool Set_TileRenderData(int32 _index, int32 _tileID, int32 _tileSubID, int32 _tileRenderInstanceIndex, FTransform& _transform);
 	UFUNCTION(BlueprintCallable, Category = Rendering)
 		//Call this function when certain tile needs to change it's render state. ex) placed,destroyed,etc.
 		//해당 인덱스의 타일에게 새로운 렌더상태에 대한 값을 요청하고, 해당 인덱스의 기존 렌더데이터를 삭제후 새로 얻은 렌더값을 렌더합니다.
@@ -241,10 +251,10 @@ public:
 		bool Update_TileRenderData(const FHHM_TileData& _tileData);
 
 private:
-	bool	RenderInstance_Add(int32 _tileID, int32 _tileSubID, int32 _index_Tile, FTransform& _tileTransform);
+	bool	RenderInstance_Add(int32 _tileID, int32 _tileSubID, int32 _tileRenderInstanceIndex, int32 _index_Tile, FTransform& _tileTransform);
 	bool	RenderInstance_Remove(int32 _index_Tile);
 
-	bool	Check_ValidRenderID(int32 _tileID, int32 _tileSubID);
+	bool	Check_ValidRenderID(int32 _tileID, int32 _tileSubID, int32 _tileRenderInstanceIndex);
 	bool	Check_ValidIndex(int32 _index);
 
 #pragma endregion

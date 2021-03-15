@@ -190,7 +190,7 @@ bool AHHM_Entity::Attack_Tile(int32 index_Horizontal, int32 index_Vertical, int3
 	return m_pLocalMap->Damage_Tile(damage, EHHM_DamageType::Damage_Melee, this, index_Horizontal, index_Vertical);
 }
 
-bool AHHM_Entity::Place_Tile(int32 index_Horizontal, int32 index_Vertical, int32 tileID) {	
+bool AHHM_Entity::Place_Tile(int32 index_Horizontal, int32 index_Vertical, int32 tileID, int32 tileSubID) {	
 	//temporary function. it will replaced with Use_Item or place_Item thing and there will be place function on local map class
 	if (m_pLocalMap == nullptr) {
 		//Exception No LocalMap Found. Entity Might Not registered.
@@ -205,6 +205,6 @@ bool AHHM_Entity::Place_Tile(int32 index_Horizontal, int32 index_Vertical, int32
 		return false;
 	}
 
-	m_pLocalMap->Set_Tile_At_Pos(index_Horizontal, index_Vertical, tileID);
+	m_pLocalMap->Set_Tile_At_Pos(index_Horizontal, index_Vertical, tileID, tileSubID);
 	return true;
 }

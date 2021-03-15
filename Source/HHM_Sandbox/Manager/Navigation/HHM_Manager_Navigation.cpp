@@ -34,7 +34,7 @@ void AHHM_Manager_Navigation::BeginPlay(void) {
 
 
 
-TArray<FHHM_PathNodeData> AHHM_Manager_Navigation::Search_Path(const ALocalMap* _pLocalMap, FVector2D _location_Start, FVector2D _location_End, int32 _entitySize_Width, int32 _entitySize_Height, int32 _maxJumpLength, int32 _maxFallLength, int32 _maxHorizontalJumpLength) const
+TArray<FHHM_PathNodeData> AHHM_Manager_Navigation::Search_Path(const ALocalMap* _pLocalMap, FVector2D _location_Start, FVector2D _location_End, const FHHM_Parameter_PathFind& _pathfind_Params) const
 {
-	return UHHM_PathFinder::Search_Path(_pLocalMap, _location_Start, _location_End, _entitySize_Width, _entitySize_Height, _maxJumpLength, _maxFallLength, _maxHorizontalJumpLength);
+	return UHHM_PathFinder::Search_Path(_pLocalMap, _location_Start, _location_End, _pathfind_Params);
 }

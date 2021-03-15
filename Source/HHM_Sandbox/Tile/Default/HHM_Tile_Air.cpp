@@ -9,6 +9,7 @@
 
 AHHM_Tile_Air::AHHM_Tile_Air(void) {
 	m_ID = 0;
+	m_SubID = 0;
 	m_BaseTileData.IsPassable = true;
 
 

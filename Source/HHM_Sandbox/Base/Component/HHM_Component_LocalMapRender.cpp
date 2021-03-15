@@ -218,7 +218,7 @@ bool UHHM_Component_LocalMapRender::Initialize_Container_InstancedMesh(void)
 		return false;
 	}
 	
-	TMap<int32, AHHM_Tile*>& Ref_TileContainer = pManager_Tile->Get_TileArr_Ref();
+	TMap<int32, FHHM_Container_SubTile>& Ref_TileContainer = pManager_Tile->Get_TileArr_Ref();
 
 
 
@@ -226,73 +226,77 @@ bool UHHM_Component_LocalMapRender::Initialize_Container_InstancedMesh(void)
 	const int32 Num_TileContainer = Ref_TileContainer.Num();
 
 	for (int32 index_Tile = 0; index_Tile < Num_TileContainer; ++index_Tile) {
-		if (Ref_TileContainer[index_Tile] == nullptr) {
-			//Exception
-			return false;
-		}
-
-		//Get Tile's render info data
-		const FHHM_RenderInfo& TileRenderInfo = Ref_TileContainer[index_Tile]->Get_RenderInfo();
-		if (TileRenderInfo.eRenderType != EHHM_RenderType::RType_Instanced) {
-			continue;
-		}
-
-		//Check if tile is already registered
-		bool IsTileAlreadyRegistered = m_Container_Comp_InstancedMesh.Contains(Ref_TileContainer[index_Tile]->Get_TileID());
-		if (IsTileAlreadyRegistered == true) {
-			//Exception
-			return false;
-		}
-
-
-
-		//make some place on map for tile
-		m_Container_Comp_InstancedMesh.Add(index_Tile, FHHM_InstancedMeshArray());
-
-		//Filling render manager's instance map based on tile's material
-		int32 Num_TileMaterial = TileRenderInfo.Num_Material;
-		for (int32 index_Material = 0; index_Material < Num_TileMaterial; ++index_Material) {
-
-			//Check tile's material is already registered
-			int32 Num_Registered_Material = m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh.Num();
-			if (index_Material < Num_Registered_Material) {
-				//Exception;
-				continue;
-			}
-
-			//Check is material is availiable
-			if (TileRenderInfo.Arr_Material[index_Material] == nullptr) {
+		const int32 Num_SubTileContainer = Ref_TileContainer[index_Tile].Container_SubTile.Num();
+		for (int32 index_SubTile = 0; index_SubTile < Num_SubTileContainer; ++index_SubTile) {
+			if (Ref_TileContainer[index_Tile].Container_SubTile[index_SubTile] == nullptr) {
 				//Exception
 				return false;
 			}
 
-			//Create Mesh Component than set mesh and material
-			FString Name_InstancedMesh = FString::Printf(TEXT("InstancedMesh_%d_%d"), index_Tile, index_Material);
-			UInstancedStaticMeshComponent* pInstancedStaticMeshComponent = nullptr;
-			//pInstancedStaticMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(*Name_InstancedMesh);
-			pInstancedStaticMeshComponent = NewObject<UInstancedStaticMeshComponent>(this, *Name_InstancedMesh);
-			pInstancedStaticMeshComponent->SetupAttachment(this);
-			pInstancedStaticMeshComponent->SetStaticMesh(m_pStaticMesh);
-			pInstancedStaticMeshComponent->SetMaterial(0, TileRenderInfo.Arr_Material[index_Material]);
-
-			//Collision Setting
-			const bool IsPassable = Ref_TileContainer[index_Tile]->Get_IsPassable();
-			if (IsPassable) {
-				pInstancedStaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-			}
-			else {
-				pInstancedStaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
+			//Get Tile's render info data
+			const FHHM_RenderInfo& TileRenderInfo = Ref_TileContainer[index_Tile].Container_SubTile[index_SubTile]->Get_RenderInfo();
+			if (TileRenderInfo.eRenderType != EHHM_RenderType::RType_Instanced) {
+				continue;
 			}
 
-			//Rendering Setting
-			const bool IsNeedToRender = TileRenderInfo.IsNeedToRender;
-			if (IsNeedToRender == false) {
-				pInstancedStaticMeshComponent->bHiddenInGame = true;
+			//Check if tile is already registered
+			bool IsTileAlreadyRegistered = m_Container_Comp_InstancedMesh.Contains(Ref_TileContainer[index_Tile].Container_SubTile[index_SubTile]->Get_TileID());
+			if (IsTileAlreadyRegistered == true) {
+				//Exception
+				return false;
 			}
 
-			//Register instanced static mesh component on renderer's map
-			m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh.Add(pInstancedStaticMeshComponent);
-			//m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh[index_Material]->RegisterComponent();
+
+
+			//make some place on map for tile
+			m_Container_Comp_InstancedMesh.Add(index_Tile, FHHM_InstancedMeshArray());
+
+			//Filling render manager's instance map based on tile's material
+			int32 Num_TileMaterial = TileRenderInfo.Num_Material;
+			for (int32 index_Material = 0; index_Material < Num_TileMaterial; ++index_Material) {
+
+				//Check tile's material is already registered
+				int32 Num_Registered_Material = m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh.Num();
+				if (index_Material < Num_Registered_Material) {
+					//Exception;
+					continue;
+				}
+
+				//Check is material is availiable
+				if (TileRenderInfo.Arr_Material[index_Material] == nullptr) {
+					//Exception
+					return false;
+				}
+
+				//Create Mesh Component than set mesh and material
+				FString Name_InstancedMesh = FString::Printf(TEXT("InstancedMesh_%d_%d"), index_Tile, index_Material);
+				UInstancedStaticMeshComponent* pInstancedStaticMeshComponent = nullptr;
+				//pInstancedStaticMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(*Name_InstancedMesh);
+				pInstancedStaticMeshComponent = NewObject<UInstancedStaticMeshComponent>(this, *Name_InstancedMesh);
+				pInstancedStaticMeshComponent->SetupAttachment(this);
+				pInstancedStaticMeshComponent->SetStaticMesh(m_pStaticMesh);
+				pInstancedStaticMeshComponent->SetMaterial(0, TileRenderInfo.Arr_Material[index_Material]);
+
+				//Collision Setting
+				const bool IsPassable = Ref_TileContainer[index_Tile].Container_SubTile[index_SubTile]->Get_IsPassable();
+				if (IsPassable) {
+					pInstancedStaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+				}
+				else {
+					pInstancedStaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
+				}
+
+				//Rendering Setting
+				const bool IsNeedToRender = TileRenderInfo.IsNeedToRender;
+				if (IsNeedToRender == false) {
+					pInstancedStaticMeshComponent->bHiddenInGame = true;
+				}
+
+				//Register instanced static mesh component on renderer's map
+				m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh.Add(pInstancedStaticMeshComponent);
+				//m_Container_Comp_InstancedMesh[index_Tile].Arr_pInstancedStaticMesh[index_Material]->RegisterComponent();
+			}
+
 		}
 	}
 

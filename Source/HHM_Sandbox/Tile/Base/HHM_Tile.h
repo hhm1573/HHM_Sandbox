@@ -43,7 +43,7 @@ protected:
 	UPROPERTY()
 		int32			m_ID = -1;	//Desired ID for regist tile
 	UPROPERTY()
-		int32			m_SubID = -1;
+		int32			m_SubID = 0;
 
 	UPROPERTY()
 		FHHM_TileData_Base	m_BaseTileData;
@@ -52,6 +52,14 @@ protected:
 	UPROPERTY()
 		FHHM_RenderInfo		m_RenderInfo;
 
+
+
+protected:
+	UPROPERTY()
+		float		m_SpeedMultiplier_Ladder = 0.0f;
+
+
+
 public:		//Getter
 	int32					Get_TileID(void) const { return m_ID; }
 	int32					Get_TileSubID(void) const { return m_SubID; }
@@ -59,6 +67,8 @@ public:		//Getter
 	int32					Get_MaxHealthPoint(void) const { return m_BaseTileData.HP_Max; }
 	const FHHM_TileData&	Get_DefaultTileInfo(void) const { return m_DefaultTileData; }
 	const FHHM_RenderInfo&	Get_RenderInfo(void) const { return m_RenderInfo; }
+
+	float					Get_SpeedMultiplier_Ladder(void) const { return m_SpeedMultiplier_Ladder; }
 
 public:		//Setter
 	void					Set_Manager_Tile(AHHM_Manager_Tile* pmanager_Tile) { if (pmanager_Tile != nullptr) m_pManager_Tile = pmanager_Tile; }
@@ -74,6 +84,11 @@ public:	//LocalMap, TileInfo, ~~~, MapInfo
 
 	//Update Render Info Based on inserted tileInfo(Data of updating tile). Called from LocalMap whenever tile's data has changed (for example, Damaged)
 	virtual bool					Update_Render(int32& index_Instance, FTransform& transform_Local, class ALocalMap* pLocalMap, const FHHM_TileData& tileInfo);
+
+
+
+protected:
+	bool					Data_Set_Ladder(bool _isLadder, float _speedMultiplier);
 	
 
 };

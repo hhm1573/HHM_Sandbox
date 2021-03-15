@@ -13,7 +13,7 @@
 
 
 
-TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocalMap, FVector2D _location_Start, FVector2D _location_End, int32 _entitySize_Width, int32 _entitySize_Height, int32 _maxJumpLength, int32 _maxFallLength, int32 _maxHorizontalJumpLength) {
+TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocalMap, FVector2D _location_Start, FVector2D _location_End, const FHHM_Parameter_PathFind& _pathfindParams) {
 
 	TArray<FHHM_PathNodeData> Container_PathNodeData_Return;	//Container of node locations as Vector2D for return value
 	Container_PathNodeData_Return.Empty();
@@ -58,8 +58,8 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 	}
 
 	//if start location or end location is not passable, return
-	bool Passable_StartLocation = _pLocalMap->IsLocationPassable(Index_Start);
-	bool Passable_EndLocation = _pLocalMap->IsLocationPassable(Index_End);
+	bool Passable_StartLocation = _pLocalMap->IsLocationPassable(Index_Start, _pathfindParams.EntitySize_Height);
+	bool Passable_EndLocation = _pLocalMap->IsLocationPassable(Index_End, _pathfindParams.EntitySize_Height);
 
 	if (Passable_StartLocation == false || Passable_EndLocation == false) {
 		//Exception
@@ -164,12 +164,6 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 
 
 
-		if (Counter_ProcessedNode > 1000) {
-			int32 breakpoint = 0;
-		}
-
-
-
 		//Iterate Neighbors of lowest cost node
 		for (int32 index_Dir = 0; index_Dir < 4; ++index_Dir) {
 
@@ -191,29 +185,53 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 
 
 			//check Neighbor node is impassable
-			bool	IsLocationPassable = _pLocalMap->IsLocationPassable(Index_Neighbor);
+			bool	IsLocationPassable = _pLocalMap->IsLocationPassable(Index_Neighbor, _pathfindParams.EntitySize_Height);
 			if (IsLocationPassable == false) {
 				continue;
 			}
 
 			//Get New Jump Value for neighbor node
 			bool	IsOnGround = _pLocalMap->IsOnGround(Index_Neighbor);
+			bool	IsOnLadder = _pLocalMap->IsOnLadder(Index_Neighbor);
+
+			//bool	IsNeighbor_Ladder = _pLocalMap->IsTarget_Ladder(Index_Neighbor);
 
 			int8			JumpValue_Neighbor = Container_Node[(uint8)eMoveType_LowestCost][Index_LowestCost].JumpValue;
 			int8			HorizontalJumpValue_Neighbor = Container_Node[(uint8)eMoveType_LowestCost][Index_LowestCost].HorizontalJumpValue;
+			int8			LadderValue_Neighbor = Container_Node[(uint8)eMoveType_LowestCost][Index_LowestCost].LadderValue;
 			EHHM_MoveType	eMoveType_Neighbor = eMoveType_LowestCost;
 
 			bool			MoveOnAir_Neighbor = Container_Node[(uint8)eMoveType_LowestCost][Index_LowestCost].MoveOnAir;
 
-			if (Index_Neighbor == 207 || Index_Neighbor == 177 || Index_Neighbor == 215) {
-				int breakpoint = 0;
+			if (Index_Neighbor == 1412) {
+				int BreakPoint = 0;
 			}
+			if (Index_Neighbor == 1348 || Index_Neighbor == 1284 || Index_Neighbor == 1220) {
+				int BreakPoint = 0;
+			}
+			if (Index_Neighbor == 964 || Index_Neighbor == 900) {
+				int BreakPoint = 0;
+			}
+
+
 
 			switch (index_Dir) {
 			case 0:		//Up
 				if (eMoveType_LowestCost == EHHM_MoveType::MT_OnGround || eMoveType_LowestCost == EHHM_MoveType::MT_Jump) {
-					++JumpValue_Neighbor;
-					eMoveType_Neighbor = EHHM_MoveType::MT_Jump;
+					if (eMoveType_LowestCost == EHHM_MoveType::MT_OnGround && IsOnGround == true) {
+						JumpValue_Neighbor = 0;
+						HorizontalJumpValue_Neighbor = 0;
+						++LadderValue_Neighbor;
+						eMoveType_Neighbor = EHHM_MoveType::MT_OnGround;
+
+						/*if (IsNeighbor_Ladder == false) {
+							LadderValue_Neighbor = 0;
+						}*/
+					}
+					else {
+						++JumpValue_Neighbor;
+						eMoveType_Neighbor = EHHM_MoveType::MT_Jump;
+					}
 				}
 				else {
 					continue;
@@ -227,18 +245,31 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 						continue;
 					}
 
-					if (IsOnGround == true) {
+					if (IsOnGround == true) {	//Landing From down-jump
+						//++LadderValue_Neighbor;
+						if (JumpValue_Neighbor <= - _pathfindParams.MaxFallLength) {
+							continue;		//Skip if downjump was too long. 
+											//since the actual neighbor's value will be set later, jumpvalue_neighbor is been set as lowestcost's jumpvalue at this point.
+						}
 						JumpValue_Neighbor = 0;
 						HorizontalJumpValue_Neighbor = 0;
 						eMoveType_Neighbor = EHHM_MoveType::MT_OnGround;
 					}
-					else {
+					else {							//Processing DownJump
 						--JumpValue_Neighbor;
 						eMoveType_Neighbor = EHHM_MoveType::MT_DownJump;
 					}
 				}
 				else {
-					continue;
+					if (eMoveType_LowestCost == EHHM_MoveType::MT_OnGround && IsOnGround == true) {
+						++LadderValue_Neighbor;
+						JumpValue_Neighbor = 0;
+						HorizontalJumpValue_Neighbor = 0;
+						eMoveType_Neighbor = EHHM_MoveType::MT_OnGround;
+					}
+					else {
+						continue;
+					}
 				}
 				break;
 
@@ -311,20 +342,26 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 
 
 
+			//reset ladder-value if currently does not using ladder
+			int8 LadderValue_LowestCost = Container_Node[(uint8)eMoveType_LowestCost][Index_LowestCost].LadderValue;
+			if (LadderValue_LowestCost == LadderValue_Neighbor) {
+				LadderValue_Neighbor = 0;
+			}
+
 			//if node is too high or too low, skip that node
-			if (JumpValue_Neighbor > _maxJumpLength) {		//remove '=' to make it can move 1 more tile than max jump/fall length
+			if (JumpValue_Neighbor > _pathfindParams.MaxJumpLength) {		//remove '=' to make it can move 1 more tile than max jump/fall length
 				if (Location_Neighbor_Vertical > Location_LowestCost_Vertical) {
 					continue;
 				}
 			}
-			else if (JumpValue_Neighbor <= -_maxFallLength) {
+			else if (JumpValue_Neighbor < -_pathfindParams.MaxFallLength) {
 				if (Location_Neighbor_Vertical < Location_LowestCost_Vertical) {
 					continue;
 				}
 			}
 
 			//Check Horizontal jump
-			if (HorizontalJumpValue_Neighbor > _maxHorizontalJumpLength) {
+			if (HorizontalJumpValue_Neighbor > _pathfindParams.MaxHorizontalJumpLength) {
 				if (Location_Neighbor_Horizontal != Location_LowestCost_Horizontal) {
 					continue;	//If Current node's jumpvalue is over max jump length, continue.
 				}
@@ -377,6 +414,7 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 				Container_Node[(uint8)eMoveType_Neighbor][Index_Neighbor].JumpValue = JumpValue_Neighbor;
 				Container_Node[(uint8)eMoveType_Neighbor][Index_Neighbor].HorizontalJumpValue = HorizontalJumpValue_Neighbor;
 				Container_Node[(uint8)eMoveType_Neighbor][Index_Neighbor].MoveOnAir = MoveOnAir_Neighbor;
+				Container_Node[(uint8)eMoveType_Neighbor][Index_Neighbor].LadderValue = LadderValue_Neighbor;
 
 				Container_Node[(uint8)eMoveType_Neighbor][Index_Neighbor].Cost_G = Cost_G_Neighbor;
 				Container_Node[(uint8)eMoveType_Neighbor][Index_Neighbor].Cost_H = Cost_H_Neighbor;
@@ -428,12 +466,19 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 
 		while (Location_Current != Location_Parent) {
 			//Container_NodeLoc_Return.Add(Location_Current);
+			int8 LadderValue_Before = Container_Node[(uint8)eMoveType_Before][Index_Before].LadderValue;
+			int8 LadderValue_Current = Container_Node[(uint8)eMoveType_Current][Index_Current].LadderValue;
+			int8 LadderValue_Parent = Container_Node[(uint8)eMoveType_Parent][Index_Parent].LadderValue;
 
 			//----------------| Filtering work |----------------//
 
 			if (Index_Current == Index_End		//Current Node is end node
-				|| (eMoveType_Before != EHHM_MoveType::MT_OnGround && eMoveType_Current == EHHM_MoveType::MT_OnGround)	//(Start Jumping)Before node is not on ground while current node is on ground
-				|| (eMoveType_Parent != EHHM_MoveType::MT_OnGround && eMoveType_Current == EHHM_MoveType::MT_OnGround)	//(Landing)
+				|| (eMoveType_Before != EHHM_MoveType::MT_OnGround && eMoveType_Current == EHHM_MoveType::MT_OnGround)//(Start Jumping)Before node is not on ground while current node is on ground
+				|| (eMoveType_Parent != EHHM_MoveType::MT_OnGround && eMoveType_Current == EHHM_MoveType::MT_OnGround)//(Landing)
+				|| (LadderValue_Current == 0 && LadderValue_Before != 0)
+				|| (LadderValue_Current != 0 && LadderValue_Before == 0)
+				//|| (LadderValue_Before == 0 && LadderValue_Current > 0)
+				//((eMoveType_Before == EHHM_MoveType::MT_OnGround && eMoveType_Current == EHHM_MoveType::MT_OnGround) && ((LadderValue_Before == 0 && LadderValue_Current != LadderValue_Before)/* || (LadderValue_Before != LadderValue_Current && LadderValue_Current == 0)*/))	//Using Ladder
 				) {	
 
 				int32			Index_FilteredNode = Index_Current;
@@ -443,9 +488,11 @@ TArray<FHHM_PathNodeData> UHHM_PathFinder::Search_Path(const ALocalMap * _pLocal
 				//Horizontal Jump Fix
 				//패스파인딩 과정에서 낙하를 실행할경우 1.낙하하는 방향으로 멀리뛰기 수행 2.멀리뛰기 실행후 바로 밑에 (이동거리가 1일경우) 지면이 있을경우 OnGround 상태로 변환됨
 				//의 과정을 거침으로 인해 탐색경로를 구축하는 과정에서 (바로 아래의 Container_PathNodeData_Return.Add 부분) 1칸 낙하하는 경우에 이동 방식이 잘못 입력됨
+				int8 HorizontalJumpValue_Parent = Container_Node[(uint8)eMoveType_Parent][Index_Parent].HorizontalJumpValue;
 				if ((eMoveType_Parent == EHHM_MoveType::MT_HorizontalJump_Left || eMoveType_Parent == EHHM_MoveType::MT_HorizontalJump_Right)
 					&& eMoveType_Current == EHHM_MoveType::MT_OnGround
-					&& MoveValue <= 1) {
+					//&& MoveValue <= 1
+					&& HorizontalJumpValue_Parent <= 1) {
 					eMoveType_FilteredNode = EHHM_MoveType::MT_DownJump;
 				}
 

@@ -36,6 +36,7 @@ public:
 		int32				Index_Horizontal = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileData")
 		int32				Index_Vertical = 0;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileData")
 		float				HP_Max = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileData")
@@ -43,6 +44,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileData")
 		bool				IsPassable = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileData")
+		bool				IsScaffold = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileData")
+		bool				IsLadder = false;
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileInfo")
 		bool				IsNeedToRender = true;*/
 
@@ -60,6 +65,24 @@ public:
 
 		IsPassable = _tileData_Base.IsPassable;
 
+	}
+
+public:
+	bool InitData_Base(int32 _id, int32 _subID, float _hpMax) {
+		if (_id < 0 || _subID < 0) {
+			//Set ID is negative value
+			return false;
+		}
+		if (_hpMax <= 0.0f) {
+			//Invalid HP Value
+			return false;
+		}
+		ID = _id;
+		SubID = _subID;
+		HP_Max = _hpMax;
+		HP = HP_Max;
+
+		return true;
 	}
 };
 

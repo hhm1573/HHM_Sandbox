@@ -223,80 +223,80 @@ void AHHM_Manager_Render::Initialize_Storage_InstancedMesh(void) {
 	AHHM_Manager_Tile* pManager_Tile = pGameMode->Get_Manager_Tile();	//Temporary Debug Part
 	
 
-	//Get Tile Container
-	TMap<int32, AHHM_Tile*>& Ref_TileContainer = pManager_Tile->Get_TileArr_Ref();
+	////Get Tile Container
+	//TMap<int32, AHHM_Tile*>& Ref_TileContainer = pManager_Tile->Get_TileArr_Ref();
 
-	//iterate container and if tile's render type is 'instanced', create render info based on tile's info
-	const int32 Num_TileContainer = Ref_TileContainer.Num();
+	////iterate container and if tile's render type is 'instanced', create render info based on tile's info
+	//const int32 Num_TileContainer = Ref_TileContainer.Num();
 
-	for (int32 index_Tile = 0; index_Tile < Num_TileContainer; ++index_Tile) {
-		if (Ref_TileContainer[index_Tile] == nullptr) {
-			//Exception
-			continue;
-		}
-		
-		//Get Tile's RenderInfo data
-		const FHHM_RenderInfo&	TileRenderInfo = Ref_TileContainer[index_Tile]->Get_RenderInfo();
-		if (TileRenderInfo.eRenderType != EHHM_RenderType::RType_Instanced) {
-			continue;
-		}
+	//for (int32 index_Tile = 0; index_Tile < Num_TileContainer; ++index_Tile) {
+	//	if (Ref_TileContainer[index_Tile] == nullptr) {
+	//		//Exception
+	//		continue;
+	//	}
+	//	
+	//	//Get Tile's RenderInfo data
+	//	const FHHM_RenderInfo&	TileRenderInfo = Ref_TileContainer[index_Tile]->Get_RenderInfo();
+	//	if (TileRenderInfo.eRenderType != EHHM_RenderType::RType_Instanced) {
+	//		continue;
+	//	}
 
-		//Check Tile is already registered
-		bool IsTileAlreadyRegistered = m_Map_Instanced.Contains(Ref_TileContainer[index_Tile]->Get_TileID());
-		if (IsTileAlreadyRegistered == true) {
-			//Exception
-			continue;
-		}
+	//	//Check Tile is already registered
+	//	bool IsTileAlreadyRegistered = m_Map_Instanced.Contains(Ref_TileContainer[index_Tile]->Get_TileID());
+	//	if (IsTileAlreadyRegistered == true) {
+	//		//Exception
+	//		continue;
+	//	}
 
-		//make some place on map for tile
-		m_Map_Instanced.Add(index_Tile, FHHM_InstancedMeshArray());
+	//	//make some place on map for tile
+	//	m_Map_Instanced.Add(index_Tile, FHHM_InstancedMeshArray());
 
-		//Filling render manager's instance map based on tile's material
-		int32 Num_TileMaterial = TileRenderInfo.Num_Material;
-		for (int32 index_Material = 0; index_Material < Num_TileMaterial; ++index_Material) {
+	//	//Filling render manager's instance map based on tile's material
+	//	int32 Num_TileMaterial = TileRenderInfo.Num_Material;
+	//	for (int32 index_Material = 0; index_Material < Num_TileMaterial; ++index_Material) {
 
-			//Check tile's material is already registered
-			int32 Num_Registered_Material = m_Map_Instanced[index_Tile].Arr_pInstancedStaticMesh.Num();
-			if (index_Material < Num_Registered_Material) {
-				//Exception;
-				continue;
-			}
+	//		//Check tile's material is already registered
+	//		int32 Num_Registered_Material = m_Map_Instanced[index_Tile].Arr_pInstancedStaticMesh.Num();
+	//		if (index_Material < Num_Registered_Material) {
+	//			//Exception;
+	//			continue;
+	//		}
 
-			//Check is material is availiable
-			if (TileRenderInfo.Arr_Material[index_Material] == nullptr) {
-				//Exception
-				return;
-			}
+	//		//Check is material is availiable
+	//		if (TileRenderInfo.Arr_Material[index_Material] == nullptr) {
+	//			//Exception
+	//			return;
+	//		}
 
-			//Create Mesh Component than set mesh and material
-			FString Name_InstancedMesh = FString::Printf(TEXT("InstancedMesh_%d_%d"),index_Tile, Num_TileMaterial);
-			UInstancedStaticMeshComponent*	pInstancedMeshComponent = nullptr;
-			pInstancedMeshComponent = NewObject<UInstancedStaticMeshComponent>(this, *Name_InstancedMesh);
-			pInstancedMeshComponent->SetStaticMesh(m_pStaticMesh_Plane);
-			pInstancedMeshComponent->SetMaterial(0, TileRenderInfo.Arr_Material[index_Material]);
+	//		//Create Mesh Component than set mesh and material
+	//		FString Name_InstancedMesh = FString::Printf(TEXT("InstancedMesh_%d_%d"),index_Tile, Num_TileMaterial);
+	//		UInstancedStaticMeshComponent*	pInstancedMeshComponent = nullptr;
+	//		pInstancedMeshComponent = NewObject<UInstancedStaticMeshComponent>(this, *Name_InstancedMesh);
+	//		pInstancedMeshComponent->SetStaticMesh(m_pStaticMesh_Plane);
+	//		pInstancedMeshComponent->SetMaterial(0, TileRenderInfo.Arr_Material[index_Material]);
 
-				//Collision Setting
-			const bool IsPassable = Ref_TileContainer[index_Tile]->Get_IsPassable();
-			if (IsPassable) {
-				pInstancedMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-			}
-			else {
-				pInstancedMeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
-				const ECollisionEnabled::Type e = pInstancedMeshComponent->GetCollisionEnabled();
-				int i = 0;
-			}
+	//			//Collision Setting
+	//		const bool IsPassable = Ref_TileContainer[index_Tile]->Get_IsPassable();
+	//		if (IsPassable) {
+	//			pInstancedMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	//		}
+	//		else {
+	//			pInstancedMeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
+	//			const ECollisionEnabled::Type e = pInstancedMeshComponent->GetCollisionEnabled();
+	//			int i = 0;
+	//		}
 
-				//Rendering Setting
-			const bool IsNeedToRender = TileRenderInfo.IsNeedToRender;
-			if (IsNeedToRender == false) {
-				pInstancedMeshComponent->bHiddenInGame = true;
-			}
+	//			//Rendering Setting
+	//		const bool IsNeedToRender = TileRenderInfo.IsNeedToRender;
+	//		if (IsNeedToRender == false) {
+	//			pInstancedMeshComponent->bHiddenInGame = true;
+	//		}
 
-			//Register instanced static mesh component on renderer's map
-			m_Map_Instanced[index_Tile].Arr_pInstancedStaticMesh.Add(pInstancedMeshComponent);
-			m_Map_Instanced[index_Tile].Arr_pInstancedStaticMesh[index_Material]->RegisterComponent();
-		}
-	}
+	//		//Register instanced static mesh component on renderer's map
+	//		m_Map_Instanced[index_Tile].Arr_pInstancedStaticMesh.Add(pInstancedMeshComponent);
+	//		m_Map_Instanced[index_Tile].Arr_pInstancedStaticMesh[index_Material]->RegisterComponent();
+	//	}
+	//}
 }
 
 void AHHM_Manager_Render::Clear_MeshComponent(void) {

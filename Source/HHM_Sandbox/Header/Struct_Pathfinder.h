@@ -42,6 +42,8 @@ public:
 	/*UPROPERTY(VisibleAnywhere, Category = "Node_Info")
 		EHHM_MoveType	eMoveType = EHHM_MoveType::MT_OnGround;*/
 	UPROPERTY(VisibleAnywhere, Category = "Node_Info")
+		int8			LadderValue = 0;	//Used for Sorting result nodes for returning
+	UPROPERTY(VisibleAnywhere, Category = "Node_Info")
 		bool			MoveOnAir = false;
 
 	UPROPERTY(VisibleAnywhere, Category = "Node_Info")

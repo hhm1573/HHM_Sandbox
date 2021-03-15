@@ -25,6 +25,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		int32		Tile_SubID = 0;
 	UPROPERTY(VisibleAnywhere)
+		int32		Tile_RenderInstanceIndex = 0;
+	UPROPERTY(VisibleAnywhere)
 		int32		Render_Index = -1;
 
 public:
@@ -33,7 +35,7 @@ public:
 		Render_Index = -1;
 	}
 
-	FORCEINLINE FHHM_RenderData(int32 TileID, int32 TileSubID) :Tile_ID(TileID), Tile_SubID(TileSubID) {
+	FORCEINLINE FHHM_RenderData(int32 _tileID, int32 _tileSubID, int32 _tileRenderInstanceIndex) :Tile_ID(_tileID), Tile_SubID(_tileSubID), Tile_RenderInstanceIndex(_tileRenderInstanceIndex) {
 		Render_Index = -1;
 	}
 
