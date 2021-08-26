@@ -8,8 +8,17 @@
 #include "Header/Struct_Pathfinder.h"
 #include "Data/Entity/Struct_Entity_MovementData.h"
 #include "Data/Entity/Enum_Entity_MovementData.h"
+#include "Base/Component/Movement/Enum_MovementMode.h"
+#include "Data/AI/AI_Enum_PathState.h"
 
 #include "HHM_Component_Movement.generated.h"
+
+//To Do : LastPathData - 현재 입력받은 명령이 이미 실행되었던 명령인지 확인 및 Abort, Blocked 같은 결과값을 동일하게 반환하기 위함.
+//AI_Order_MoveTo 함수. 이동명령을 받고 현재 이동상황에 따른 결과값 Enum 반환.
+//타일 상호작용은 상호작용 ID랑 틱 시간값을 타일에서 전해받음.
+
+//To Do : Search Path, FollowPath 로 함수를 나눈후 Behavior Tree Task Execute 시에 Search Path 실행.
+// Search Path에서 찾은 패스를 Task에 반환, 반환받은 패스를 Task에서 컴포넌트에게 입력하여 패스를 따라가게 진행?
 
 /**
  * 
@@ -47,6 +56,9 @@ protected:
 
 
 	UPROPERTY()
+		EHHM_MovementMode			m_MoveMode = EHHM_MovementMode::Move_OnGround;
+
+	UPROPERTY()
 		EHHM_MoveType				m_MoveType_Current = EHHM_MoveType::MT_OnGround;
 	UPROPERTY()
 		EHHM_MoveType				m_MoveType_Before = EHHM_MoveType::MT_OnGround;
@@ -78,6 +90,10 @@ protected:
 
 	UPROPERTY()
 	TArray<FHHM_PathNodeData>	m_FollowingPath;
+	UPROPERTY()
+		FVector2D				m_LastTargetLocation = FVector2D::ZeroVector;
+	UPROPERTY()
+		EHHM_AI_PathState		m_LastPathState = EHHM_AI_PathState::PathState_End;
 
 
 
@@ -106,6 +122,10 @@ public:
 public:
 	UFUNCTION()
 	bool			MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical);
+	UFUNCTION(BlueprintCallable, Category = "HHM_AI")
+		EHHM_AI_PathState	AI_MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical);
+	UFUNCTION(BlueprintCallable, Category = "HHM_AI")	//Reset Last MoveTarget. so that ai can order the move again.
+		void				AI_Reset_MoveTarget();
 
 	UFUNCTION()
 		bool		Change_Face_Direction(bool _toLeft = true);
@@ -137,6 +157,10 @@ public:
 		FVector			Get_Location();				//Get Location Of UpdatedComponent of UMovementComponent
 	UFUNCTION()
 		FVector			Get_Location_BottomLeft();	//Get Bottom-Center Location of Bottom_Left Entity-Tile
+	UFUNCTION()
+		int32			Get_Index();				//Get Index
+	UFUNCTION()
+		FVector2D		Get_IndexLocation();		// HHM Note : To Do - make it return bool value instead of returning result directly
 
 	UFUNCTION()
 		FRotator		Get_Rotation_Safe();			//Get Rotation of Updated Component of UMovementComponent. Do Safety check
@@ -184,15 +208,21 @@ private:
 	void			FollowPath_HorizontalJump_Free(float DeltaTime);
 
 	void			FollowPath_Walk(float DeltaTime/*, const FVector& _location_Current, const FVector& _location_Target*/);
-	void			FollowPath_Ladder(float DeltaTile);
+	void			FollowPath_Ladder(float DeltaTime);
 #pragma endregion
+
+private:
+	void			Start_Fall(float DeltaTime);
+	void			Start_RecoveryFromFall(void);
 
 private:
 	bool			Calculate_MoveTarget_Location(void);
 
-	bool			Check_IsBelowFloor_Standable(void);
+	bool			Check_IsBelowFloor_Standable(void);		//Deprecated due to it is obsoleted.
+	bool			Check_ShouldStartFall(void);			//But It is just renamed version of Check_IsBelowFloor_Standable for now though.
 
 	void			Abort_Path(void);
+	void			Path_Succeed(void);
 	
 	
 };

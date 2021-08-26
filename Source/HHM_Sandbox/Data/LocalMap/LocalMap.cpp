@@ -525,7 +525,8 @@ bool ALocalMap::IsLocationStandable(int32 _index, int32 _entitySize_Height) cons
 
 	const bool isLocationOnGround = ALocalMap::IsOnGround(_index);
 	if (isLocationOnGround == false) {
-		return false;
+		const bool isLocationOnScaffold = ALocalMap::IsOnScaffold(_index);
+		return isLocationOnScaffold;
 	}
 
 	return true;

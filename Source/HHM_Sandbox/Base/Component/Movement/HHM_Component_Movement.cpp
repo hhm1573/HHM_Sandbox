@@ -71,24 +71,28 @@ void UHHM_Component_Movement::TickComponent(float DeltaTime, ELevelTick TickType
 
 
 
-	//Check Is Falling
-	if (m_bIsFalling == false) {
-		bool IsFloor_Standalbe = Check_IsBelowFloor_Standable();
-		m_bIsFalling = !(IsFloor_Standalbe);
+	//Update IsFalling_Before
+	m_bIsFalling_Before = m_bIsFalling;
+
+	//Update MoveType
+	//int32 Num_FollowingPath = m_FollowingPath.Num();
+	m_MoveType_Before = m_MoveType_Current;
+	/*if (Num_FollowingPath > 0) {
+		m_MoveType_Current = m_FollowingPath[0].eMoveType;
 	}
+	else {
+		m_MoveType_Current = EHHM_MoveType::MT_OnGround;
+		return;
+	}*/
 
+
+
+	UHHM_Component_Movement::Update_MovementSpeed(DeltaTime);
 	
+
+
 	if (m_bIsFalling == true) {												//If Falling, Do Some Falling job
-		//If It just start to falling abort path
-		if (m_bIsFalling_Before == false) {
-			Abort_Path();
-		}
-
 		Update_Falling(DeltaTime);
-
-		//Update IsFalling_Before
-		m_bIsFalling_Before = m_bIsFalling;
-
 		return;
 	}
 	else if (m_bIsRecovering == true) {										//If Falling ended, do recover
@@ -97,29 +101,11 @@ void UHHM_Component_Movement::TickComponent(float DeltaTime, ELevelTick TickType
 		m_bIsRecovering = false;
 		return;
 	}
-
-
-
-	//Update MoveType
-	int32 Num_FollowingPath = m_FollowingPath.Num();
-	m_MoveType_Before = m_MoveType_Current;
-	if (Num_FollowingPath > 0) {
-		m_MoveType_Current = m_FollowingPath[0].eMoveType;
-	}
 	else {
-		m_MoveType_Current = EHHM_MoveType::MT_OnGround;
-		return;
+		FollowPath(DeltaTime);												//Falling check executes on FollowingPath
 	}
 
-
-
-	UHHM_Component_Movement::Update_MovementSpeed(DeltaTime);
-	
-
-
-	if (m_FollowingPath.Num() > 0) {
-		FollowPath(DeltaTime);
-	}
+	return;
 }
 
 
@@ -127,7 +113,7 @@ void UHHM_Component_Movement::TickComponent(float DeltaTime, ELevelTick TickType
 bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical) {
 	// HHM Note : Add Location Check whether entity can reach/stand or not
 	// HHM Note : Save Manager's pointer if that kind of thing needed
-
+	
 	//Get Navigation Manager
 	UWorld* pWorld = GetWorld();
 	if (pWorld == nullptr) {
@@ -178,12 +164,15 @@ bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _ind
 
 
 
-	FVector Vec_Location_Current = GetActorLocation();
-	FVector2D Vec_Location_Start = FVector2D();
-	bool IsSucceed_Calculate_IndexLocation = AHHM_Manager_Math_Grid::Convert_Translation_To_IndexLocation(Vec_Location_Start, Vec_Location_Current, MapInfo);
-	if (IsSucceed_Calculate_IndexLocation == false) {
-		return false;
-	}
+	////FVector Vec_Location_Current = GetActorLocation();
+	//FVector Vec_Location_Current = Get_Location();
+	//FVector2D Vec_Location_Start = FVector2D();
+	//bool IsSucceed_Calculate_IndexLocation = AHHM_Manager_Math_Grid::Convert_Translation_To_IndexLocation(Vec_Location_Start, Vec_Location_Current, MapInfo);
+	//if (IsSucceed_Calculate_IndexLocation == false) {
+	//	return false;
+	//}
+	//FVector2D Vec_Location_End = FVector2D(_index_Horizontal, _index_Vertical);
+	FVector2D Vec_Location_Start = Get_IndexLocation();
 	FVector2D Vec_Location_End = FVector2D(_index_Horizontal, _index_Vertical);
 
 
@@ -205,6 +194,113 @@ bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _ind
 
 	return true;
 }
+
+EHHM_AI_PathState UHHM_Component_Movement::AI_MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical)
+{
+	FVector2D Vec_Location_Start = Get_IndexLocation();
+	FVector2D Vec_Location_End = FVector2D(_index_Horizontal, _index_Vertical);
+
+	////Is this move already performed?
+	//if (Vec_Location_Start == Vec_Location_End) {
+	//	return EHHM_AI_PathState::PathState_Success;
+	//}
+
+	//if target location is same as last target, return last target's state
+	if (m_LastTargetLocation == Vec_Location_End) {
+		return m_LastPathState;
+	}
+
+	
+
+	//Get Navigation Manager For PathFinding
+	UWorld* pWorld = nullptr;
+	pWorld = GetWorld();
+	if (pWorld == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+	AGameModeBase* pGameMode_Raw = nullptr;
+	pGameMode_Raw = pWorld->GetAuthGameMode();
+	if (pGameMode_Raw == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+	AHHM_GameMode_LocalMap* pGameMode = nullptr;
+	pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
+	if (pGameMode == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+	AHHM_Manager_Navigation* pManager_Navigation = nullptr;
+	pManager_Navigation = pGameMode->Get_Manager_Navigation();
+	if (pManager_Navigation == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+	
+
+	//Get LocalMap and MapInfo for PathFinding
+	AActor* pOwner_Raw = nullptr;
+	pOwner_Raw = GetOwner();
+	if (pOwner_Raw == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+	AHHM_Entity* pOwner = nullptr;
+	pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+	if (pOwner == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+	const ALocalMap* pLocalMap_const = nullptr;
+	pLocalMap_const = pOwner->Get_LocalMap_Const();
+	if (pLocalMap_const == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+
+
+	//Build Path Params
+	FHHM_Parameter_PathFind PathFind_Params = FHHM_Parameter_PathFind(m_EntitySize_Horizontal, m_EntitySize_Vertical, m_MovementData.Jump_Vertical_MaxHeight, m_MovementData.DownJump_MaxHeight, m_MovementData.Jump_Horizontal_MaxLength);
+
+	TArray<FHHM_PathNodeData> Path_Find = pManager_Navigation->Search_Path(pLocalMap_const, Vec_Location_Start, Vec_Location_End, PathFind_Params);
+	
+	int32 Num_Path = Path_Find.Num();
+	if (Num_Path > 0) {
+		m_FollowingPath = Path_Find;
+		AI_Reset_MoveTarget();
+		m_LastTargetLocation = Vec_Location_End;
+		m_LastPathState = EHHM_AI_PathState::PathState_Begin;
+		//return EHHM_AI_PathState::PathState_Begin;
+
+		//Calculate MoveTarget
+		bool IsSucceed_CalculateTargetLocation = UHHM_Component_Movement::Calculate_MoveTarget_Location();
+		if (IsSucceed_CalculateTargetLocation) {
+			return EHHM_AI_PathState::PathState_Begin;
+		}
+		else {
+			m_FollowingPath.Empty();
+		}
+	}
+
+	//Can not find any path to target location
+	return EHHM_AI_PathState::PathState_NoPath;
+}
+
+void UHHM_Component_Movement::AI_Reset_MoveTarget()
+{
+	m_LastTargetLocation = FVector2D::ZeroVector;
+	m_LastPathState = EHHM_AI_PathState::PathState_End;
+}
+
+
 
 bool UHHM_Component_Movement::Change_Face_Direction(bool _toLeft)
 {
@@ -253,6 +349,13 @@ FVector UHHM_Component_Movement::Get_Location()
 	}
 	
 	FVector Vec_Location = Super::UpdatedComponent->GetComponentLocation();
+
+	////Since scenecomponent located very bottom of entity, lift it up little bit so it can be located center of tile
+	//FVector Vec_Return = Vec_Location;
+	//Vec_Return.Z = Vec_Return.Z + HHM_TILE_SIZE * 0.5f;
+
+	//return Vec_Return;
+
 	return Vec_Location;
 }
 
@@ -277,7 +380,115 @@ FVector UHHM_Component_Movement::Get_Location_BottomLeft()
 	float Distance_To_BottomLeft_EntityTile = (m_EntitySize_Horizontal - 1) * (HHM_TILE_SIZE * 0.5f);
 	FVector Vec_Location_BottomLeft = FVector(Vec_Location.X - Distance_To_BottomLeft_EntityTile, Vec_Location.Y, Vec_Location.Z);
 
+	////Since scenecomponent located very bottom of entity, lift it up little bit so it can be located center of tile
+	//FVector Vec_Return = Vec_Location_BottomLeft;
+	//Vec_Return.Z = Vec_Return.Z + HHM_TILE_SIZE * 0.5f;
+
+	//return Vec_Return;
+
 	return Vec_Location_BottomLeft;
+}
+
+int32 UHHM_Component_Movement::Get_Index()
+{
+	//Get LocalMap For Getting MapInfo from it
+	AActor* pOwner_Raw = nullptr;
+	pOwner_Raw = GetOwner();
+	if (pOwner_Raw == nullptr) {
+		//Exception
+		return -1;
+	}
+
+	AHHM_Entity* pOwner = nullptr;
+	pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+	if (pOwner == nullptr) {
+		//Exception
+		return -1;
+	}
+
+	ALocalMap* pLocalMap = nullptr;
+	pLocalMap = pOwner->Get_LocalMap();
+	if (pLocalMap == nullptr) {
+		//Exception
+		return -1;
+	}
+
+
+
+	//Get MapInfo
+	const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+
+	//Get Location
+	FVector Vec_Location_Current = Get_Location();
+
+	//Fix Location Height
+	float Height_Current = Vec_Location_Current.Z;
+	float Height_Current_Int = FMath::FloorToInt(Height_Current);
+	float Difference_Height = Height_Current - Height_Current_Int;
+	if (Difference_Height >= 0.8f) {
+		Vec_Location_Current.Z = Height_Current_Int + 1.0f;
+	}
+
+	//Get Index
+	int32 Index_Current = -1;
+	bool IsConvertSucceed = AHHM_Manager_Math_Grid::Convert_Translation_To_Index(Index_Current, Vec_Location_Current, MapInfo);
+	if (IsConvertSucceed == false) {
+		//Exception
+		return -1;
+	}
+
+	return Index_Current;
+}
+
+FVector2D UHHM_Component_Movement::Get_IndexLocation()
+{
+	//Get LocalMap For Getting MapInfo from it
+	AActor* pOwner_Raw = nullptr;
+	pOwner_Raw = GetOwner();
+	if (pOwner_Raw == nullptr) {
+		//Exception
+		return FVector2D(-1);
+	}
+
+	AHHM_Entity* pOwner = nullptr;
+	pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+	if (pOwner == nullptr) {
+		//Exception
+		return FVector2D(-1);
+	}
+
+	ALocalMap* pLocalMap = nullptr;
+	pLocalMap = pOwner->Get_LocalMap();
+	if (pLocalMap == nullptr) {
+		//Exception
+		return FVector2D(-1);
+	}
+
+
+
+	//Get MapInfo
+	const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+
+	//Get Location
+	FVector Vec_Location_Current = Get_Location();
+
+	//Fix Location Height
+	float Height_Current = Vec_Location_Current.Z;
+	float Height_Current_Int = FMath::FloorToInt(Height_Current);
+	float Difference_Height = Height_Current - Height_Current_Int;
+	if (Difference_Height >= 0.8f) {
+		Vec_Location_Current.Z = Height_Current_Int + 1.0f;
+	}
+
+	//Get IndexLocation
+	FVector2D IndexLocation_Current = FVector2D(-1);
+	bool IsSucceed_Convert_IndexLocation = AHHM_Manager_Math_Grid::Convert_Translation_To_IndexLocation(IndexLocation_Current, Vec_Location_Current, MapInfo);
+	if (IsSucceed_Convert_IndexLocation == false) {
+		//Exception
+		return FVector2D(-1);
+	}
+
+	return IndexLocation_Current;
 }
 
 FRotator UHHM_Component_Movement::Get_Rotation_Safe()
@@ -489,8 +700,7 @@ void UHHM_Component_Movement::Update_Falling(float DeltaTime)
 				return;
 			}
 
-			m_bIsFalling = false;
-			m_bIsRecovering = true;
+			Start_RecoveryFromFall();
 
 			return;
 		}
@@ -519,6 +729,24 @@ void UHHM_Component_Movement::Update_Recovering(float DeltaTime)
 
 void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 
+	m_LastPathState = EHHM_AI_PathState::PathState_Following;
+
+	//Check Entity is on standable floor
+	bool ShouldFallStart = Check_ShouldStartFall();
+	//If there is no floor to support entity, start fall and skip this update.
+	if (ShouldFallStart == true) {
+		Start_Fall(DeltaTime);
+		m_LastPathState = EHHM_AI_PathState::PathState_OffPath;
+		return;
+	}
+
+	//If there is no Path to follow. skip this tick.
+	int32 Num_RemainingPathToFollow = m_FollowingPath.Num();
+	if (Num_RemainingPathToFollow <= 0) {
+		//Exception Can't find any path
+		return;
+	}
+
 	FVector Location_Current = GetActorLocation();
 	//float	Location_Start_X = Location_Current.X - ((m_EntitySize_Horizontal - 1) * (m_TileSize * 0.5f));
 	//float	Location_Start_Y = Location_Current.Y - ((m_EntitySize_Vertical - 1) * (m_TileSize * 0.5f));
@@ -528,6 +756,7 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 
 
 	EHHM_MoveType MoveType_Current = m_FollowingPath[0].eMoveType;
+	m_MoveType_Current = MoveType_Current;
 
 
 
@@ -542,10 +771,18 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 	if (Distance_Target <= Acceptable_Distance) {
 		m_FollowingPath.RemoveAt(0);
 
+		//Check if there is no more path to follow
+		int32 Num_Path = m_FollowingPath.Num();
+		if (Num_Path <= 0) {
+			Path_Succeed();
+			return;
+		}
+
 		bool IsSucceed_Calculation = UHHM_Component_Movement::Calculate_MoveTarget_Location();
 		if (IsSucceed_Calculation == false) {
-			//Exception
+			//Exception Calculate target location failed
 			m_FollowingPath.Empty();
+			//m_LastPathState = EHHM_AI_PathState::PathState_Success;
 			return;
 		}
 
@@ -1011,11 +1248,67 @@ void UHHM_Component_Movement::FollowPath_Walk(float DeltaTime) {
 		SafeMoveUpdatedComponent(Vec_Current_To_AfterTick, Rotator_Current, false, HitResult);
 	}
 }
-void UHHM_Component_Movement::FollowPath_Ladder(float DeltaTile)
+void UHHM_Component_Movement::FollowPath_Ladder(float DeltaTime)	// HHM Note : Mostly copied FollowPath_Walk. Modify speed values as project progresses 
 {
+	FVector Location_Current = GetActorLocation();
+
+	//Get Target Direction
+	FVector Direction_Current_To_Target = m_MoveTarget_Current - Location_Current;
+	Direction_Current_To_Target.X = 0.0f;
+	Direction_Current_To_Target.Y = 0.0f;
+
+	FVector Vec_Current_To_Target = Direction_Current_To_Target;
+	Direction_Current_To_Target.Normalize();
+
+	//Get Location of this entity should be after this tick
+	FVector Location_AfterTick = Location_Current + (Direction_Current_To_Target * (m_Speed_Current * m_TileSize) * DeltaTime); // HHM Note : Speed Modifying part
+
+	//Get Distance of AfterTick and Target
+	FVector Vec_Current_To_After_Tick = Location_AfterTick - Location_Current;
+	Vec_Current_To_After_Tick.X = 0.0f;
+	Vec_Current_To_After_Tick.Y = 0.0f;
+
+	float Distance_Current_To_AfterTick = Vec_Current_To_After_Tick.Size();
+	float Distance_Current_To_Target = Vec_Current_To_Target.Size();
+
+	//Compare The Distance and if Entity will be pass the target after this tick, set actor's location as target
+	AActor* pActor_Owner = GetOwner();
+	if (pActor_Owner == nullptr) {
+		//Exception
+		Abort_Path();
+		return;
+	}
+	FRotator Rotator_Current = Get_Rotation_Safe();
+	FHitResult HitResult = FHitResult();
+	if (Distance_Current_To_AfterTick > Distance_Current_To_Target) {
+		SafeMoveUpdatedComponent(Vec_Current_To_Target, Rotator_Current, false, HitResult);
+	}
+	else {
+		SafeMoveUpdatedComponent(Vec_Current_To_After_Tick, Rotator_Current, false, HitResult);
+	}
+
 	return;
 }
 #pragma endregion
+
+
+
+void UHHM_Component_Movement::Start_Fall(float DeltaTime)
+{
+	m_bIsFalling = true;
+	Abort_Path();
+	Update_Falling(DeltaTime);
+
+	return;
+}
+
+void UHHM_Component_Movement::Start_RecoveryFromFall(void)
+{
+	m_bIsFalling = false;
+	m_bIsRecovering = true;
+
+	return;
+}
 
 
 
@@ -1108,8 +1401,69 @@ bool UHHM_Component_Movement::Check_IsBelowFloor_Standable(void)
 	return IsAreaStandable;
 }
 
+bool UHHM_Component_Movement::Check_ShouldStartFall(void)
+{
+	//Get LocalMap For Getting MapInfo from it
+	AActor* pOwner_Raw = nullptr;
+	pOwner_Raw = GetOwner();
+	if (pOwner_Raw == nullptr) {
+		//Exception
+		return false;
+	}
+
+	AHHM_Entity* pOwner = nullptr;
+	pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+	if (pOwner == nullptr) {
+		//Exception
+		return false;
+	}
+
+	ALocalMap* pLocalMap = nullptr;
+	pLocalMap = pOwner->Get_LocalMap();
+	if (pLocalMap == nullptr) {
+		//Exception
+		return false;
+	}
+
+	
+
+	//Get MapInfo
+	const FHHM_MapInfo& MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+
+	//Get Location
+	FVector Vec_Location_Current = Get_Location();
+
+	//Fix Location Height
+	float Height_Current = Vec_Location_Current.Z;
+	float Height_Current_Int = FMath::FloorToInt(Height_Current);
+	float Difference_Height = Height_Current - Height_Current_Int;
+	if (Difference_Height >= 0.8f) {
+		Vec_Location_Current.Z = Height_Current_Int + 1.0f;
+	}
+
+	//Get Index
+	int32 Index_Current = -1;
+	bool IsConvertSucceed = AHHM_Manager_Math_Grid::Convert_Translation_To_Index(Index_Current, Vec_Location_Current, MapInfo);
+	if (IsConvertSucceed == false) {
+		//Exception
+		return false;
+	}
+
+	bool IsAreaStandable = pLocalMap->IsAreaStandable(Index_Current, m_EntitySize_Horizontal, m_EntitySize_Vertical);
+
+	return !IsAreaStandable;
+}
+
 void UHHM_Component_Movement::Abort_Path(void) {
 	m_FollowingPath.Empty();
 	m_Move_Timer = 0.0f;
 	m_MoveTarget_Current = FVector();
+}
+
+void UHHM_Component_Movement::Path_Succeed(void)
+{
+	m_FollowingPath.Empty();
+	m_LastPathState = EHHM_AI_PathState::PathState_Success;
+
+	return;
 }
