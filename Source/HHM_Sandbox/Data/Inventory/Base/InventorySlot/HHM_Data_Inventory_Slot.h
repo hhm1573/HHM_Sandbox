@@ -1,10 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HHM_InventorySlotData.generated.h"
+#include "HHM_Data_Inventory_Slot.generated.h"
 
 USTRUCT()
-struct FHHM_InventorySlotData
+struct FHHM_Data_Inventory_Slot
 {
 	GENERATED_USTRUCT_BODY()
 

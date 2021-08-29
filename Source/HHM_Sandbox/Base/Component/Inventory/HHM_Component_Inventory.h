@@ -38,7 +38,10 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(BlueprintAssignable, Category = "HHM_Event")
-		FHHM_Delegate_InventoryUpdate OnInventoryUpdate;
+		FHHM_Delegate_InventoryUpdate OnInventoryUpdate;		
+	//Inventory UI 등에서 매 틱마다 인벤토리를 업데이트 하지 않고 Inventory Component가 직접 이벤트를 Broadcast 할 때 신호를 받고 업데이트 할 수 있게끔 해놓은 작업인듯 싶음.
+	//아이템 슬롯마다 모두 업데이트를 호출하니 매 슬롯마다 아이템 그림을 지워야 할지 추가해야할지 알아보는 대신
+	//슬롯 데이터에 Master / Source 여부를 저장하고 UI에서 해당 칸의 점유가 해제되었을때 기존에 아이템의 시작위치였으면 그림을 지우고 시작위치가 아니였으면 데이터만 업데이트 하는식으로 하면될듯.
 
 
 
