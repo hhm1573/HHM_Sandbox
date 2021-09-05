@@ -12,7 +12,8 @@
 #include "HHM_Item.generated.h"
 
 /**
- * 
+ * 아이템의 기능만을 수행하는 클래스.
+ * 개별 아이템의 정보는 ItemData 클래스에서 데이터만을 따로 관리한다.
  */
 UCLASS()
 class HHM_SANDBOX_API UHHM_Item : public UObject
