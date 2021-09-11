@@ -82,6 +82,10 @@ public:
 
 
 
+	void					Clear_Inventory();
+
+
+
 public:	
 	//Inventory Component 와 Inventory 를 분리하기 이전 Inventory Component에 구현되어있던 Inventory는 IndexPoint 대신 Index를 저장하여 아이템을 관리하였지만,
 	//분리하는 과정에서 혹시 모르니 그냥 IndexPoint를 사용하게끔 변경하여 아래 Convert 함수는 사실상 쓸일이 없어졌다.
@@ -94,16 +98,18 @@ public:
 protected:
 	bool		Check_IsRoomFree(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical);
 	
+	//Note : 나중에 에러가 나서 어디서 에러가 난건지 알아내야 한다거나 하는 이유로 에러 유무를 반환해야 하게 되면 
+	//리턴값을 EHHM_InventoryReturn으로 바꾸고 리턴값을 인자로 받은 레퍼런스나 포인터로 반환하게끔 설정
 	int32		Find_FreeRoom(const int32& _size_Horizontal, const int32& _size_Vertical);
 
 	int32		Find_ValidInventoryItemID();
 
-	bool		Find_SourceIndex(FIntPoint& _indexPoint_Return, const int32 _index_InventoryItemKey);
+	EHHM_InventoryReturn	Find_SourceIndex(FIntPoint& _indexPoint_Return, const int32 _index_InventoryItemID);
 
 	
 
 	bool		Set_RoomOccupied(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical
-									, const int32& _inventoryItemID, FHHM_Data_Inventory_Item* _inventoryItemData);
+									, const int32& _inventoryItemID, FHHM_Data_Inventory_Item* _pInventoryItemData);
 
 	void		Set_RoomFree(const int32& _inventoryItemID);
 
