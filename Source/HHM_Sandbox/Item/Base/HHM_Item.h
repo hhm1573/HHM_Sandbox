@@ -51,9 +51,9 @@ protected:
 
 
 public:
-	int32					Get_ItemID() { return m_ItemID; }
-	int32					Get_ItemSubID() { return m_ItemSubID; }
-	FIntPoint				Get_ItemSize() { return FIntPoint(m_ItemSize_Horizontal, m_ItemSize_Vertical); }
+	int32					Get_ItemID() const { return m_ItemID; }
+	int32					Get_ItemSubID() const { return m_ItemSubID; }
+	FIntPoint				Get_ItemSize() const { return FIntPoint(m_ItemSize_Horizontal, m_ItemSize_Vertical); }
 	const UHHM_ItemData*	Get_DefaultItemData() const { return m_DefaultItemData; }
 
 public:

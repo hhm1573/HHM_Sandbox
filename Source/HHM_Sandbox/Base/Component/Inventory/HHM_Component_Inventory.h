@@ -5,15 +5,13 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
-#include "Base/Component/Inventory/HHM_InventoryItemData.h"
 #include "Data/Item/ItemData/HHM_ItemData.h"
-#include "Data/InventorySlotData/HHM_InventorySlotData_Row.h"
+#include "Data/Inventory/Base/Item/HHM_Data_Inventory_Item.h"
+#include "Data/Inventory/Base/InventorySlot/HHM_Data_Inventory_Slot.h"
+
+#include "Data/Inventory/HHM_Inventory.h"
 
 #include "HHM_Component_Inventory.generated.h"
-
-
-
-// Note : FIntPoint 가 왠지 미완성된 구조체인듯한 찝찝한 기분이 들어 앵간하면 안쓰려고 했음.
 
 
 
@@ -46,88 +44,105 @@ public:
 
 
 protected:
-	// 인벤토리 슬롯
+	//// 인벤토리 슬롯
+	//UPROPERTY()
+	//	TArray<FHHM_InventorySlotData_Row>		m_InventorySlotData;
+	//// 아이템 데이터
+	//UPROPERTY()
+	//	TMap<int32, FHHM_InventoryItemData>		m_Container_ItemData;
+	//// 인벤토리 사이즈 변수
+	//UPROPERTY()
+	//	int32									m_InventorySize_Horizontal = 0;
+	//UPROPERTY()
+	//	int32									m_InventorySize_Vertical = 0;
 	UPROPERTY()
-		TArray<FHHM_InventorySlotData_Row>		m_InventorySlotData;
-	// 아이템 데이터
+		TMap<int32, FHHM_Inventory>				m_Container_Inventory_Root;
 	UPROPERTY()
-		TMap<int32, FHHM_InventoryItemData>		m_Container_ItemData;
-	// 인벤토리 사이즈 변수
-	UPROPERTY()
-		int32									m_InventorySize_Horizontal = 0;
-	UPROPERTY()
-		int32									m_InventorySize_Vertical = 0;
+		TMap<int32, FHHM_Inventory>				m_Container_Inventory;
 
 
 
 public:
-	// 초기화
-	bool	Initialize_Inventory(int32 _size_Horizontal, int32 _size_Vertical);
+	int32		Inventory_Add(const bool& _isRoot, const FHHM_Data_Inventory& _data_Inventory);
+	
+
 
 public:
-	UHHM_ItemData*							Get_ItemDataPtr(int32 _index_Horizontal, int32 _index_Vertical);
+	UHHM_ItemData*							Get_ItemDataPtr(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
 
-	TMap<int32, FHHM_InventoryItemData>&	Get_ItemDataContainer_Ref() { return m_Container_ItemData; }
+	//TMap<int32, FHHM_Data_Inventory_Item>&	Get_ItemDataContainer_Ref(const bool& _isRoot, const int32& _inventoryID);
 
-	FIntPoint								Get_InventorySize() { return FIntPoint(m_InventorySize_Horizontal, m_InventorySize_Vertical); }
+	bool									Get_InventorySize(FIntPoint& _inventorySize_Return, const bool& _isRoot, const int32& _inventoryID);
+
+
 
 public:
-	bool	Check_IsValidIndex(int32 _index_Horizontal, int32 _index_Vertical);
+	bool	Check_IsValidIndex(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
 
-	bool	Check_IsItemSwappable(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData_Swap);
+	bool	Check_IsValidInventoryID(const bool& _isRoot, const int32& _inventoryID);
 
-	bool	Check_IsItemInsertable(UHHM_ItemData*& _pItemData);
+	bool	Check_IsItemSwappable(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Swap);
 
-	bool	Check_IsItemInsertableAt(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData_Insert);
+	bool	Check_IsItemInsertable(const bool& _isRoot, const int32& _inventoryID, const UHHM_ItemData*& _pItemData_Insert);
+
+	bool	Check_IsItemInsertableAt(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Insert);
 
 
 	
 public:
 	// 아이템 삽입삭제 이동등의 인터페이스
-	bool	Item_Insert_At(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData);
+
+
+	//Insert item at target inventory's target slot
+	EHHM_InventoryReturn	Item_Insert_At(int32& _inventoryItemID_Return, UHHM_ItemData*& _pItemData_Insert, const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
 	
-	/*
-	* Return - 1=General Error / 2=Inventory Full
-	*/
-	int32	Item_Insert(UHHM_ItemData*& _pItemData);
+	//Insert item at target inventory
+	EHHM_InventoryReturn	Item_Insert_AtInventory(int32& _inventoryItemID_Return, UHHM_ItemData*& _pItemData_Insert, const bool& _isRoot, const int32& _inventoryID);
 
-	/*
-	* _pItemData_Return - nullptr is fine. no need to make new object to get return data
-	*/
-	bool	Item_Pop_At(UHHM_ItemData*& _pItemData_Return, int32 _index_Horizontal, int32 _index_Vertical);
-
-	bool	Item_Remove(UHHM_ItemData*& _pItemData_Remove);
+	//Insert item at any inventory
+	EHHM_InventoryReturn	Item_Insert(int32& _inventoryItemID_Return, int32& _inventoryID_Return, UHHM_ItemData*& _pItemData_Insert, const bool& _isRoot);
 
 
 
-	FIntPoint	Convert_IndexToIndexPoint(int32 _index);
+	EHHM_InventoryReturn	Item_Pop_At(UHHM_ItemData*& _pItemData_Return, const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
 
-	int32		Convert_IndexPointToIndex(FIntPoint _indexPoint);
+	//EHHM_InventoryReturn	Item_Remove(UHHM_ItemData*& _pItemData_Remove, const bool& _isRoot, const int32& _inventoryID);
+
+
+
+	/*FIntPoint	Convert_IndexToIndexPoint(int32 _index);
+
+	int32		Convert_IndexPointToIndex(FIntPoint _indexPoint);*/
 
 	
 
 protected:
+	int32					Get_AvailableInventoryID(const bool& _isRoot);
+
 	// 아이템 삽입가능 공간 체크
-	bool		Check_IsRoomFree(int32 _index_Horizontal, int32 _index_Vertical, int32 _size_Horizontal, int32 _size_Vertical);
-	// 아이템 삽입가능 공간 요청 (없으면 -1)
-	int32		Find_FreeRoom(int32 _size_Horizontal, int32 _size_Vertical);
+	bool					Check_IsRoomFree(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical);
+	//// Find available slot for item at target inventory
+	//EHHM_InventoryReturn	Find_FreeRoom_AtInventory(int32& _index_Return, const bool& _isRoot, const int32& _inventoryID, const int32& _size_Horizontal, const int32& _size_Vertical);
+	//// Find available slot for item at any inventory
+	//EHHM_InventoryReturn	Find_FreeRoom(int32& _index_Return, bool& _isRoot_Return, int32& _inventoryID_Return, const int32& _size_Horizontal, const int32& _size_Vertical);
+	
 
 
 
 
-	int32		Find_ValidItemKey();
+	//int32		Find_ValidItemKey();
 
 
 
-	bool		Find_FirstSlot_ItemOccupied(FIntPoint& _indexPoint_Return, int32 _index_Item);
+	//bool		Find_FirstSlot_ItemOccupied(FIntPoint& _indexPoint_Return, int32 _index_Item);
 
 
 
-	bool		Set_RoomOccupied(int32 _index_Horizontal, int32 _index_Vertical, int32 _size_Horizontal, int32 _size_Vertical, int32 _itemKey, FHHM_InventoryItemData* _inventoryItemData);
+	//bool		Set_RoomOccupied(int32 _index_Horizontal, int32 _index_Vertical, int32 _size_Horizontal, int32 _size_Vertical, int32 _itemKey, FHHM_InventoryItemData* _inventoryItemData);
 
-	//bForceFree = true 일경우 입력된 공간이 인벤토리 밖을 포함하거나 슬롯의 아이템 키값이 다른경우 등의 예외상황에도 공간점유를 해제함.
-	void		Set_RoomFree(int32 _index_Horizontal, int32 _index_Vertical, int32 _size_Horizontal, int32 _size_Vertical, bool _bForceFree = false);
+	////bForceFree = true 일경우 입력된 공간이 인벤토리 밖을 포함하거나 슬롯의 아이템 키값이 다른경우 등의 예외상황에도 공간점유를 해제함.
+	//void		Set_RoomFree(int32 _index_Horizontal, int32 _index_Vertical, int32 _size_Horizontal, int32 _size_Vertical, bool _bForceFree = false);
 
-	//search input indexpoint and if that slot is occupied, trace item. then free the room that item occupied and remove item from container.
-	//void		CleanUp_At(int32 _index_Horizontal, int32 _index_Vertical);
+	////search input indexpoint and if that slot is occupied, trace item. then free the room that item occupied and remove item from container.
+	////void		CleanUp_At(int32 _index_Horizontal, int32 _index_Vertical);
 };

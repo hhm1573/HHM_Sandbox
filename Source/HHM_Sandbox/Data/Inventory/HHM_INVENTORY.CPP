@@ -15,9 +15,9 @@ FHHM_Inventory::FHHM_Inventory() {
 
 
 
-bool FHHM_Inventory::Initialize_Inventory(uint32 _size_Horizontal, uint32 _size_Vertical)
+bool FHHM_Inventory::Initialize_Inventory(const FHHM_Data_Inventory& _data_Inventory)
 {
-	if (_size_Horizontal <= 0 || _size_Horizontal <= 0) {
+	if (_data_Inventory.m_Size_Horizontal <= 0 || _data_Inventory.m_Size_Vertical <= 0) {
 		//HHM Exception : Unavailable inventory size
 		return false;
 	}
@@ -25,20 +25,19 @@ bool FHHM_Inventory::Initialize_Inventory(uint32 _size_Horizontal, uint32 _size_
 	//Initialize Column
 	//// Note : 이니셜라이즈된 InventorySlotRow 데이터를 m_InventorySlotData.Init 에 인자로 넣어 처리할수도 있긴 하지만, 아무래도 내부에 리스트가 들어가는 만큼 같은 주소를 참조하는 리스트가
 	//// 있을수도 있겠다는 생각에 일일이 하나하나 초기화하고 이니셜라이즈 하는 방법으로 진행했다. 언리얼에서 만든만큼 그런걱정은 안해도 되겠지만 혹시 모르니깐
-	m_InventorySlotData.Init(FHHM_Data_Inventory_Slot_Row(), _size_Vertical);
+	m_InventorySlotData.Init(FHHM_Data_Inventory_Slot_Row(), _data_Inventory.m_Size_Vertical);
 
 	//Initialize Row
 	FHHM_Data_Inventory_Slot Data_InventorySlot_ToAdd = FHHM_Data_Inventory_Slot();
 	Data_InventorySlot_ToAdd.Reset();
 
-	for (int32 _index_Row = 0; _index_Row < _size_Vertical; ++_index_Row) {
+	for (int32 _index_Row = 0; _index_Row < _data_Inventory.m_Size_Vertical; ++_index_Row) {
 		m_InventorySlotData[_index_Row].SlotDataRow.Empty();
-		m_InventorySlotData[_index_Row].SlotDataRow.Init(Data_InventorySlot_ToAdd, _size_Horizontal);
+		m_InventorySlotData[_index_Row].SlotDataRow.Init(Data_InventorySlot_ToAdd, _data_Inventory.m_Size_Horizontal);
 	}
 
 	//Set Member Variables
-	m_Size_Horizontal = _size_Horizontal;
-	m_Size_Vertical = _size_Vertical;
+	m_Data_Inventory = _data_Inventory;
 
 	return true;
 }
@@ -46,8 +45,8 @@ bool FHHM_Inventory::Initialize_Inventory(uint32 _size_Horizontal, uint32 _size_
 FIntPoint FHHM_Inventory::Get_InventorySize()
 {
 	FIntPoint InventorySize_Return = FIntPoint();
-	InventorySize_Return.X = m_Size_Horizontal;
-	InventorySize_Return.Y = m_Size_Vertical;
+	InventorySize_Return.X = m_Data_Inventory.m_Size_Horizontal;
+	InventorySize_Return.Y = m_Data_Inventory.m_Size_Vertical;
 
 	return InventorySize_Return;
 }
@@ -88,13 +87,13 @@ TMap<int32, FHHM_Data_Inventory_Item>& FHHM_Inventory::Get_ItemDataContainer_Ref
 
 
 
-bool FHHM_Inventory::Check_IsValidIndex(uint32 _index_Horizontal, uint32 _index_Vertical)
+bool FHHM_Inventory::Check_IsValidIndex(const uint32& _index_Horizontal, const uint32& _index_Vertical) const 
 {
-	return _index_Horizontal < 0 || _index_Horizontal >= m_Size_Horizontal
-		|| _index_Vertical < 0 || _index_Vertical >= m_Size_Vertical ? false : true;
+	return _index_Horizontal < 0 || _index_Horizontal >= m_Data_Inventory.m_Size_Horizontal
+		|| _index_Vertical < 0 || _index_Vertical >= m_Data_Inventory.m_Size_Vertical ? false : true;
 }
 
-bool FHHM_Inventory::Check_IsItemSwappable(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData_Swap)
+bool FHHM_Inventory::Check_IsItemSwappable(const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Swap) const 
 {
 	//Valid Check
 	//Input ItemData Check
@@ -141,14 +140,20 @@ bool FHHM_Inventory::Check_IsItemSwappable(int32 _index_Horizontal, int32 _index
 		IndexPoint_Source = FIntPoint(_index_Horizontal, _index_Vertical);
 	}
 	else {
-		int32 Num_OccupyingSlot = m_Container_ItemData[InventoryItemID_Target].Container_IndexPoint_Occupied.Num();
+		int32 Num_OccupyingSlot = m_Container_ItemData[InventoryItemID_Target].Container_Index_Occupied.Num();
 		if (Num_OccupyingSlot <= 0) {
 			//Exception InventoryItemData has 0 or even below number of occupying slot. Possible to corrupted inventory data
 			return false;
 		}
 
 		for (int32 index_Slot = 0; index_Slot < Num_OccupyingSlot; ++index_Slot) {
-			FIntPoint IndexPoint_Search = m_Container_ItemData[InventoryItemID_Target].Container_IndexPoint_Occupied[index_Slot];
+			int32 Index_Search = m_Container_ItemData[InventoryItemID_Target].Container_Index_Occupied[index_Slot];
+			FIntPoint IndexPoint_Search = Convert_IndexToIndexPoint(Index_Search);
+			if (IndexPoint_Search.X < 0 || IndexPoint_Search.Y < 0) {
+				//Exception convert index to index point failed
+				return false;
+			}
+
 			if (m_InventorySlotData[IndexPoint_Search.Y].SlotDataRow[IndexPoint_Search.X].IsSource) {
 				//Source IndexPoint Found
 				IndexPoint_Source = IndexPoint_Search;
@@ -194,7 +199,7 @@ bool FHHM_Inventory::Check_IsItemSwappable(int32 _index_Horizontal, int32 _index
 	}
 
 	//Get ItemSize of swapping item(input item)
-	UHHM_Item* pItem_Swap = _pItemData_Swap->Get_Item();
+	const UHHM_Item* pItem_Swap = _pItemData_Swap->Get_Item_Const();
 	if (pItem_Swap == nullptr) {
 		//Exception Input itemData has no reference to actual item. Possible to corrupted ItemData or incompleted itemData class
 		return false;
@@ -217,15 +222,15 @@ bool FHHM_Inventory::Check_IsItemSwappable(int32 _index_Horizontal, int32 _index
 	return true;
 }
 
-bool FHHM_Inventory::Check_IsItemInsertable(UHHM_ItemData*& _pItemData)
+bool FHHM_Inventory::Check_IsItemInsertable(UHHM_ItemData*& _pItemData) const 
 {
 	if (_pItemData == nullptr) {
 		//Exception ItemData is nullptr
 		return false;
 	}
 
-	UHHM_Item* pItem = nullptr;
-	pItem = _pItemData->Get_Item();
+	const UHHM_Item* pItem = nullptr;
+	pItem = _pItemData->Get_Item_Const();
 	if (pItem == nullptr) {
 		//Exception ItemData has no item reference
 		return false;
@@ -246,7 +251,7 @@ bool FHHM_Inventory::Check_IsItemInsertable(UHHM_ItemData*& _pItemData)
 	return true;
 }
 
-bool FHHM_Inventory::Check_IsItemInsertable_At(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData_Insert)
+bool FHHM_Inventory::Check_IsItemInsertable_At(const int32& _index_Horizontal, const int32& _index_Vertical, UHHM_ItemData*& _pItemData_Insert) const 
 {
 	//Valid check
 	if (_index_Horizontal < 0 || _index_Vertical < 0) {
@@ -262,8 +267,8 @@ bool FHHM_Inventory::Check_IsItemInsertable_At(int32 _index_Horizontal, int32 _i
 
 
 	//Get Item Size
-	UHHM_Item* pItem = nullptr;
-	pItem = _pItemData_Insert->Get_Item();
+	const UHHM_Item* pItem = nullptr;
+	pItem = _pItemData_Insert->Get_Item_Const();
 	if (pItem == nullptr) {
 		//Exception itemdata has no reference to item
 		return false;
@@ -448,8 +453,8 @@ void FHHM_Inventory::Clear_Inventory()
 {
 	m_Container_ItemData.Empty();
 	
-	for (int32 index_Clear_Vertical = 0; index_Clear_Vertical < m_Size_Vertical; ++index_Clear_Vertical) {
-		for (int32 index_Clear_Horizontal = 0; index_Clear_Horizontal < m_Size_Horizontal; ++index_Clear_Horizontal) {
+	for (int32 index_Clear_Vertical = 0; index_Clear_Vertical < m_Data_Inventory.m_Size_Vertical; ++index_Clear_Vertical) {
+		for (int32 index_Clear_Horizontal = 0; index_Clear_Horizontal < m_Data_Inventory.m_Size_Horizontal; ++index_Clear_Horizontal) {
 			m_InventorySlotData[index_Clear_Vertical].SlotDataRow[index_Clear_Horizontal].Reset();
 		}
 	}
@@ -457,32 +462,32 @@ void FHHM_Inventory::Clear_Inventory()
 
 
 
-FIntPoint FHHM_Inventory::Convert_IndexToIndexPoint(const int32& _index)
+FIntPoint FHHM_Inventory::Convert_IndexToIndexPoint(const int32& _index) const 
 {
-	if (m_Size_Horizontal <= 0) {
+	if (m_Data_Inventory.m_Size_Horizontal <= 0) {
 		//Exception inventory size is not set
 		return FIntPoint(-1, -1);
 	}
 
-	int32 Index_Horizontal = _index % m_Size_Horizontal;
-	int32 Index_Vertical = _index / m_Size_Horizontal;
+	int32 Index_Horizontal = _index % m_Data_Inventory.m_Size_Horizontal;
+	int32 Index_Vertical = _index / m_Data_Inventory.m_Size_Horizontal;
 	FIntPoint IndexPoint_Return = FIntPoint(Index_Horizontal, Index_Vertical);
 
 	return IndexPoint_Return;
 }
 
-int32 FHHM_Inventory::Convert_IndexPointToIndex(const FIntPoint& _indexPoint)
+int32 FHHM_Inventory::Convert_IndexPointToIndex(const FIntPoint& _indexPoint) const 
 {
-	if (m_Size_Horizontal <= 0 || m_Size_Horizontal <= 0) {
+	if (m_Data_Inventory.m_Size_Horizontal <= 0 || m_Data_Inventory.m_Size_Vertical <= 0) {
 		//Exception Inventory Size is not set properly
 		return -1;
 	}
 
-	int32 Index_Return = _indexPoint.X + (_indexPoint.Y * m_Size_Horizontal);
+	int32 Index_Return = _indexPoint.X + (_indexPoint.Y * m_Data_Inventory.m_Size_Horizontal);
 	return Index_Return;
 }
 
-bool FHHM_Inventory::Check_IsRoomFree(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical)
+bool FHHM_Inventory::Check_IsRoomFree(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical) const 
 {
 	//Index Valid check
 	bool IsValid_Index = Check_IsValidIndex(_index_Horizontal, _index_Vertical);
@@ -521,7 +526,7 @@ bool FHHM_Inventory::Check_IsRoomFree(const int32& _index_Horizontal, const int3
 	return true;
 }
 
-int32 FHHM_Inventory::Find_FreeRoom(const int32& _size_Horizontal, const int32& _size_Vertical)
+int32 FHHM_Inventory::Find_FreeRoom(const int32& _size_Horizontal, const int32& _size_Vertical) const 
 {
 	//valid check input value
 	if (_size_Horizontal <= 0 || _size_Vertical <= 0) {
@@ -530,12 +535,12 @@ int32 FHHM_Inventory::Find_FreeRoom(const int32& _size_Horizontal, const int32& 
 	}
 
 	//inventory size check
-	if (m_Size_Horizontal <= 0 || m_Size_Vertical <= 0) {
+	if (m_Data_Inventory.m_Size_Horizontal <= 0 || m_Data_Inventory.m_Size_Vertical <= 0) {
 		//Exception inventory size is not properly set
 		return -1;
 	}
 	
-	if (_size_Horizontal > m_Size_Horizontal || _size_Vertical > m_Size_Vertical) {
+	if (_size_Horizontal > m_Data_Inventory.m_Size_Horizontal || _size_Vertical > m_Data_Inventory.m_Size_Vertical) {
 		//Exception item is too big for inventory
 		return -1;
 	}
@@ -543,8 +548,8 @@ int32 FHHM_Inventory::Find_FreeRoom(const int32& _size_Horizontal, const int32& 
 
 
 	//Get Possibly available slot radius By get last available index which closest to end of inventory
-	int32 Index_Horizontal_Last = m_Size_Horizontal - _size_Horizontal;		//가장 끝에 가까운 인덱스. 가로4칸 인벤토리에 2칸짜리 아이템일 경우 4-2=2, index가 2인 슬롯은 3번째 칸 이므로 3,4칸을 차지
-	int32 Index_Vertical_Last = m_Size_Vertical - _size_Vertical;
+	int32 Index_Horizontal_Last = m_Data_Inventory.m_Size_Horizontal - _size_Horizontal;		//가장 끝에 가까운 인덱스. 가로4칸 인벤토리에 2칸짜리 아이템일 경우 4-2=2, index가 2인 슬롯은 3번째 칸 이므로 3,4칸을 차지
+	int32 Index_Vertical_Last = m_Data_Inventory.m_Size_Vertical -_size_Vertical;
 	
 
 
@@ -609,7 +614,7 @@ int32 FHHM_Inventory::Find_FreeRoom(const int32& _size_Horizontal, const int32& 
 	return Index_Return;
 }
 
-int32 FHHM_Inventory::Find_ValidInventoryItemID()
+int32 FHHM_Inventory::Find_ValidInventoryItemID() const 
 {
 	for (int32 index_Search = 0; index_Search < INVENTORY_ITEM_HARD_LIMIT; ++index_Search) {
 		bool IsOccupied_ID = m_Container_ItemData.Contains(index_Search);
@@ -621,7 +626,7 @@ int32 FHHM_Inventory::Find_ValidInventoryItemID()
 	return -1;
 }
 
-EHHM_InventoryReturn FHHM_Inventory::Find_SourceIndex(FIntPoint& _indexPoint_Return, const int32 _index_InventoryItemID)
+EHHM_InventoryReturn FHHM_Inventory::Find_SourceIndex(FIntPoint& _indexPoint_Return, const int32 _index_InventoryItemID) 
 {
 	//Valid check
 	if (_index_InventoryItemID < 0) {
@@ -693,7 +698,7 @@ bool FHHM_Inventory::Set_RoomOccupied(const int32& _index_Horizontal, const int3
 	//Check whether item will fit in inventory or too big to go through out of inventory
 	int32 Index_Horizontal_ItemEnd = _index_Horizontal + _size_Horizontal - 1;
 	int32 Index_Vertical_ItemEnd = _index_Vertical + _size_Vertical - 1;
-	if (Index_Horizontal_ItemEnd >= m_Size_Horizontal || Index_Vertical_ItemEnd >= m_Size_Vertical) {
+	if (Index_Horizontal_ItemEnd >= m_Data_Inventory.m_Size_Horizontal || Index_Vertical_ItemEnd >= m_Data_Inventory.m_Size_Vertical) {
 		//Exception Inventory Can not fit on inventory's target slot
 		return false;
 	}

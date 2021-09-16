@@ -36,6 +36,7 @@ protected:
 
 public:
 	class UHHM_Item* Get_Item() { return m_Item; }
+	const class UHHM_Item* Get_Item_Const() const { return m_Item; }
 
 public:
 	void Set_ID(int32 _id) { m_ID = _id; }

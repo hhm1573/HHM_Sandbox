@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 
+#include "Base/HHM_Data_Inventory.h"
 #include "Base/Item/HHM_Data_Inventory_Item.h"
 #include "Base/InventorySlot/HHM_Data_Inventory_Slot_Row.h"
 #include "Base/Enum_InventoryReturn.h"
@@ -19,10 +20,8 @@ public:
 	FHHM_Inventory();
 
 protected:
-	UPROPERTY()
-		uint32		m_Size_Horizontal = 0;
-	UPROPERTY()
-		uint32		m_Size_Vertical = 0;
+	UPROPERTY()	//Collective of datas about inventory.
+		FHHM_Data_Inventory								m_Data_Inventory;
 
 	UPROPERTY()
 		TArray<FHHM_Data_Inventory_Slot_Row>	m_InventorySlotData;	//Column of Slots
@@ -32,7 +31,7 @@ protected:
 	
 
 public:
-	bool	Initialize_Inventory(uint32 _size_Horizontal, uint32 _size_Vertical);
+	bool	Initialize_Inventory(const FHHM_Data_Inventory& _data_Inventory);
 
 public:
 	FIntPoint									Get_InventorySize();
@@ -50,14 +49,14 @@ public:
 
 
 public:
-	bool Check_IsValidIndex(uint32 _index_Horizontal, uint32 _index_Vertical);
+	bool Check_IsValidIndex(const uint32& _index_Horizontal, const uint32& _index_Vertical) const;
 	
-	bool Check_IsItemSwappable(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData_Swap);
+	bool Check_IsItemSwappable(const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Swap) const;
 
 	//Insert Item Wherever it can fit when there is enough room for item on inventory
-	bool Check_IsItemInsertable(UHHM_ItemData*& _pItemData);
+	bool Check_IsItemInsertable(UHHM_ItemData*& _pItemData) const;
 
-	bool Check_IsItemInsertable_At(int32 _index_Horizontal, int32 _index_Vertical, UHHM_ItemData*& _pItemData_Insert);
+	bool Check_IsItemInsertable_At(const int32& _index_Horizontal, const int32& _index_Vertical, UHHM_ItemData*& _pItemData_Insert) const;
 
 
 
@@ -90,24 +89,26 @@ public:
 	//Inventory Component 와 Inventory 를 분리하기 이전 Inventory Component에 구현되어있던 Inventory는 IndexPoint 대신 Index를 저장하여 아이템을 관리하였지만,
 	//분리하는 과정에서 혹시 모르니 그냥 IndexPoint를 사용하게끔 변경하여 아래 Convert 함수는 사실상 쓸일이 없어졌다.
 	//하지만 무한인벤토리와 같이 혹시나 가로사이즈가 변경될 수 있
-	FIntPoint		Convert_IndexToIndexPoint(const int32& _index);
-	int32			Convert_IndexPointToIndex(const FIntPoint& _indexPoint);
+	FIntPoint		Convert_IndexToIndexPoint(const int32& _index) const;
+	int32			Convert_IndexPointToIndex(const FIntPoint& _indexPoint) const;
 
 
 
-protected:
-	bool		Check_IsRoomFree(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical);
+public:
+	bool		Check_IsRoomFree(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical) const;
 	
 	//Note : 나중에 에러가 나서 어디서 에러가 난건지 알아내야 한다거나 하는 이유로 에러 유무를 반환해야 하게 되면 
 	//리턴값을 EHHM_InventoryReturn으로 바꾸고 리턴값을 인자로 받은 레퍼런스나 포인터로 반환하게끔 설정
-	int32		Find_FreeRoom(const int32& _size_Horizontal, const int32& _size_Vertical);
+	int32		Find_FreeRoom(const int32& _size_Horizontal, const int32& _size_Vertical) const;
 
-	int32		Find_ValidInventoryItemID();
+protected:
+	int32		Find_ValidInventoryItemID() const;
 
 	EHHM_InventoryReturn	Find_SourceIndex(FIntPoint& _indexPoint_Return, const int32 _index_InventoryItemID);
 
 	
 
+protected:
 	bool		Set_RoomOccupied(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical
 									, const int32& _inventoryItemID, FHHM_Data_Inventory_Item* _pInventoryItemData);
 
