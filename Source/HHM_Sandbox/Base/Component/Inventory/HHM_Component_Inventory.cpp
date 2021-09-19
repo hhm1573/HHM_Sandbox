@@ -214,7 +214,7 @@ bool UHHM_Component_Inventory::Check_IsItemSwappable(const bool& _isRoot, const 
 	return IsSwappable;
 }
 
-bool UHHM_Component_Inventory::Check_IsItemInsertable(const bool& _isRoot, const int32& _inventoryID, const UHHM_ItemData*& _pItemData)
+bool UHHM_Component_Inventory::Check_IsItemInsertable(const bool& _isRoot, const int32& _inventoryID, UHHM_ItemData*& _pItemData)
 {
 	bool IsValidInventoryID = Check_IsValidInventoryID(_isRoot, _inventoryID);
 	if (IsValidInventoryID == false) {
@@ -234,7 +234,7 @@ bool UHHM_Component_Inventory::Check_IsItemInsertable(const bool& _isRoot, const
 	return IsInsertable;
 }
 
-bool UHHM_Component_Inventory::Check_IsItemInsertableAt(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Insert)
+bool UHHM_Component_Inventory::Check_IsItemInsertableAt(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, UHHM_ItemData*& _pItemData_Insert)
 {
 	//bool IsValidInventoryID = Check_IsValidInventoryID(_isRoot, _inventoryID);
 	//if (IsValidInventoryID == false) {

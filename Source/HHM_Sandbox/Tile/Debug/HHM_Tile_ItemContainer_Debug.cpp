@@ -8,6 +8,6 @@
 AHHM_Tile_ItemContainer_Debug::AHHM_Tile_ItemContainer_Debug() {
 	m_ID = 9999;
 
-	m_Size_Inventory_Horizontal = 5;
-	m_Size_Inventory_Vertical = 3;
+	m_Data_Inventory.m_Size_Horizontal = 5;
+	m_Data_Inventory.m_Size_Vertical = 3;
 }

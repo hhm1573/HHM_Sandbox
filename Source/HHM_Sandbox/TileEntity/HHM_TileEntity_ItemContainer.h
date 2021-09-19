@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "TileEntity/HHM_TileEntity.h"
 
+#include "Data/Inventory/HHM_Inventory.h"
 #include "Data/Item/ItemData/HHM_ItemData.h"
 
 #include "HHM_TileEntity_ItemContainer.generated.h"
@@ -27,7 +28,8 @@ protected:
 
 
 protected:
-	class UHHM_Component_Inventory* m_pComponent_Inventory = nullptr;
+	//class UHHM_Component_Inventory* m_pComponent_Inventory = nullptr;
+	FHHM_Inventory		m_Inventory;
 
 public:
 	virtual bool Initialize_TileEntity(class AHHM_Tile* _pTile, class ALocalMap* _pLocalMap, int32 _index_Horizontal, int32 _index_Vertical) override;

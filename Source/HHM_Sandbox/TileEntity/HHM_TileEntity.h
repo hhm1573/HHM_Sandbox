@@ -6,6 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "HHM_TileEntity.generated.h"
 
+//TileEntity 는 Tile과 달리 필요에 따라서만 생성.
+//TileEntity를 사용하는 타일에서는 OnPlaced 함수에서 필요에따른 TileEntity를 생성.
+//예를들어 Tile_WeaponBox, Tile_WoodenBox 등은 각각의 다른 타일이지만 결국 인벤토리 기능만 필요하므로 TileEntity_ItemContainer 를 사용.
+
 UCLASS()
 class HHM_SANDBOX_API AHHM_TileEntity : public AActor
 {

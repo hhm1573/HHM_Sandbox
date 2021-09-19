@@ -15,10 +15,7 @@
 
 
 AHHM_TileEntity_ItemContainer::AHHM_TileEntity_ItemContainer() {
-
-	if (m_pComponent_Inventory == nullptr) {
-		m_pComponent_Inventory = CreateDefaultSubobject<UHHM_Component_Inventory>(TEXT("HHM_InventoryComponent"));
-	}
+	
 }
 
 void AHHM_TileEntity_ItemContainer::BeginPlay()
@@ -37,26 +34,25 @@ bool AHHM_TileEntity_ItemContainer::Initialize_TileEntity(AHHM_Tile* _pTile, ALo
 		return false;
 	}
 
-	FIntPoint Size_Inventory = pTile_ItemContainer->Get_Size_Inventory();
-	if (Size_Inventory.X <= 0 || Size_Inventory.Y <= 0) {
-		//Exception 
-	}
-	bool IsSucceed_Initialize_Inventory = m_pComponent_Inventory->Initialize_Inventory(Size_Inventory.X, Size_Inventory.Y);
-	if (IsSucceed_Initialize_Inventory == false) {
-		//Exception
+	FHHM_Data_Inventory Data_Inventory = pTile_ItemContainer->Get_Data_Inventory();
+	if (Data_Inventory.m_Size_Horizontal <= 0 || Data_Inventory.m_Size_Vertical <= 0) {
+		//Exception inventory size too small
 		return false;
 	}
+
+	bool IsSucceed_Initialize = m_Inventory.Initialize_Inventory(Data_Inventory);
+	if (IsSucceed_Initialize == false) {
+		//Exception Inventory Initialize failed
+		return false;
+	}
+	
+
 
 	return true;
 }
 
 bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add(AEntity* _pEntity_Interact, UHHM_ItemData*& _pItemData)
 {
-	if (m_pComponent_Inventory == nullptr) {
-		//Exception [Warning] inventory component not created
-		return false;
-	}
-
 	if (_pItemData == nullptr) {
 		//Exception input item data is nullptr
 		return false;
@@ -73,14 +69,19 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add(AEntity* _pEntity_Interac
 		return false;
 	}
 
-	bool IsInventoryHasRoomForItem = m_pComponent_Inventory->Check_IsItemInsertable(_pItemData);
+	bool IsInventoryHasRoomForItem = m_Inventory.Check_IsItemInsertable(_pItemData);
 	if (IsInventoryHasRoomForItem == false) {
 		return false;
 	}
 
-	int32 Index_ItemAdded = m_pComponent_Inventory->Item_Insert(_pItemData);
+	int32 Index_ItemAdded = -1;
+	EHHM_InventoryReturn InventoryReturn = m_Inventory.Item_Insert(Index_ItemAdded, _pItemData);
 	if (Index_ItemAdded < 0) {
 		//Exception Insert Item Failed
+		return false;
+	}
+	if (InventoryReturn != EHHM_InventoryReturn::Return_Succeed) {
+		//Exception insert item failed
 		return false;
 	}
 
@@ -89,11 +90,6 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add(AEntity* _pEntity_Interac
 
 bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add_At(AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical, UHHM_ItemData*& _pItemData)
 {
-	if (m_pComponent_Inventory == nullptr) {
-		//Exception Inventory Component not created
-		return false;
-	}
-
 	if (_pItemData == nullptr) {
 		//Exception Input item data is nullptr
 		return false;
@@ -110,13 +106,14 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add_At(AEntity* _pEntity_Inte
 		return false;
 	}
 
-	bool IsInventoryHasRoomForItem = m_pComponent_Inventory->Check_IsItemInsertableAt(_index_Inventory_Horizontal, _index_Inventory_Vertical, _pItemData);
+	bool IsInventoryHasRoomForItem = m_Inventory.Check_IsItemInsertable_At(_index_Inventory_Horizontal, _index_Inventory_Vertical, _pItemData);
 	if (IsInventoryHasRoomForItem == false) {
 		return false;
 	}
 
-	bool IsSucceed_InsertItem = m_pComponent_Inventory->Item_Insert_At(_index_Inventory_Horizontal, _index_Inventory_Vertical, _pItemData);
-	if (IsSucceed_InsertItem == false) {
+	int32 InventoryItemID = -1;
+	EHHM_InventoryReturn InventoryReturn = m_Inventory.Item_Insert_At(InventoryItemID, _pItemData, _index_Inventory_Horizontal, _index_Inventory_Vertical);
+	if (InventoryReturn != EHHM_InventoryReturn::Return_Succeed) {
 		//Exception Insert item faild
 		return false;
 	}
@@ -126,23 +123,18 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add_At(AEntity* _pEntity_Inte
 
 bool AHHM_TileEntity_ItemContainer::Inventory_Item_Remove_At(UHHM_ItemData*& _pItemData_Return, AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
 {
-	if (m_pComponent_Inventory == nullptr) {
-		//Exception [Warning] Inventoy Component not created
-		return false;
-	}
-
 	if (_pItemData_Return != nullptr) {
 		//Exception [Notice] recommend to set return item data as nullptr
 	}
 
-	bool IsValid_Index_Inventory = m_pComponent_Inventory->Check_IsValidIndex(_index_Inventory_Horizontal, _index_Inventory_Vertical);
+	bool IsValid_Index_Inventory = m_Inventory.Check_IsValidIndex(_index_Inventory_Horizontal, _index_Inventory_Vertical);
 	if (IsValid_Index_Inventory == false) {
 		return false;
 	}
 
 	UHHM_ItemData* ItemData_Remove = nullptr;
-	bool IsSucceed_RemoveItem = m_pComponent_Inventory->Item_Pop_At(ItemData_Remove, _index_Inventory_Horizontal, _index_Inventory_Vertical);
-	if (IsSucceed_RemoveItem == false) {
+	EHHM_InventoryReturn InventoryReturn = m_Inventory.Item_Pop_At(ItemData_Remove, _index_Inventory_Horizontal, _index_Inventory_Vertical);
+	if (InventoryReturn != EHHM_InventoryReturn::Return_Succeed) {
 		//Exception Remove item from inventory failed
 		return false;
 	}
@@ -153,18 +145,13 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Remove_At(UHHM_ItemData*& _pI
 
 bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete(AEntity* _pEntity_Interact, UHHM_ItemData*& _pItemData_Delete)
 {
-	if (m_pComponent_Inventory == nullptr) {
-		//Exception Inventory component not created
-		return false;
-	}
-
 	if (_pItemData_Delete == nullptr) {
 		//Exception Input item data is nullptr
 		return false;
 	}
 
-	bool IsSucceed_RemoveItem = m_pComponent_Inventory->Item_Remove(_pItemData_Delete);
-	if (IsSucceed_RemoveItem == false) {
+	EHHM_InventoryReturn InventoryReturn = m_Inventory.Item_Remove(_pItemData_Delete);
+	if (InventoryReturn != EHHM_InventoryReturn::Return_Succeed) {
 		return false;
 	}
 
@@ -173,26 +160,21 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete(AEntity* _pEntity_Inte
 
 bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete_At(AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
 {
-	if (m_pComponent_Inventory == nullptr) {
-		//Exception Inventory component not created
-		return false;
-	}
-
-	bool IsValid_Index_Inventory = m_pComponent_Inventory->Check_IsValidIndex(_index_Inventory_Horizontal, _index_Inventory_Vertical);
+	bool IsValid_Index_Inventory = m_Inventory.Check_IsValidIndex(_index_Inventory_Horizontal, _index_Inventory_Vertical);
 	if (IsValid_Index_Inventory == false) {
 		//Exception Input index is invalid
 		return false;
 	}
 
 	UHHM_ItemData* ItemData_Delete = nullptr;
-	ItemData_Delete = m_pComponent_Inventory->Get_ItemDataPtr(_index_Inventory_Horizontal, _index_Inventory_Vertical);
-	if (ItemData_Delete == nullptr) {
+	EHHM_InventoryReturn InventoryReturn = m_Inventory.Get_ItemDataPtr_AtSlot(ItemData_Delete, _index_Inventory_Horizontal, _index_Inventory_Vertical);
+	if (InventoryReturn != EHHM_InventoryReturn::Return_Succeed) {
 		//Exception No item on target index
 		return false;
 	}
 
-	bool IsSucceed_RemoveItem = m_pComponent_Inventory->Item_Pop_At(ItemData_Delete, _index_Inventory_Horizontal, _index_Inventory_Vertical);
-	if (IsSucceed_RemoveItem == false) {
+	EHHM_InventoryReturn InventoryReturn_ItemPop = m_Inventory.Item_Pop_At(ItemData_Delete, _index_Inventory_Horizontal, _index_Inventory_Vertical);
+	if (InventoryReturn_ItemPop != EHHM_InventoryReturn::Return_Succeed) {
 		//Exception Remove item from inventory failed
 		return false;
 	}
@@ -202,16 +184,11 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete_At(AEntity* _pEntity_I
 
 FIntPoint AHHM_TileEntity_ItemContainer::Get_InventorySize() const
 {
-	return m_pComponent_Inventory == nullptr ? FIntPoint(-1, -1) : m_pComponent_Inventory->Get_InventorySize();
+	return m_Inventory.Get_InventorySize();
 }
 
 bool AHHM_TileEntity_ItemContainer::Check_InventoryHasRoomForItem(UHHM_ItemData*& _pItemData)
 {
-	if (m_pComponent_Inventory == nullptr) {
-		//Exception [Warning] Inventory component not created
-		return false;
-	}
-
 	if (_pItemData == nullptr) {
 		//Exception Input Item Data is nullptr
 		return false;
@@ -228,6 +205,6 @@ bool AHHM_TileEntity_ItemContainer::Check_InventoryHasRoomForItem(UHHM_ItemData*
 		return false;
 	}
 
-	bool IsInventoryHasRoomForItem = m_pComponent_Inventory->Check_IsItemInsertable(_pItemData);
+	bool IsInventoryHasRoomForItem = m_Inventory.Check_IsItemInsertable(_pItemData);
 	return IsInventoryHasRoomForItem;
 }

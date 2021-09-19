@@ -2,7 +2,7 @@
 
 #include "EngineMinimal.h"
 
-#include "Base/Component/Inventory/HHM_InventoryItemData.h"
+#include "Data/Inventory/Base/Item/HHM_Data_Inventory_Item.h"
 
 #include "HHM_Container_InventoryItemData.generated.h"
 
@@ -13,7 +13,7 @@ struct FHHM_Container_InventoryItemData
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HHM_Inventory)
-	TMap<int32, FHHM_InventoryItemData> Container_InventoryItemData;
+	TMap<int32, FHHM_Data_Inventory_Item> Container_InventoryItemData;
 
 public:
 	FHHM_Container_InventoryItemData() {

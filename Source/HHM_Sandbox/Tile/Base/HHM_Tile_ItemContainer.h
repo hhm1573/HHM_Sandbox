@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Tile/Base/HHM_Tile.h"
 
+#include "Data/Inventory/Base/HHM_Data_Inventory.h"
 #include "Data/Item/ItemData/HHM_ItemData.h"
 
 #include "HHM_Tile_ItemContainer.generated.h"
@@ -24,9 +25,7 @@ public:
 
 protected:
 	UPROPERTY()
-		int32	m_Size_Inventory_Horizontal = -1;
-	UPROPERTY()
-		int32	m_Size_Inventory_Vertical = -1;
+		FHHM_Data_Inventory		m_Data_Inventory;
 
 public:
 	virtual FHHM_TileData On_Placed(class ALocalMap* _pLocalMap, FHHM_TileData& _tileInfo, class AEntity* _pEntity);
@@ -35,7 +34,8 @@ public:
 
 
 public:
-	FIntPoint	Get_Size_Inventory() const { return FIntPoint(m_Size_Inventory_Horizontal, m_Size_Inventory_Vertical); }
+	FIntPoint	Get_Size_Inventory() const { return FIntPoint(m_Data_Inventory.m_Size_Horizontal, m_Data_Inventory.m_Size_Vertical); }
+	FHHM_Data_Inventory		Get_Data_Inventory() const { return m_Data_Inventory; }
 
 
 

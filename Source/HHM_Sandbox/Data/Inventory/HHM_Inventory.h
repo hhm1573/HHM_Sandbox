@@ -7,7 +7,7 @@
 #include "Base/InventorySlot/HHM_Data_Inventory_Slot_Row.h"
 #include "Base/Enum_InventoryReturn.h"
 
-#include "ObjectMacros.h"
+#include "HHM_Inventory.generated.h"
 
 
 
@@ -34,7 +34,7 @@ public:
 	bool	Initialize_Inventory(const FHHM_Data_Inventory& _data_Inventory);
 
 public:
-	FIntPoint									Get_InventorySize();
+	FIntPoint									Get_InventorySize() const;
 
 	/**
 	* @param	_pItemData_Return	Item Data on target slot
@@ -49,7 +49,7 @@ public:
 
 
 public:
-	bool Check_IsValidIndex(const uint32& _index_Horizontal, const uint32& _index_Vertical) const;
+	bool Check_IsValidIndex(const int32& _index_Horizontal, const int32& _index_Vertical) const;
 	
 	bool Check_IsItemSwappable(const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Swap) const;
 

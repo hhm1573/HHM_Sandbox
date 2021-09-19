@@ -42,7 +42,7 @@ bool FHHM_Inventory::Initialize_Inventory(const FHHM_Data_Inventory& _data_Inven
 	return true;
 }
 
-FIntPoint FHHM_Inventory::Get_InventorySize()
+FIntPoint FHHM_Inventory::Get_InventorySize() const
 {
 	FIntPoint InventorySize_Return = FIntPoint();
 	InventorySize_Return.X = m_Data_Inventory.m_Size_Horizontal;
@@ -87,7 +87,7 @@ TMap<int32, FHHM_Data_Inventory_Item>& FHHM_Inventory::Get_ItemDataContainer_Ref
 
 
 
-bool FHHM_Inventory::Check_IsValidIndex(const uint32& _index_Horizontal, const uint32& _index_Vertical) const 
+bool FHHM_Inventory::Check_IsValidIndex(const int32& _index_Horizontal, const int32& _index_Vertical) const 
 {
 	return _index_Horizontal < 0 || _index_Horizontal >= m_Data_Inventory.m_Size_Horizontal
 		|| _index_Vertical < 0 || _index_Vertical >= m_Data_Inventory.m_Size_Vertical ? false : true;
@@ -184,8 +184,8 @@ bool FHHM_Inventory::Check_IsItemSwappable(const int32& _index_Horizontal, const
 	//Valid Check of occupying slots of target item
 	for (int32 index_Vertical_ValidCheck = IndexPoint_Source.Y; index_Vertical_ValidCheck <= IndexPoint_SourceEnd.Y; ++index_Vertical_ValidCheck) {
 		for (int32 index_Horizontal_ValidCheck = IndexPoint_Source.X; index_Horizontal_ValidCheck <= IndexPoint_SourceEnd.X; ++index_Vertical_ValidCheck) {
-			bool IsOccupied = m_InventorySlotData[index_Vertical_ValidCheck].SlotDataRow[index_Horizontal_ValidCheck].IsOccupied;
-			if (IsOccupied == false) {
+			bool IsOccupied_Slot = m_InventorySlotData[index_Vertical_ValidCheck].SlotDataRow[index_Horizontal_ValidCheck].IsOccupied;
+			if (IsOccupied_Slot == false) {
 				//Exception InventoryItemData's occupying slot data is incorrect. Possible to corrupted inventory data
 				return false;
 			}

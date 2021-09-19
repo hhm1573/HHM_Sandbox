@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ObjectMacros.h"
+#include "HHM_Data_Inventory.generated.h"
 
 USTRUCT()
 struct FHHM_Data_Inventory
@@ -9,7 +9,9 @@ struct FHHM_Data_Inventory
 	GENERATED_USTRUCT_BODY()
 
 public:
-	FHHM_Data_Inventory();
+	FHHM_Data_Inventory() {
+
+	}
 
 	FHHM_Data_Inventory(const int32& _size_Horizontal, const int32& _size_Vertical, const FString& _name, const float& _time_Interact) {
 		m_Size_Horizontal = _size_Horizontal;

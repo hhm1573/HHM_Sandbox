@@ -350,8 +350,8 @@ bool AHHM_Tile_ItemContainer::On_Item_Delete_At(ALocalMap* _pLocalMap, FHHM_Tile
 
 bool AHHM_Tile_ItemContainer::Check_InventoryIndex(int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
 {
-	if (_index_Inventory_Horizontal < 0 || _index_Inventory_Horizontal >= m_Size_Inventory_Horizontal
-		|| _index_Inventory_Vertical < 0 || _index_Inventory_Vertical >= m_Size_Inventory_Vertical) {
+	if (_index_Inventory_Horizontal < 0 || _index_Inventory_Horizontal >= m_Data_Inventory.m_Size_Horizontal
+		|| _index_Inventory_Vertical < 0 || _index_Inventory_Vertical >= m_Data_Inventory.m_Size_Vertical) {
 		return false;
 	}
 

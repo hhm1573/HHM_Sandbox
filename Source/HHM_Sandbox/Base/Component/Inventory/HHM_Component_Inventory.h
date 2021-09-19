@@ -83,9 +83,9 @@ public:
 
 	bool	Check_IsItemSwappable(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Swap);
 
-	bool	Check_IsItemInsertable(const bool& _isRoot, const int32& _inventoryID, const UHHM_ItemData*& _pItemData_Insert);
+	bool	Check_IsItemInsertable(const bool& _isRoot, const int32& _inventoryID, UHHM_ItemData*& _pItemData_Insert);
 
-	bool	Check_IsItemInsertableAt(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Insert);
+	bool	Check_IsItemInsertableAt(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, UHHM_ItemData*& _pItemData_Insert);
 
 
 	
