@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 
+//#include "Base/Component/InteractionHandler/HHM_Component_InteractionHandler.h"
 #include "HHM_Data_Interaction_Base.h"
 
 #include "HHM_Data_Interaction.generated.h"
@@ -42,7 +43,7 @@ public:
 	UPROPERTY()
 		AActor*		m_Target_Interaction_Actor = nullptr;
 	UPROPERTY()
-		UHHM_Component_InteractionHandler* m_Target_Interaction_Handler = nullptr;
+		class UHHM_Component_InteractionHandler* m_Target_Interaction_Handler = nullptr;
 
 
 

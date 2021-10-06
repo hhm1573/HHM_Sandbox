@@ -24,6 +24,8 @@ public:
 		int32							m_ID_Target = -1;
 	UPROPERTY()
 		int32							m_Priority = -1;
+	UPROPERTY()
+		AActor*							m_pInteractor = nullptr;
 
 
 

@@ -52,3 +52,7 @@ bool AHHM_Manager_Interaction::Get_BaseData_Interaction(const FHHM_Data_Interact
 void AHHM_Manager_Interaction::Register_AllInteractionBaseData()
 {
 }
+
+void AHHM_Manager_Interaction::Execute_Interact(FHHM_Data_Interaction& _data_Interaction, UHHM_Component_InteractionHandler* _pInteractionHandler_Executer)
+{
+}

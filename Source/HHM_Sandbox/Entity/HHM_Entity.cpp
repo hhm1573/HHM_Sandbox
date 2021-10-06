@@ -144,6 +144,24 @@ void AHHM_Entity::DeRegister_Entity(void) {
 
 
 
+void AHHM_Entity::Interaction_Begin()
+{
+}
+
+void AHHM_Entity::Interaction_End()
+{
+}
+
+void AHHM_Entity::Action_End(FHHM_Data_Queue_Interaction& _action)
+{
+}
+
+void AHHM_Entity::Action_Canceled(FHHM_Data_Queue_Interaction& _action)
+{
+}
+
+
+
 void AHHM_Entity::HHM_Jump_Implementation(const FVector& jump_LocationStart, const FVector& jump_LocationEnd, const int32& jump_Height) {
 
 	if (jump_Height == 0) {

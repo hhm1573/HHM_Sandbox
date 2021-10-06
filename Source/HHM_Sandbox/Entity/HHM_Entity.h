@@ -8,6 +8,8 @@
 
 #include "Header/Struct_Tile.h"
 
+#include "Data/Interaction/HHM_Data_Queue_Interaction.h"
+
 #include "HHM_Entity.generated.h"
 
 
@@ -63,6 +65,15 @@ public:
 	//MenuData 구조체에 대해서는 작업을 하며 수정해나가야 겠지만 일단 기본적으로 라벨(명령이 UI에 표시될 문구), 명령ID (Order_Handler나 블럭엔티티등에서 받은 아이디를 토대로 행동,
 	//일단 각각의 클래스에서 따로 명령을 수행하기에 명령아이디가 곂치는 경우에 대해 고민해야할 일은 없어보이지만 혹시 모르니 명령매크로?컨스턴트? 파일을 만들어 명령마다의 상수매크로를 만들어놓고
 	//작업을 하도록 하자. 또 Selected Entity와 Targeted Entity, 블럭 엔티티도 명령을 받을것을 고려해 Selected TileEntity, Targeted TileEntity 일단 이정도만 있어도 될듯.
+
+
+
+public:
+	//Movement component lock 등, 상호작용이 시작되거나 종료될때 자신의 상태를 변화하기위한 함수.
+	virtual void Interaction_Begin();
+	virtual void Interaction_End();
+	virtual void Action_End(FHHM_Data_Queue_Interaction& _action);
+	virtual void Action_Canceled(FHHM_Data_Queue_Interaction& _action);
 
 
 

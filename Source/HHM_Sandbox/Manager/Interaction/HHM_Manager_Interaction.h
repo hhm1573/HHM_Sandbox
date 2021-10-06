@@ -7,6 +7,7 @@
 
 #include "Data/Interaction/HHM_Data_Interaction_Base.h"	//Áö¿öµµµÊ
 #include "Data/Interaction/HHM_Data_Interaction.h"
+#include "Base/Component/InteractionHandler/HHM_Component_InteractionHandler.h"
 
 #include "HHM_Manager_Interaction.generated.h"
 
@@ -51,5 +52,5 @@ private:
 
 	//Interact interface
 public:
-	static void Execute_Interact(FHHM_Data_Interaction& _data_Interaction);
+	static void Execute_Interact(FHHM_Data_Interaction& _data_Interaction, UHHM_Component_InteractionHandler* _pInteractionHandler_Executer);
 };
