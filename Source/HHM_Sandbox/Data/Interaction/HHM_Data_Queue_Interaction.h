@@ -27,6 +27,10 @@ public:
 	UPROPERTY()
 		AActor*							m_pInteractor = nullptr;
 
+	UPROPERTY()
+		//Name of Action. (same name as HHM_Data_Action has)
+		FString							m_Name;
+
 
 
 public:

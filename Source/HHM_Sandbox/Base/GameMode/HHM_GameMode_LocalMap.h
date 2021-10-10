@@ -33,6 +33,9 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 		class AHHM_Manager_LocalMap*	m_pManager_LocalMap = nullptr;
 
+	UPROPERTY(VisibleAnywhere)
+		class AHHM_Manager_Interaction* m_pManager_Interaction = nullptr;
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 		FHHM_MapInfo				m_MapInfo;
@@ -71,6 +74,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		class AHHM_Manager_Navigation*			Get_Manager_Navigation() { return m_pManager_Navigation; }
 		const class AHHM_Manager_Navigation*	Get_Manager_Navigation_Const() const { return m_pManager_Navigation; }
+	UFUNCTION(BlueprintCallable)
+		class AHHM_Manager_Interaction*			Get_Manager_Interaction() { return m_pManager_Interaction; }
+		const class AHHM_Manager_Interaction*	Get_Manager_Interaction() const { return m_pManager_Interaction; }
 	UFUNCTION(BlueprintCallable)
 		const FHHM_MapInfo&						Get_MapInfo() { return m_MapInfo; }
 

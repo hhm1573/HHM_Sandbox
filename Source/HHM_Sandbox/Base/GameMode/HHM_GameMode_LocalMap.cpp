@@ -13,6 +13,7 @@
 #include "Manager/LocalMap/HHM_Manager_LocalMap.h"
 #include "Data/LocalMap/LocalMap.h"
 #include "Manager/Item/HHM_Manager_Item.h"
+#include "Manager/Interaction/HHM_Manager_Interaction.h"
 
 #include "Base/TouchPanel/TouchPanel.h"
 
@@ -69,6 +70,10 @@ void AHHM_GameMode_LocalMap::BeginPlay() {
 		if (IsSucceed_CreateLocalMap == false) {
 			//Exception
 		}
+	}
+
+	if (m_pManager_Interaction == nullptr) {
+		m_pManager_Interaction = pWorld->SpawnActor<AHHM_Manager_Interaction>();
 	}
 
 

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 
-#include "Data/Interaction/HHM_Data_Queue_Interaction.h"
+#include "Data/Interaction/HHM_Data_Action.h"
 
 #include "HHM_Act.generated.h"
 
@@ -22,8 +22,23 @@ public:
 
 
 
+protected:
+	UPROPERTY()
+		class AHHM_Entity*	m_pInteractor = nullptr;
+
+	UPROPERTY()
+		class AHHM_Entity*	m_pTarget_Entity = nullptr;
+	UPROPERTY()
+		//Index Location of target tile
+		FVector				m_Target_Location = FVector::ZeroVector;
+
+
+
 public:
-	virtual void	Begin_Act(FHHM_Data_Queue_Interaction& _queue_Interaction_Return);
-	virtual void	Performed_Action(const bool& _isActEnd_Return, FHHM_Data_Queue_Interaction& _queue_Interaction_Return);
+	virtual bool	Begin_Act(FHHM_Data_Action& _data_Action_Return);
+	virtual void	Performed_Action(const bool& _isActEnd_Return, FHHM_Data_Action& _data_Action_Return);
+
+public:
+	void	Set_Target(class AHHM_Entity* _pInteractor, class AHHM_Entity* _pTarget_Entity = nullptr, FVector _targetLocation = FVector::ZeroVector);
 	
 };

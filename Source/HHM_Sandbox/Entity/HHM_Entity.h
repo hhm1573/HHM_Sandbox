@@ -8,7 +8,7 @@
 
 #include "Header/Struct_Tile.h"
 
-#include "Data/Interaction/HHM_Data_Queue_Interaction.h"
+#include "Data/Interaction/HHM_Data_Action.h"
 
 #include "HHM_Entity.generated.h"
 

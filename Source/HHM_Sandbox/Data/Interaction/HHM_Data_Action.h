@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "HHM_Data_Interaction.h"
+#include "HHM_Data_Queue_Interaction.h"
 
 #include "HHM_Data_Action.generated.h"
 
@@ -17,7 +17,7 @@ struct FHHM_Data_Action
 
 public:
 	UPROPERTY()
-		FHHM_Data_Interaction	m_Data_Interaction;
+		FHHM_Data_Queue_Interaction	m_Queue_Interaction;
 
 	UPROPERTY()
 		FVector					m_Location_Target = FVector::ZeroVector;
@@ -28,6 +28,6 @@ public:
 
 public:
 	FHHM_Data_Action() {
-
+		m_Queue_Interaction.m_Queue_Interaction.Empty();
 	}
 };
