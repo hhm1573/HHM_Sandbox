@@ -74,6 +74,8 @@ public:
 
 	bool									Get_InventorySize(FIntPoint& _inventorySize_Return, const bool& _isRoot, const int32& _inventoryID);
 
+	const TMap<int32, FHHM_Inventory>&		Get_InventoryContainer(const bool& _isRoot) const;
+
 
 
 public:

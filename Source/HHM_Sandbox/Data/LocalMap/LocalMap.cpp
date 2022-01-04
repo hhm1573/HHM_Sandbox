@@ -1119,6 +1119,7 @@ bool ALocalMap::Initialize_Container_InstancedMesh(void)
 				else {
 					pInstancedStaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 				}
+				pInstancedStaticMeshComponent->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
 
 				//Rendering Setting
 				const bool IsNeedToRender = TileRenderInfo.IsNeedToRender;
@@ -1970,21 +1971,19 @@ bool ALocalMap::Spawn_Item_At_Pos_ByID(int32 _index_Horizontal, int32 _index_Ver
 		//Exception
 		return false;
 	}
-	UHHM_Item* pItem = m_pManager_Item->Get_Item_By_ID(_item_ID);
-	//Item DefaultData Valid Check
-	if (pItem == nullptr) {
+	const UHHM_ItemData* pItemData_Default = m_pManager_Item->Get_ItemData_By_ID(_item_ID);
+	//Default ItemData Valid Check
+	if (pItemData_Default == nullptr) {
 		//Exception
 		return false;
 	}
 
-	TSharedPtr<UHHM_ItemData> pItemData = nullptr;
-	bool IsSucceed_CreateNewItemData = pItem->Create_NewItemData(pItemData);
-	if (IsSucceed_CreateNewItemData == false || pItemData == nullptr) {
+	//Create new itemdata and copy the default
+	UClass* pClass = pItemData_Default->GetClass();
+	UHHM_ItemData* pItemData_New = NewObject<UHHM_ItemData>(this, pClass);
+	pItemData_New->Set_Item(pItemData_Default->Get_Item());		// Note : Fix this part when ItemData's item reference changed as static.
+	if (pItemData_New == nullptr) {
 		//Exception
-		/*if (pItemData != nullptr) {
-			pItemData->Destroy
-		}*/
-		pItemData.Reset();
 		return false;
 	}
 
@@ -1995,6 +1994,7 @@ bool ALocalMap::Spawn_Item_At_Pos_ByID(int32 _index_Horizontal, int32 _index_Ver
 	pWorld = GetWorld();
 	if (pWorld == nullptr) {
 		//Exception
+		//pItemData_New->Destroy
 		return false;
 	}
 
@@ -2011,14 +2011,14 @@ bool ALocalMap::Spawn_Item_At_Pos_ByID(int32 _index_Horizontal, int32 _index_Ver
 
 	UMaterialInterface* pMaterialInterface = nullptr;
 	FVector2D Size_ItemActor = FVector2D::ZeroVector;
-	pItem->Get_RenderData_ItemActor(pMaterialInterface, Size_ItemActor, this, pItemData.Get());
+	pItemData_New->Get_RenderData_ItemActor(pMaterialInterface, Size_ItemActor, this);
 	if (pMaterialInterface == nullptr) {
 		//Exception Item Is Not fully implemented
 		pItemActor->Destroy();
 		return false;
 	}
 
-	bool IsSucceed_ItemDataSet = pItemActor->Set_ItemData(pItemData, pMaterialInterface, Size_ItemActor);
+	bool IsSucceed_ItemDataSet = pItemActor->Set_ItemData(pItemData_New, pMaterialInterface, Size_ItemActor);
 	if (IsSucceed_ItemDataSet == false) {
 		//Exception
 		pItemActor->Destroy();

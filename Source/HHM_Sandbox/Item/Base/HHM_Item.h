@@ -25,17 +25,8 @@ public:
 
 protected:
 	//UI 에 아이템 렌더용 텍스쳐 변수 필요. Textrue2D UTexture 등 여러 텍스쳐 타입중 어느것이 필요할줄 몰라 추후 UI작업시에 확정예정.
-	UPROPERTY()
-		int32						m_ItemID = -1;		//Desired Item ID. Should be set by item self.
-	UPROPERTY()
-		int32						m_ItemSubID = 0;
-	UPROPERTY()
-		int32						m_ItemSize_Horizontal = 1;		//On Inventory
-	UPROPERTY()
-		int32						m_ItemSize_Vertical = 1;
-
-	UPROPERTY()
-		UHHM_ItemData*				m_DefaultItemData = nullptr;	//필요없을수도?
+	UPROPERTY()	//Item Name which will be registered on item manager
+		FString						m_ItemName;		
 	UPROPERTY()
 		EHHM_ItemType				m_ItemType = EHHM_ItemType::Item_Unavailiable;
 
@@ -51,13 +42,7 @@ protected:
 
 
 public:
-	int32					Get_ItemID() const { return m_ItemID; }
-	int32					Get_ItemSubID() const { return m_ItemSubID; }
-	FIntPoint				Get_ItemSize() const { return FIntPoint(m_ItemSize_Horizontal, m_ItemSize_Vertical); }
-	const UHHM_ItemData*	Get_DefaultItemData() const { return m_DefaultItemData; }
-
-public:
-	virtual bool			Create_NewItemData(TSharedPtr<UHHM_ItemData>& _pReturn);		//Return DefaultItemData
+	FString					Get_ItemName() const { return m_ItemName; }
 
 public:
 	/*
@@ -65,11 +50,11 @@ public:
 	no need to set valid value on both _targetLocaiton and _pTarget. because depends on item, item will use only one of them.
 	return true will reduce item use count and might consume item.
 	*/
-	virtual bool	On_ItemUsed(class ALocalMap* _pLocalMap, class AEntity* _pUser, UHHM_ItemData* _itemUsed, FVector _targetLocation, class AEntity* _pTarget); // HHM Note : Make it as pure virtual
+	virtual bool	On_ItemUsed(class ALocalMap* _pLocalMap, class AEntity* _pUser, UHHM_ItemData* _itemUsed, FVector _targetLocation, class AEntity* _pTarget) const; // HHM Note : Make it as pure virtual
 
 
 
 	//Return RenderData that ItemActor can use.
-	virtual void	Get_RenderData_ItemActor(class UMaterialInterface*& _material_Return, FVector2D& _cubeSize_Return, class ALocalMap* _pLocalMap, const UHHM_ItemData* _itemData);
+	virtual void	Get_RenderData_ItemActor(class UMaterialInterface*& _material_Return, FVector2D& _cubeSize_Return, class ALocalMap* _pLocalMap, const UHHM_ItemData* _itemData) const;
 	
 };

@@ -31,6 +31,9 @@ AHHM_ItemActor::AHHM_ItemActor()
 			RootComponent = m_pComponent_StaticMesh;
 			//m_pComponent_StaticMesh->SetupAttachment(RootComponent);
 			m_pComponent_StaticMesh->SetSimulatePhysics(true);
+
+			m_pComponent_StaticMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+			m_pComponent_StaticMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
 		}
 		else {
 			//Exception No Mesh Asset Found
@@ -52,7 +55,7 @@ void AHHM_ItemActor::Tick(float DeltaTime)
 
 }
 
-bool AHHM_ItemActor::Set_ItemData(const TSharedPtr<UHHM_ItemData>& _pItemData, UMaterialInterface* _material, FVector2D _actorSize)
+bool AHHM_ItemActor::Set_ItemData(UHHM_ItemData* _pItemData, UMaterialInterface* _material, FVector2D _actorSize)
 {
 	if (_pItemData == nullptr) {
 		//Exception

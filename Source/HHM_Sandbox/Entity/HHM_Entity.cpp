@@ -14,11 +14,52 @@
 #include "Data/LocalMap/LocalMap.h"
 //#include "Manager/LocalMap/HHM_Manager_LocalMap.h"
 
+#include "Manager/Item/HHM_Manager_Item.h"
+
+
+
 // Sets default values
 AHHM_Entity::AHHM_Entity()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+
+
+	if (m_pComponent_Inventory == nullptr) {
+		m_pComponent_Inventory = CreateDefaultSubobject<UHHM_Component_Inventory>(TEXT("Component_Inventory"));
+
+		FHHM_Data_Inventory InventoryData_Debug = FHHM_Data_Inventory(8, 8, TEXT("DebugInventory"), 1.0f);
+		m_pComponent_Inventory->Inventory_Add(true, InventoryData_Debug);
+
+		//UWorld* pWorld = nullptr;	//HHM Note : 인벤토리 UI와 컨테이너 타일 엔티티와의 상호작용 테스트를 위한 코드부분. 추후 테스트가 끝나면 삭제.
+		//pWorld = GetWorld();
+		//if (pWorld) {
+		//	AGameModeBase* pGameMode_Raw = nullptr;
+		//	pGameMode_Raw = pWorld->GetAuthGameMode();
+		//	if (pGameMode_Raw) {
+		//		AHHM_GameMode_LocalMap* pGameMode = nullptr;
+		//		pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
+		//		if (pGameMode) {
+		//			AHHM_Manager_Item* pManager_Item = nullptr;
+		//			pManager_Item = pGameMode->Get_Manager_Item();
+		//			if (pManager_Item) {
+		//				UHHM_ItemData* pItemData_Cup = nullptr;
+		//				pItemData_Cup = pManager_Item->Create_Default_ItemData_By_ID(0);
+		//				if (pItemData_Cup) {
+		//					int32 InventoryIndex_Horizontal = FMath::RandRange(0, 3);
+		//					int32 InventoryIndex_Vertical = FMath::RandRange(0, 3);
+		//					int32 InventoryItemID_Temp = 0;
+		//					EHHM_InventoryReturn eReturn = m_pComponent_Inventory->Item_Insert_At(InventoryItemID_Temp, pItemData_Cup, true, 0, InventoryIndex_Horizontal, InventoryIndex_Vertical);
+		//					if (eReturn != EHHM_InventoryReturn::Return_Succeed) {
+		//						int i = 0;
+		//					}
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
+	}
 }
 
 // Called when the game starts or when spawned
@@ -46,6 +87,34 @@ void AHHM_Entity::BeginPlay()
 	}
 	
 	
+
+	UWorld* pWorld = nullptr;	//HHM Note : 인벤토리 UI와 컨테이너 타일 엔티티와의 상호작용 테스트를 위한 코드부분. 추후 테스트가 끝나면 삭제.
+	pWorld = GetWorld();
+	if (pWorld) {
+		AGameModeBase* pGameMode_Raw = nullptr;
+		pGameMode_Raw = pWorld->GetAuthGameMode();
+		if (pGameMode_Raw) {
+			AHHM_GameMode_LocalMap* pGameMode = nullptr;
+			pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
+			if (pGameMode) {
+				AHHM_Manager_Item* pManager_Item = nullptr;
+				pManager_Item = pGameMode->Get_Manager_Item();
+				if (pManager_Item) {
+					UHHM_ItemData* pItemData_Cup = nullptr;
+					pItemData_Cup = pManager_Item->Create_Default_ItemData_By_ID(0);
+					if (pItemData_Cup) {
+						int32 InventoryIndex_Horizontal = FMath::RandRange(0, 3);
+						int32 InventoryIndex_Vertical = FMath::RandRange(0, 3);
+						int32 InventoryItemID_Temp = 0;
+						EHHM_InventoryReturn eReturn = m_pComponent_Inventory->Item_Insert_At(InventoryItemID_Temp, pItemData_Cup, true, 0, InventoryIndex_Horizontal, InventoryIndex_Vertical);
+						if (eReturn != EHHM_InventoryReturn::Return_Succeed) {
+							int i = 0;
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 // Called every frame
@@ -68,6 +137,26 @@ void AHHM_Entity::BeginDestroy() {
 	if (m_EntityID >= 0 || m_pLocalMap != nullptr) {
 		DeRegister_Entity();
 	}
+}
+
+
+
+const TMap<int32, FHHM_Inventory>& AHHM_Entity::Get_InventoryContainer(bool _isRoot)
+{
+	/*if (m_pComponent_Inventory) {
+		return m_pComponent_Inventory->Get_InventoryContainer(_isRoot);
+	}
+	return TMap<int32, FHHM_Inventory>();*/
+	return m_pComponent_Inventory->Get_InventoryContainer(_isRoot);
+}
+
+bool AHHM_Entity::Get_InventorySize(FIntPoint& _size_Return, bool _isRoot, int32 _inventoryID)
+{
+	if (m_pComponent_Inventory) {
+		return m_pComponent_Inventory->Get_InventorySize(_size_Return, _isRoot, _inventoryID);
+	}
+
+	return false;
 }
 
 

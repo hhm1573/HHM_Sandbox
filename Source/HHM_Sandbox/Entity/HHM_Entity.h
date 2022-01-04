@@ -10,6 +10,8 @@
 
 #include "Data/Interaction/HHM_Data_Action.h"
 
+#include "Base/Component/Inventory/HHM_Component_Inventory.h"
+
 #include "HHM_Entity.generated.h"
 
 
@@ -29,6 +31,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = HHM_Entity)
 		int32				m_EntityID = -1;
 
+	UPROPERTY()
+		UHHM_Component_Inventory*	m_pComponent_Inventory = nullptr;
+
 
 
 
@@ -44,6 +49,14 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void BeginDestroy() override;
+
+
+
+public:
+	UFUNCTION(BlueprintCallable/*, meta=(AdvancedDisplay="_isRoot")*/)
+		const TMap<int32, FHHM_Inventory>& Get_InventoryContainer(bool _isRoot);
+	UFUNCTION(BlueprintCallable)
+		bool Get_InventorySize(FIntPoint& _size_Return, bool _isRoot, int32 _inventoryID);
 
 
 

@@ -42,6 +42,11 @@ bool FHHM_Inventory::Initialize_Inventory(const FHHM_Data_Inventory& _data_Inven
 	return true;
 }
 
+//TMap<int32, FHHM_Data_Inventory_Item>& FHHM_Inventory::BP_Get_Container_ItemData()
+//{
+//	return m_Container_ItemData;
+//}
+
 FIntPoint FHHM_Inventory::Get_InventorySize() const
 {
 	FIntPoint InventorySize_Return = FIntPoint();
@@ -170,15 +175,8 @@ bool FHHM_Inventory::Check_IsItemSwappable(const int32& _index_Horizontal, const
 
 
 
-	//Get Item
-	UHHM_Item* pItem = m_Container_ItemData[InventoryItemID_Target].pItemData->Get_Item();
-	if (pItem == nullptr) {
-		//Exception ItemData has no reference to Actual Item class. Possible to corrupted ItemData or not fully completed ItemData Class
-		return false;
-	}
-
 	//Get ItemSize
-	FIntPoint Size_Item = pItem->Get_ItemSize();
+	FIntPoint Size_Item = m_Container_ItemData[InventoryItemID_Target].pItemData->Get_ItemSize();
 	FIntPoint IndexPoint_SourceEnd = IndexPoint_Source + Size_Item - FIntPoint(1, 1);
 
 	//Valid Check of occupying slots of target item
@@ -198,15 +196,8 @@ bool FHHM_Inventory::Check_IsItemSwappable(const int32& _index_Horizontal, const
 		}
 	}
 
-	//Get ItemSize of swapping item(input item)
-	const UHHM_Item* pItem_Swap = _pItemData_Swap->Get_Item_Const();
-	if (pItem_Swap == nullptr) {
-		//Exception Input itemData has no reference to actual item. Possible to corrupted ItemData or incompleted itemData class
-		return false;
-	}
-
 	//Get needed room for swapping item(input item)
-	FIntPoint Size_Item_Swap = pItem_Swap->Get_ItemSize();
+	FIntPoint Size_Item_Swap = _pItemData_Swap->Get_ItemSize();
 	FIntPoint IndexPoint_SwapEnd = FIntPoint(_index_Horizontal, _index_Vertical) + Size_Item_Swap - FIntPoint(1, 1);
 
 
@@ -229,14 +220,7 @@ bool FHHM_Inventory::Check_IsItemInsertable(UHHM_ItemData*& _pItemData) const
 		return false;
 	}
 
-	const UHHM_Item* pItem = nullptr;
-	pItem = _pItemData->Get_Item_Const();
-	if (pItem == nullptr) {
-		//Exception ItemData has no item reference
-		return false;
-	}
-
-	FIntPoint ItemSize = pItem->Get_ItemSize();
+	FIntPoint ItemSize = _pItemData->Get_ItemSize();
 	if (ItemSize.X <= 0 || ItemSize.Y <= 0) {
 		//Exception Unavailable ItemSize
 		return false;
@@ -266,15 +250,7 @@ bool FHHM_Inventory::Check_IsItemInsertable_At(const int32& _index_Horizontal, c
 
 
 
-	//Get Item Size
-	const UHHM_Item* pItem = nullptr;
-	pItem = _pItemData_Insert->Get_Item_Const();
-	if (pItem == nullptr) {
-		//Exception itemdata has no reference to item
-		return false;
-	}
-
-	FIntPoint Size_Item = pItem->Get_ItemSize();
+	FIntPoint Size_Item = _pItemData_Insert->Get_ItemSize();
 	if (Size_Item.X <= 0 || Size_Item.Y <= 0) {
 		//Exception unavailable item size
 		return false;
@@ -299,15 +275,7 @@ EHHM_InventoryReturn FHHM_Inventory::Item_Insert(int32& _InventoryItemID_Return,
 
 	
 
-	//Get ItemSize
-	UHHM_Item* pItem = nullptr;
-	pItem = _pItemData->Get_Item();
-	if (pItem == nullptr) {
-		//Exception ItemData has no reference to item
-		return EHHM_InventoryReturn::Return_Error;
-	}
-	
-	FIntPoint Size_Item = pItem->Get_ItemSize();
+	FIntPoint Size_Item = _pItemData->Get_ItemSize();
 	if (Size_Item.X <= 0 || Size_Item.Y <= 0) {
 		//Exception Unavailable item size
 		return EHHM_InventoryReturn::Return_Error;
@@ -355,15 +323,7 @@ EHHM_InventoryReturn FHHM_Inventory::Item_Insert_At(int32& _InventoryItemID_Retu
 
 
 
-	//Get ItemSize
-	UHHM_Item* pItem = nullptr;
-	pItem = _pItemData->Get_Item();
-	if (pItem == nullptr) {
-		//Exception Item Data has no reference to item
-		return EHHM_InventoryReturn::Return_Error;
-	}
-
-	FIntPoint Size_Item = pItem->Get_ItemSize();
+	FIntPoint Size_Item = _pItemData->Get_ItemSize();
 	if (Size_Item.X <= 0 || Size_Item.Y <= 0) {
 		//Exception Unavailable Item size
 		return EHHM_InventoryReturn::Return_Error;
@@ -669,7 +629,7 @@ EHHM_InventoryReturn FHHM_Inventory::Find_SourceIndex(FIntPoint& _indexPoint_Ret
 bool FHHM_Inventory::Set_RoomOccupied(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical, const int32& _inventoryItemID, FHHM_Data_Inventory_Item* _pInventoryItemData)
 {
 	//Valid check
-	if (_index_Horizontal <= 0 || _index_Vertical <= 0) {
+	if (_index_Horizontal < 0 || _index_Vertical < 0) {
 		//Exception Zero or below index
 		return false;
 	}
@@ -762,13 +722,6 @@ void FHHM_Inventory::Set_RoomFree(const int32& _inventoryItemID)
 		return;
 	}
 
-	UHHM_Item* pItem = nullptr;
-	pItem = pInventoryItemData_Found->pItemData->Get_Item();
-	if (pItem == nullptr) {
-		//Exception ItemData has no Item reference
-		return;
-	}
-
 	
 
 	//Free Room
@@ -779,7 +732,7 @@ void FHHM_Inventory::Set_RoomFree(const int32& _inventoryItemID)
 		return;
 	}
 
-	FIntPoint Size_Item = pItem->Get_ItemSize();
+	FIntPoint Size_Item = pInventoryItemData_Found->pItemData->Get_ItemSize();
 	if (Size_Item.X <= 0 || Size_Item.Y <= 0) {
 		//Exception invalid item size
 		return;

@@ -21,10 +21,10 @@ public:
 
 
 private:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 		class UStaticMeshComponent*		m_pComponent_StaticMesh = nullptr;
 
-	TSharedPtr<UHHM_ItemData>		m_pItemData = nullptr;
+	UHHM_ItemData*		m_pItemData = nullptr;
 
 
 
@@ -40,7 +40,7 @@ public:
 
 public:
 	//Set Item Data
-	bool Set_ItemData(const TSharedPtr<UHHM_ItemData>& _pItemData, class UMaterialInterface* _material, FVector2D _actorSize);
+	bool Set_ItemData(UHHM_ItemData* _pItemData, class UMaterialInterface* _material, FVector2D _actorSize);
 	void Add_Force(FVector _force);
 
 };

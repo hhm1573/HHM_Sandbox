@@ -11,7 +11,7 @@
 
 
 
-USTRUCT()
+USTRUCT(Blueprintable)
 struct FHHM_Inventory
 {
 	GENERATED_USTRUCT_BODY()
@@ -24,14 +24,18 @@ protected:
 		FHHM_Data_Inventory								m_Data_Inventory;
 
 	UPROPERTY()
-		TArray<FHHM_Data_Inventory_Slot_Row>	m_InventorySlotData;	//Column of Slots
-	UPROPERTY()
+		TArray<FHHM_Data_Inventory_Slot_Row>			m_InventorySlotData;	//Column of Slots
+	UPROPERTY(BlueprintReadOnly)
 		TMap<int32, FHHM_Data_Inventory_Item>			m_Container_ItemData;	// 다른 Inventory나 UI등에서 아이템의 ID를 이용해서 참고할 경우를 대비해 Array가 아닌 Map으로 저장한다.
 
 	
 
 public:
 	bool	Initialize_Inventory(const FHHM_Data_Inventory& _data_Inventory);
+
+//public:
+//	UFUNCTION(BlueprintCallable)
+//		TMap<int32, FHHM_Data_Inventory_Item>& BP_Get_Container_ItemData();
 
 public:
 	FIntPoint									Get_InventorySize() const;

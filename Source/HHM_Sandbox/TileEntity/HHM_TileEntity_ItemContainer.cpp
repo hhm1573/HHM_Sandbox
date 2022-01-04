@@ -58,12 +58,7 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add(AEntity* _pEntity_Interac
 		return false;
 	}
 
-	if (_pItemData->Get_Item() == nullptr) {
-		//Exception Input item data has no item pointer
-		return false;
-	}
-
-	FIntPoint Size_Item = _pItemData->Get_Item()->Get_ItemSize();
+	FIntPoint Size_Item = _pItemData->Get_ItemSize();
 	if (Size_Item.X <= 0 || Size_Item.Y <= 0) {
 		//Exception Input item has invalid size
 		return false;
@@ -95,12 +90,7 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add_At(AEntity* _pEntity_Inte
 		return false;
 	}
 
-	if (_pItemData->Get_Item() == nullptr) {
-		//Exception Input item data has no item pointer
-		return false;
-	}
-
-	FIntPoint Size_Item = _pItemData->Get_Item()->Get_ItemSize();
+	FIntPoint Size_Item = _pItemData->Get_ItemSize();
 	if (Size_Item.X <= 0 || Size_Item.Y <= 0) {
 		//Exception Input item has invalid item size
 		return false;
@@ -194,12 +184,7 @@ bool AHHM_TileEntity_ItemContainer::Check_InventoryHasRoomForItem(UHHM_ItemData*
 		return false;
 	}
 
-	if (_pItemData->Get_Item() == nullptr) {
-		//Exceptino Input item has no valid item pointer
-		return false;
-	}
-
-	FIntPoint Size_Item = _pItemData->Get_Item()->Get_ItemSize();
+	FIntPoint Size_Item = _pItemData->Get_ItemSize();
 	if (Size_Item.X <= 0 || Size_Item.Y <= 0) {
 		//Exception Input item has invalid size data
 		return false;

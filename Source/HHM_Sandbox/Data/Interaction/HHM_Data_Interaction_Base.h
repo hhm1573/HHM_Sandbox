@@ -9,7 +9,7 @@
 
 
 
-USTRUCT()
+USTRUCT()								//HHM Future Note : CompatibleID 등 공유해야 하는 데이터들을 저장하기 위한 객체
 struct FHHM_Data_Interaction_Base		//Contains data for registering to manager
 {
 	GENERATED_USTRUCT_BODY();
