@@ -31,7 +31,6 @@ UHHM_ItemData::UHHM_ItemData() {
 			pMaterialInstance->SetScalarParameterValue(TEXT("Param_TextureSize"), 64.0f);
 
 			m_RenderData.Container_Material.Add(pMaterialInstance);
-
 		}
 		else {
 			//Exception Cant find texture
@@ -40,6 +39,13 @@ UHHM_ItemData::UHHM_ItemData() {
 	else {
 		//Exception Cant find material
 	}
+
+	static ConstructorHelpers::FObjectFinder<UTexture2D> Asset_Texture2D(TEXT("/Game/HHM_Develope/Core/Resource/Texture/Develope/Ladder"));
+	if (Asset_Texture2D.Succeeded() == true) {
+		m_Container_Texture.Add(Asset_Texture2D.Object);
+	}
+
+
 
 	m_RenderData.Size_ItemActor = FVector2D(5.0f, 5.0f);
 
@@ -64,6 +70,11 @@ void UHHM_ItemData::BP_Get_RenderData(UMaterialInterface*& _material_Return, ALo
 	Get_RenderData_ItemActor(_material_Return, TmpVec2D, _pLocalMap);
 }
 
+void UHHM_ItemData::BP_Get_Texture2D(UTexture2D*& _pTexture_Return)
+{
+	Get_Texture(_pTexture_Return);
+}
+
 void UHHM_ItemData::Get_RenderData_ItemActor(UMaterialInterface*& _material_Return, FVector2D& _cubeSize_Return, ALocalMap* _pLocalMap)
 {
 	int32 Num_Material = m_RenderData.Container_Material.Num();
@@ -72,4 +83,16 @@ void UHHM_ItemData::Get_RenderData_ItemActor(UMaterialInterface*& _material_Retu
 	}
 
 	_cubeSize_Return = m_RenderData.Size_ItemActor;
+}
+
+void UHHM_ItemData::Get_Texture(UTexture2D*& _pTexture_Return)
+{
+	int32 Num_Texture = m_Container_Texture.Num();
+	if (Num_Texture > 0) {
+		_pTexture_Return = m_Container_Texture[0];
+	}
+	else {
+		_pTexture_Return = nullptr;
+	}
+
 }

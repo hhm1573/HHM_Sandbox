@@ -25,5 +25,5 @@ public:
 
 
 public:
-	virtual void On_Interact(class ALocalMap* _pLocalMap, FHHM_TileData& _tileData, class AEntity* _pEntity, FHHM_Data_Interact* _pinteractData);
+	virtual void On_Interact(class ALocalMap* _pLocalMap, FHHM_TileData& _tileData, class AHHM_Entity* _pEntity, FHHM_Data_Interact* _pinteractData);
 };

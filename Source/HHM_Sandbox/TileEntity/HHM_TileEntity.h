@@ -45,6 +45,19 @@ protected:
 
 
 
+protected:
+	UPROPERTY()
+		TMap<FString, class UStaticMeshComponent*>	m_Container_Component_StaticMesh;
+
+
+
 public:
 	virtual bool Initialize_TileEntity(class AHHM_Tile* _pTile, class ALocalMap* _pLocalMap, int32 _index_Horizontal, int32 _index_Vertical);
+
+
+
+public:
+	bool Component_StaticMesh_Add(const FString& _name, class UMaterialInterface* _pMaterial, const FVector2D& _size = FVector2D::UnitVector, const FVector2D& _offset = FVector2D::ZeroVector, const float& _offset_Depth = 0.0f);
+	bool Component_StaticMesh_Remove(const FString& _name);
+	bool Get_StaticMeshComponent(const FString& _name, class UStaticMeshComponent*& _pStaticMesh_Return);
 };

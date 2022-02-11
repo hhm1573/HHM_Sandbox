@@ -35,11 +35,11 @@ void AHHM_Tile::Tick(float DeltaTime)
 
 
 
-FHHM_TileData AHHM_Tile::On_Placed(ALocalMap * pLocalMap, FHHM_TileData& tileInfo, AEntity * pEntity)
+bool AHHM_Tile::On_Placed(ALocalMap * pLocalMap, FHHM_TileData& tileInfo, AHHM_Entity * pEntity)
 {
 	// TODO: 여기에 반환 구문을 삽입합니다.
 	//return m_DefaultTileData;
-	return tileInfo;
+	return true;
 }
 
 int32 AHHM_Tile::On_Damaged(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, int32 damage, EHHM_DamageType damage_Type, class APawn* pAttackPawn) {

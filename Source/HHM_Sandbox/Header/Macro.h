@@ -19,3 +19,8 @@ constexpr float HHM_CUBE_MESH_SIZE = 100.0f;
 
 
 constexpr float HHM_GRAVITATIONAL_ACCELERATION = 9.764f;
+
+
+
+//const FString HHM_PATH_MESH_TILE = TEXT("/Game/StarterContent/Shapes/Shape_Cube");
+#define HHM_PATH_MESH_TILE TEXT("/Game/StarterContent/Shapes/Shape_Cube")

@@ -50,7 +50,7 @@ public:
 	no need to set valid value on both _targetLocaiton and _pTarget. because depends on item, item will use only one of them.
 	return true will reduce item use count and might consume item.
 	*/
-	virtual bool	On_ItemUsed(class ALocalMap* _pLocalMap, class AEntity* _pUser, UHHM_ItemData* _itemUsed, FVector _targetLocation, class AEntity* _pTarget) const; // HHM Note : Make it as pure virtual
+	virtual bool	On_ItemUsed(class ALocalMap* _pLocalMap, class AHHM_Entity* _pUser, UHHM_ItemData* _itemUsed, FVector _targetLocation, class AHHM_Entity* _pTarget) const; // HHM Note : Make it as pure virtual
 
 
 

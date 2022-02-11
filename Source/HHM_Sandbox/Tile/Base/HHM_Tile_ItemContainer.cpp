@@ -12,21 +12,23 @@
 #include "TileEntity/HHM_TileEntity.h"
 #include "TileEntity/HHM_TileEntity_ItemContainer.h"
 
+#include "Header/Macro.h"
+
 
 
 AHHM_Tile_ItemContainer::AHHM_Tile_ItemContainer() {
-
+	m_RenderInfo.IsIndependent = true;
 }
 
 
 
-FHHM_TileData AHHM_Tile_ItemContainer::On_Placed(ALocalMap* _pLocalMap, FHHM_TileData& _tileInfo, AEntity* _pEntity)
+bool AHHM_Tile_ItemContainer::On_Placed(ALocalMap* _pLocalMap, FHHM_TileData& _tileInfo, AHHM_Entity* _pEntity)
 {
 	UWorld* pWorld = nullptr;
 	pWorld = GetWorld();
 	if (pWorld == nullptr) {
 		//Exception Critical Cant Get World Instance
-		return m_pManager_Tile->Get_DefaultTileInfo_ByID(0);
+		return false;
 	}
 
 	const FHHM_MapInfo& MapInfo_ConstRef = _pLocalMap->Get_MapInfo_ConstRef();
@@ -34,25 +36,40 @@ FHHM_TileData AHHM_Tile_ItemContainer::On_Placed(ALocalMap* _pLocalMap, FHHM_Til
 	AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(Location_Tile, FVector2D(_tileInfo.Index_Horizontal, _tileInfo.Index_Vertical), MapInfo_ConstRef);
 	if (Location_Tile.X < 0 || Location_Tile.Z < 0) {
 		//Exception Invalid Location for tile entity. IndexLocation of tile data might not set correctly
-		return m_pManager_Tile->Get_DefaultTileInfo_ByID(0);
+		return false;
 	}
+
+	FVector CenteredLocation = Location_Tile;
+	CenteredLocation.X = CenteredLocation.X + (HHM_TILE_SIZE * 0.5f);
 
 	AHHM_TileEntity_ItemContainer* pTileEntity_Create = nullptr;
-	pTileEntity_Create = pWorld->SpawnActor<AHHM_TileEntity_ItemContainer>(Location_Tile, FRotator::ZeroRotator);
+	pTileEntity_Create = pWorld->SpawnActor<AHHM_TileEntity_ItemContainer>(CenteredLocation, FRotator::ZeroRotator);
 	if (pTileEntity_Create == nullptr) {
 		//Exception creating tileentity failed
-		return m_pManager_Tile->Get_DefaultTileInfo_ByID(0);
+		return false;
 	}
 	
-	bool IsSucceed_SetTileEntity = _pLocalMap->Set_TileEntity_At(_tileInfo.Index_Horizontal, _tileInfo.Index_Vertical, TSharedPtr<AHHM_TileEntity>(pTileEntity_Create));
+	bool IsSucceed_SetTileEntity = _pLocalMap->Set_TileEntity_At(_tileInfo.Index_Horizontal, _tileInfo.Index_Vertical, pTileEntity_Create);
 	if (IsSucceed_SetTileEntity == false) {
 		//Exception Set tile entity on localmap failed
-		return m_pManager_Tile->Get_DefaultTileInfo_ByID(0);
+		return false;
+	}
+
+	m_pTileEntity = pTileEntity_Create;
+
+
+
+	int32 Num_Material = m_RenderInfo.Arr_Material.Num();
+	if (Num_Material > 0) {
+		bool IsSucceed_Add = m_pTileEntity->Component_StaticMesh_Add(TEXT("Base"), m_RenderInfo.Arr_Material[0]);
+		if (IsSucceed_Add == false) {
+			//Exception
+		}
 	}
 
 
 
-	return _tileInfo;
+	return true;
 }
 
 FHHM_TileData AHHM_Tile_ItemContainer::On_Destruct(ALocalMap* _pLocalMap, FHHM_TileData& _tileInfo)
@@ -66,7 +83,7 @@ FHHM_TileData AHHM_Tile_ItemContainer::On_Destruct(ALocalMap* _pLocalMap, FHHM_T
 
 
 
-bool AHHM_Tile_ItemContainer::On_Item_Add(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, UHHM_ItemData* _pItemData)
+bool AHHM_Tile_ItemContainer::On_Item_Add(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AHHM_Entity* _pEntity, UHHM_ItemData* _pItemData)
 {
 	if (_pItemData == nullptr) {
 		//Exception ItemData is nullptr
@@ -80,7 +97,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Add(ALocalMap* _pLocalMap, FHHM_TileData& 
 		return false;
 	}
 
-	TSharedPtr<AHHM_TileEntity> pTileEntity = nullptr;
+	AHHM_TileEntity* pTileEntity = nullptr;
 	bool IsSucceed_Get_TileEntity = _pLocalMap->Get_TileEntity_At(pTileEntity, _tileData.Index_Horizontal, _tileData.Index_Vertical);
 	if (IsSucceed_Get_TileEntity == false) {
 		//Exception get tile entity failed
@@ -92,7 +109,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Add(ALocalMap* _pLocalMap, FHHM_TileData& 
 	}
 
 	AHHM_TileEntity_ItemContainer* pTileEntity_ItemContainer = nullptr;
-	pTileEntity_ItemContainer = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity.Get());
+	pTileEntity_ItemContainer = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity);
 	if (pTileEntity_ItemContainer == nullptr) {
 		//Exception Casting tile entity failed
 		return false;
@@ -111,7 +128,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Add(ALocalMap* _pLocalMap, FHHM_TileData& 
 	return true;
 }
 
-bool AHHM_Tile_ItemContainer::On_Item_Add_At(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, UHHM_ItemData* _pItemData, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
+bool AHHM_Tile_ItemContainer::On_Item_Add_At(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AHHM_Entity* _pEntity, UHHM_ItemData* _pItemData, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
 {
 	if (_pItemData == nullptr) {
 		//Exception Input item is nullptr
@@ -131,7 +148,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Add_At(ALocalMap* _pLocalMap, FHHM_TileDat
 		return false;
 	}
 
-	TSharedPtr<AHHM_TileEntity> pTileEntity_Raw = nullptr;
+	AHHM_TileEntity* pTileEntity_Raw = nullptr;
 	bool IsSucceed_GetTileEntity = _pLocalMap->Get_TileEntity_At(pTileEntity_Raw, _tileData.Index_Horizontal, _tileData.Index_Vertical);
 	if (IsSucceed_GetTileEntity == false) {
 		//Exception Get TileEntity Failed
@@ -143,7 +160,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Add_At(ALocalMap* _pLocalMap, FHHM_TileDat
 	}
 
 	AHHM_TileEntity_ItemContainer* pTileEntity = nullptr;
-	pTileEntity = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity_Raw.Get());
+	pTileEntity = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity_Raw);
 	if (pTileEntity == nullptr) {
 		//Exception Cast Tile Entity failed
 		return false;
@@ -162,7 +179,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Add_At(ALocalMap* _pLocalMap, FHHM_TileDat
 	return true;
 }
 
-bool AHHM_Tile_ItemContainer::On_Item_Remove(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, UHHM_ItemData* _pItemData_Remove)
+bool AHHM_Tile_ItemContainer::On_Item_Remove(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AHHM_Entity* _pEntity, UHHM_ItemData* _pItemData_Remove)
 {
 	if (_pItemData_Remove == nullptr) {
 		//Exception Input ItemData is nullptr
@@ -176,7 +193,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Remove(ALocalMap* _pLocalMap, FHHM_TileDat
 		return false;
 	}
 
-	TSharedPtr<AHHM_TileEntity> pTileEntity_Raw = nullptr;
+	AHHM_TileEntity* pTileEntity_Raw = nullptr;
 	bool IsSucceed_GetTileEntity = _pLocalMap->Get_TileEntity_At(pTileEntity_Raw, _tileData.Index_Horizontal, _tileData.Index_Vertical);
 	if (IsSucceed_GetTileEntity == false) {
 		//Exception Get Tile Entity failed
@@ -188,7 +205,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Remove(ALocalMap* _pLocalMap, FHHM_TileDat
 	}
 
 	AHHM_TileEntity_ItemContainer* pTileEntity = nullptr;
-	pTileEntity = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity_Raw.Get());
+	pTileEntity = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity_Raw);
 	if (pTileEntity == nullptr) {
 		//Exception Cast TileEntity Failed
 		return false;
@@ -207,7 +224,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Remove(ALocalMap* _pLocalMap, FHHM_TileDat
 	return true;
 }
 
-bool AHHM_Tile_ItemContainer::On_Item_Remove_At(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, UHHM_ItemData*& _pItemData_Return, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
+bool AHHM_Tile_ItemContainer::On_Item_Remove_At(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AHHM_Entity* _pEntity, UHHM_ItemData*& _pItemData_Return, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
 {
 	bool IsValidIndex_Inventory = Check_InventoryIndex(_index_Inventory_Horizontal, _index_Inventory_Vertical);
 	if (IsValidIndex_Inventory == false) {
@@ -222,7 +239,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Remove_At(ALocalMap* _pLocalMap, FHHM_Tile
 		return false;
 	}
 
-	TSharedPtr<AHHM_TileEntity> pTileEntity_Raw = nullptr;
+	AHHM_TileEntity* pTileEntity_Raw = nullptr;
 	bool IsSucceed_GetTileEntity = _pLocalMap->Get_TileEntity_At(pTileEntity_Raw, _tileData.Index_Horizontal, _tileData.Index_Vertical);
 	if (IsSucceed_GetTileEntity == false) {
 		//Exception Get Tile Entity Failed
@@ -234,7 +251,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Remove_At(ALocalMap* _pLocalMap, FHHM_Tile
 	}
 
 	AHHM_TileEntity_ItemContainer* pTileEntity = nullptr;
-	pTileEntity = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity_Raw.Get());
+	pTileEntity = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity_Raw);
 	if (pTileEntity == nullptr) {
 		//Exception Cast tile entity failed
 		return false;
@@ -257,7 +274,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Remove_At(ALocalMap* _pLocalMap, FHHM_Tile
 	return true;
 }
 
-bool AHHM_Tile_ItemContainer::On_Item_Delete(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, UHHM_ItemData* _pItemData_Delete)
+bool AHHM_Tile_ItemContainer::On_Item_Delete(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AHHM_Entity* _pEntity, UHHM_ItemData* _pItemData_Delete)
 {
 	if (_pItemData_Delete == nullptr) {
 		//Exception Input Item Data is nullptr
@@ -271,7 +288,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Delete(ALocalMap* _pLocalMap, FHHM_TileDat
 		return false;
 	}
 
-	TSharedPtr<AHHM_TileEntity> pTileEntity_Raw = nullptr;
+	AHHM_TileEntity* pTileEntity_Raw = nullptr;
 	bool IsSucceed_GetTileEntity = _pLocalMap->Get_TileEntity_At(pTileEntity_Raw, _tileData.Index_Horizontal, _tileData.Index_Vertical);
 	if (IsSucceed_GetTileEntity == false) {
 		//Exception Get Tile entity failed
@@ -283,7 +300,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Delete(ALocalMap* _pLocalMap, FHHM_TileDat
 	}
 
 	AHHM_TileEntity_ItemContainer* pTileEntity = nullptr;
-	pTileEntity = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity_Raw.Get());
+	pTileEntity = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity_Raw);
 	if (pTileEntity == nullptr) {
 		//Exception cast tile entity failed
 		return false;
@@ -302,7 +319,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Delete(ALocalMap* _pLocalMap, FHHM_TileDat
 	return true;
 }
 
-bool AHHM_Tile_ItemContainer::On_Item_Delete_At(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AEntity* _pEntity, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
+bool AHHM_Tile_ItemContainer::On_Item_Delete_At(ALocalMap* _pLocalMap, FHHM_TileData& _tileData, AHHM_Entity* _pEntity, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
 {
 	bool IsValidIndex_Inventory = Check_InventoryIndex(_index_Inventory_Horizontal, _index_Inventory_Vertical);
 	if (IsValidIndex_Inventory == false) {
@@ -317,7 +334,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Delete_At(ALocalMap* _pLocalMap, FHHM_Tile
 		return false;
 	}
 
-	TSharedPtr<AHHM_TileEntity> pTileEntity_Raw = nullptr;
+	AHHM_TileEntity* pTileEntity_Raw = nullptr;
 	bool IsSucceed_GetTileEntity = _pLocalMap->Get_TileEntity_At(pTileEntity_Raw, _tileData.Index_Horizontal, _tileData.Index_Vertical);
 	if (IsSucceed_GetTileEntity == false) {
 		//Exception Get Tile Entity failed
@@ -329,7 +346,7 @@ bool AHHM_Tile_ItemContainer::On_Item_Delete_At(ALocalMap* _pLocalMap, FHHM_Tile
 	}
 
 	AHHM_TileEntity_ItemContainer* pTileEntity = nullptr;
-	pTileEntity = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity_Raw.Get());
+	pTileEntity = Cast<AHHM_TileEntity_ItemContainer>(pTileEntity_Raw);
 	if (pTileEntity == nullptr) {
 		//Exception cast tile entity failed
 		return false;

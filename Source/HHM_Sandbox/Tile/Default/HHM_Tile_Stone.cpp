@@ -35,7 +35,6 @@ void AHHM_Tile_Stone::OnConstruction(const FTransform& Transform) {
 		pMaterialinstance->SetVectorParameterValue(TEXT("DyeColor"), Color_Grey);*/
 
 
-		m_RenderInfo.eRenderType = EHHM_RenderType::RType_Instanced;
 		m_RenderInfo.Arr_Material.Add(pMaterialinstance);
 		m_RenderInfo.Num_Material = 1;
 	}

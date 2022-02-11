@@ -25,7 +25,6 @@ AHHM_Tile_Dirt::AHHM_Tile_Dirt(void) {
 	UMaterialInstanceDynamic* pMaterialinstance = UMaterialInstanceDynamic::Create(pMaterial_Raw, this, TEXT("Tile_Material_Dirt"));
 	pMaterialinstance->SetVectorParameterValue(TEXT("DyeColor"), FLinearColor::Red);
 
-	m_RenderInfo.eRenderType = EHHM_RenderType::RType_Instanced;
 	m_RenderInfo.Arr_Material.Add(pMaterialinstance);
 	m_RenderInfo.Num_Material = 1;
 }

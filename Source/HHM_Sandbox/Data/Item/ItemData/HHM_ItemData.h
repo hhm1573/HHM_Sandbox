@@ -6,6 +6,7 @@
 #include "UObject/NoExportTypes.h"
 
 #include "Data/Item/RenderData/HHM_RenderData_Item.h"
+#include "Engine/Texture.h"
 
 #include "HHM_ItemData.generated.h"
 
@@ -45,6 +46,8 @@ protected:
 		int32				m_ItemSize_Vertical = 0;
 
 	FHHM_RenderData_Item		m_RenderData;							//Note : 스태틱으로 하거나 따로 DefaultItemData 클래스같은걸 만들어서 하나만 존재하게 하거나 해야할듯?
+	UPROPERTY()	//UI상에서의 표시를 위한 텍스처를 저장하는 변수
+	TArray<UTexture2D*>			m_Container_Texture;
 	TArray<FString>				m_Container_Descriptions;
 
 
@@ -76,7 +79,11 @@ public:
 public:
 	UFUNCTION(BlueprintCallable)	//HHM Note : Temporary Function. 타일엔티티와의 상호작용 테스트에 필요한 인벤토리에서 아이템 사진을 가져오는 기능을 위해 임시로 만든 함수.
 		void		BP_Get_RenderData(class UMaterialInterface*& _material_Return, class ALocalMap* _pLocalMap);
+	UFUNCTION(BlueprintCallable)
+		void		BP_Get_Texture2D(UTexture2D*& _pTexture_Return);
 public:
 	virtual void	Get_RenderData_ItemActor(class UMaterialInterface*& _material_Return, FVector2D& _cubeSize_Return, class ALocalMap* _pLocalMap);
+	//Inventory UI등 UI에서 쓰일 텍스쳐를 반환받는 함수. UI에서 텍스쳐를 업데이트할때 호출된다.
+	virtual void	Get_Texture(UTexture2D*& _pTexture_Return);
 
 };

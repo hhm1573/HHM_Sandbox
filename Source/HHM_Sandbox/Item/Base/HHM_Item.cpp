@@ -31,7 +31,7 @@ UHHM_Item::UHHM_Item(void) {
 
 
 
-bool UHHM_Item::On_ItemUsed(ALocalMap* _pLocalMap, AEntity* _pUser, UHHM_ItemData* _itemUsed, FVector _targetLocation, AEntity* _pTarget) const
+bool UHHM_Item::On_ItemUsed(ALocalMap* _pLocalMap, AHHM_Entity* _pUser, UHHM_ItemData* _itemUsed, FVector _targetLocation, AHHM_Entity* _pTarget) const
 {
 	return false;
 }

@@ -80,6 +80,48 @@ void ALocalMap::BeginDestroy() {
 
 #pragma endregion
 
+
+
+TArray<int32> ALocalMap::Get_TileIndex_In_Rectangle(const FVector2D& _point_First, const FVector2D& _point_Second)
+{
+	float Location_Horizontal_Lower = _point_First.X < _point_Second.X ? _point_First.X : _point_Second.X;
+	float Location_Vertical_Lower = _point_First.Y < _point_Second.Y ? _point_First.Y : _point_Second.Y;
+	float Location_Horizontal_Higher = Location_Horizontal_Lower == _point_First.X ? _point_Second.X : _point_First.X;
+	float Location_Vertical_Higher = Location_Vertical_Lower == _point_First.Y ? _point_Second.Y : _point_First.Y;
+	FVector2D Point_Lower = FVector2D(Location_Horizontal_Lower, Location_Vertical_Lower);
+	FVector2D Point_Higher = FVector2D(Location_Horizontal_Higher, Location_Vertical_Higher);
+	
+	FVector2D Offset_LocalMap = FVector2D(m_MapInfo.Location.X, m_MapInfo.Location.Z);
+	FVector2D Point_Lower_Fixed = Point_Lower - Offset_LocalMap;
+	FVector2D Point_Higher_Fixed = Point_Higher - Offset_LocalMap;
+
+
+
+	float Location_Horizontal_End = m_MapInfo.MapSize_Horizontal * HHM_TILE_SIZE;
+	float Location_Vertical_End = m_MapInfo.MapSize_Vertical * HHM_TILE_SIZE;
+
+	int32 Index_Horizontal_Lower = Point_Lower_Fixed.X < 0.0f ? 0 : Point_Lower_Fixed.X / HHM_TILE_SIZE;
+	int32 Index_Vertical_Lower = Point_Lower_Fixed.Y < 0.0f ? 0 : Point_Lower_Fixed.Y / HHM_TILE_SIZE;
+	int32 Index_Horizontal_Higher = Point_Higher_Fixed.X > Location_Horizontal_End ? m_MapInfo.MapSize_Horizontal - 1 : Point_Higher_Fixed.X / HHM_TILE_SIZE;
+	int32 Index_Vertical_Higher = Point_Higher_Fixed.Y > Location_Vertical_End ? m_MapInfo.MapSize_Vertical - 1 : Point_Higher_Fixed.Y / HHM_TILE_SIZE;
+
+	
+
+	TArray<int32> Container_Return;
+	Container_Return.Empty();
+	//Add To Array
+	for (int32 index_Vertical = Index_Vertical_Lower; index_Vertical <= Index_Vertical_Higher; ++index_Vertical) {
+		for (int32 index_Horizontal = Index_Horizontal_Lower; index_Horizontal <= Index_Horizontal_Higher; ++index_Horizontal) {
+			int32 Index_ToAdd = (index_Vertical * m_MapInfo.MapSize_Horizontal) + index_Horizontal;
+			Container_Return.Add(Index_ToAdd);
+		}
+	}
+
+	return Container_Return;
+}
+
+
+
 #pragma region Initialize related
 
 bool ALocalMap::Initialize_LocalMap(void){
@@ -351,6 +393,14 @@ void ALocalMap::Set_Tile_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, 
 		return;
 	}
 
+
+	//HHM Note : Temporary. 타일엔티티를 갖는 타일이 OnPlaced 호출시에 타일엔티티를 생성하고 렌더설정 등을 진행하게끔 하였는데, SetTile 함수를 사용할경우 OnPlaced 함수 호출이 이루어지지 않아,
+	//OnPlaced 함수를 호출하는 부분을 임시로 넣어둠.
+	/*FHHM_TileData TileData_Temp = _tileData;
+	FHHM_TileData TileData_Place = _tileData.Tile->On_Placed(this, TileData_Temp, nullptr);*/
+
+
+
 	const int32 Index_Input = _index_Vertical * m_MapInfo.MapSize_Horizontal + _index_Horizontal;
 	m_MapData.Container_TileData[Index_Input] = _tileData;
 
@@ -377,9 +427,38 @@ void ALocalMap::Set_Tile_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, 
 	ALocalMap::Set_Tile_At_Pos(_index_Horizontal, _index_Vertical, TileData);
 }
 
+void ALocalMap::Remove_Tile(int32 _index_Horizontal, int32 _index_Vertical)
+{
+	const bool IsValidIndex = Check_IsValidPos(_index_Horizontal, _index_Vertical);
+	if (IsValidIndex == false) {
+		//Exception
+		return;
+	}
+
+	ALocalMap::Set_Tile_At_Pos(_index_Horizontal, _index_Vertical, 0, 0);
+	ALocalMap::TileEntity_Remove(_index_Horizontal, _index_Vertical);
+}
 
 
-bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AEntity* _pPlacer, FHHM_TileData _tileData)
+
+bool ALocalMap::Replace_Tile(int32 _index_Horizontal, int32 _index_Vertical, AHHM_Entity* _pPlacer, int32 _tile_ID, int32 _tile_SubID)
+{
+	const bool IsValidIndex = Check_IsValidPos(_index_Horizontal, _index_Vertical);
+	if (IsValidIndex == false) {
+		//Exception
+		return false;
+	}
+
+	//Remove Target Tile
+	ALocalMap::Remove_Tile(_index_Horizontal, _index_Vertical);
+
+	//Place New Tile
+	ALocalMap::Place_Tile(_index_Horizontal, _index_Vertical, _pPlacer, _tile_ID, _tile_SubID);
+
+	return true;
+}
+
+bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AHHM_Entity* _pPlacer, FHHM_TileData _tileData)
 {
 	const bool isValidIndex = Check_IsValidPos(_index_Horizontal, _index_Vertical);
 	if (isValidIndex == false) {
@@ -392,15 +471,22 @@ bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AEnti
 		return false;
 	}
 
-	// This is actual tile that will be placed
-	FHHM_TileData TileData_Place = _tileData.Tile->On_Placed(this, _tileData, _pPlacer);
+	ALocalMap::Set_Tile_At_Pos(_index_Horizontal, _index_Vertical, _tileData);
 
-	ALocalMap::Set_Tile_At_Pos(_index_Horizontal, _index_Vertical, TileData_Place);
+	// This is actual tile that will be placed
+	bool IsSucceed_PlaceTile = _tileData.Tile->On_Placed(this, _tileData, _pPlacer);
+	if (IsSucceed_PlaceTile == false) {
+		//Exception Tile place failed. 
+		ALocalMap::Set_Tile_At_Pos(_index_Horizontal, _index_Vertical, 0, 0);
+		return false;
+	}
+
+
 
 	return true;
 }
 
-bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AEntity* _pPlacer, int32 _tile_ID, int32 _tile_SubID)
+bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AHHM_Entity* _pPlacer, int32 _tile_ID, int32 _tile_SubID)
 {
 	const bool IsValidIndex = Check_IsValidPos(_index_Horizontal, _index_Vertical);
 	if (IsValidIndex == false) {
@@ -427,9 +513,16 @@ bool ALocalMap::Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, AEnti
 	TileData_LocationSet.Index_Horizontal = _index_Horizontal;
 	TileData_LocationSet.Index_Vertical = _index_Vertical;
 
-	FHHM_TileData TileData_Place = TileData_Default.Tile->On_Placed(this, TileData_LocationSet, _pPlacer);
 
-	ALocalMap::Set_Tile_At_Pos(_index_Horizontal, _index_Vertical, TileData_Place);
+
+	ALocalMap::Set_Tile_At_Pos(_index_Horizontal, _index_Vertical, TileData_LocationSet);
+
+	bool IsSucceed_PlaceTile = TileData_Default.Tile->On_Placed(this, TileData_LocationSet, _pPlacer);
+	if (IsSucceed_PlaceTile == false) {
+		//Exception
+		ALocalMap::Set_Tile_At_Pos(_index_Horizontal, _index_Vertical, 0, 0);
+		return false;
+	}
 
 	return true;
 }
@@ -960,9 +1053,9 @@ void ALocalMap::Translate_TileInfo_To_MovementData(const FHHM_TileData& tileInfo
 
 
 
-#pragma region Tile
+#pragma region TileEntity
 
-bool ALocalMap::Get_TileEntity_At(TSharedPtr<AHHM_TileEntity>& _pTileEntity_Return, int32 _index_Horizontal, int32 _index_Vertical)
+bool ALocalMap::Get_TileEntity_At(AHHM_TileEntity* _pTileEntity_Return, int32 _index_Horizontal, int32 _index_Vertical)
 {
 	bool IsValid_Index = Check_IsValidPos(_index_Horizontal, _index_Vertical);
 	if (IsValid_Index == false) {
@@ -981,7 +1074,7 @@ bool ALocalMap::Get_TileEntity_At(TSharedPtr<AHHM_TileEntity>& _pTileEntity_Retu
 	return true;
 }
 
-bool ALocalMap::Set_TileEntity_At(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<AHHM_TileEntity> _pTileEntity)
+bool ALocalMap::Set_TileEntity_At(int32 _index_Horizontal, int32 _index_Vertical, AHHM_TileEntity* _pTileEntity)
 {
 	bool IsValid_Index = Check_IsValidPos(_index_Horizontal, _index_Vertical);
 	if (IsValid_Index == false) {
@@ -999,6 +1092,34 @@ bool ALocalMap::Set_TileEntity_At(int32 _index_Horizontal, int32 _index_Vertical
 	m_MapData.Container_TileEntity[Index_Target] = _pTileEntity;
 
 	return true;
+}
+
+void ALocalMap::TileEntity_Remove(int32 _index_Horizontal, int32 _index_Vertical)
+{
+	const bool IsValidIndex = Check_IsValidPos(_index_Horizontal, _index_Vertical);
+	if (IsValidIndex == false) {
+		//Exception
+		return;
+	}
+
+	const int32 Index_Target = AHHM_Manager_Math_Grid::Index_Combine(_index_Horizontal, _index_Vertical, m_MapInfo);
+	
+	//Just in case
+	const bool IsValidIndex_Target = Check_IsValidIndex(Index_Target);
+	if (IsValidIndex_Target == false) {
+		//Exception
+		return;
+	}
+
+	AHHM_TileEntity*& pTileEntity = m_MapData.Container_TileEntity[Index_Target];
+	if (pTileEntity != nullptr) {
+		const bool IsSucceed_Destroy_TileEntity = pTileEntity->Destroy();
+		if (IsSucceed_Destroy_TileEntity == false) {
+			//Exception Destroy object failed
+		}
+	}
+
+	m_MapData.Container_TileEntity[Index_Target] = nullptr;
 }
 
 #pragma endregion
@@ -1052,7 +1173,7 @@ bool ALocalMap::Initialize_Container_InstancedMesh(void)
 
 			//Get Tile's render info data
 			const FHHM_RenderInfo& TileRenderInfo = pTile_Register->Get_RenderInfo();
-			if (TileRenderInfo.eRenderType != EHHM_RenderType::RType_Instanced) {
+			if (TileRenderInfo.IsIndependent) {
 				continue;
 			}
 
@@ -1229,6 +1350,29 @@ bool ALocalMap::Update_TileRenderData(const FHHM_TileData& _tileData)
 		//Exception
 		return false;
 	}
+
+
+
+	//Just remove old render instance and skip entire proccess if Tile renders independent
+	AHHM_Tile* pTile = nullptr;
+	pTile = _tileData.Tile;
+	if (pTile == nullptr) {
+		//Exception
+		return false;
+	}
+
+	FHHM_RenderInfo RenderInfo = pTile->Get_RenderInfo();
+	if (RenderInfo.IsIndependent) {
+		const int32 Index_Tile = AHHM_Manager_Math_Grid::Index_Combine(_tileData.Index_Horizontal, _tileData.Index_Vertical, m_MapInfo);
+		const bool IsRemoveSucceed = RenderInstance_Remove(Index_Tile);
+		if (IsRemoveSucceed == false) {
+			//Exception
+			return false;
+		}
+		return true;
+	}
+
+
 
 	//Get essential information to update render
 	FTransform	Transform_Local = FTransform();

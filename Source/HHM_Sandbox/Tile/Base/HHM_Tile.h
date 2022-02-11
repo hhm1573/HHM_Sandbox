@@ -12,6 +12,8 @@
 
 #include "Manager/Tile/HHM_Manager_Tile.h"
 
+#include "TileEntity/HHM_TileEntity.h"
+
 #include "HHM_Tile.generated.h"
 
 
@@ -52,6 +54,9 @@ protected:
 	UPROPERTY()
 		FHHM_RenderInfo		m_RenderInfo;
 
+	UPROPERTY()
+		AHHM_TileEntity*	m_pTileEntity = nullptr;
+
 
 
 protected:
@@ -76,7 +81,7 @@ public:		//Setter
 
 
 public:	//LocalMap, TileInfo, ~~~, MapInfo
-	virtual FHHM_TileData			On_Placed(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, class AEntity* pEntity);	//Call when Entity place tile on map. 해당 타일 클래스의 DefaultTileData등이 인자로 입력될 수 있고, 리턴하는 TileData를 맵에 저장합니다.
+	virtual bool					On_Placed(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, class AHHM_Entity* pEntity);	//Call when Entity place tile on map. 해당 타일 클래스의 DefaultTileData등이 인자로 입력될 수 있고, 리턴하는 TileData를 맵에 저장합니다.
 	virtual int32					On_Damaged(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo, int32 damage, EHHM_DamageType damage_Type, class APawn* pAttackPawn);	//Called when tile got damage. return the health point after damaged
 	virtual FHHM_TileData			On_Destruct(class ALocalMap* pLocalMap, FHHM_TileData& tileInfo);		//Called when tile destructed. return tile will replace current tile.
 	//Called when tile deleted. it normally doesn't called often. 디버그툴을 이용하여 타일을 덮어쓰거나 하는 등, 타일의 파괴나 회수 함수가 호출되지 않는 특수한 경우에만 호출됩니다.

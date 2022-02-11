@@ -70,7 +70,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MapData")
 		TArray<FHHM_TileMovementInfo>		Container_TileMovementData;
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MapData")
-		TArray<TSharedPtr<AHHM_TileEntity>>	Container_TileEntity;
+		//TArray<TSharedPtr<AHHM_TileEntity>>	Container_TileEntity;
+		TArray<AHHM_TileEntity*>	Container_TileEntity;
 
 public:
 	void Empty(void) { Container_TileData.Empty(); Container_TileMovementData.Empty(); Container_TileEntity.Empty(); }

@@ -37,11 +37,11 @@ public:
 
 
 public:
-	virtual bool Inventory_Item_Add(class AEntity* _pEntity_Interact, UHHM_ItemData*& _pItemData);
-	virtual bool Inventory_Item_Add_At(class AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical, UHHM_ItemData*& _pItemData);
-	virtual bool Inventory_Item_Remove_At(UHHM_ItemData*& _pItemData_Return, class AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical);
-	virtual bool Inventory_Item_Delete(class AEntity* _pEntity_Interact, UHHM_ItemData*& _pItemData_Delete);
-	virtual bool Inventory_Item_Delete_At(class AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical);
+	virtual bool Inventory_Item_Add(class AHHM_Entity* _pEntity_Interact, UHHM_ItemData*& _pItemData);
+	virtual bool Inventory_Item_Add_At(class AHHM_Entity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical, UHHM_ItemData*& _pItemData);
+	virtual bool Inventory_Item_Remove_At(UHHM_ItemData*& _pItemData_Return, class AHHM_Entity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical);
+	virtual bool Inventory_Item_Delete(class AHHM_Entity* _pEntity_Interact, UHHM_ItemData*& _pItemData_Delete);
+	virtual bool Inventory_Item_Delete_At(class AHHM_Entity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical);
 
 	FIntPoint	Get_InventorySize() const;
 

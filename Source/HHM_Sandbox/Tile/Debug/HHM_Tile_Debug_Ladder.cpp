@@ -33,7 +33,6 @@ AHHM_Tile_Debug_Ladder::AHHM_Tile_Debug_Ladder() {
 			pMaterialInstance->SetTextureParameterValue(TEXT("Param_Texture"), Asset_Texture.Object);
 			pMaterialInstance->SetScalarParameterValue(TEXT("Param_TextureSize"), 64.0f);
 			
-			m_RenderInfo.eRenderType = EHHM_RenderType::RType_Instanced;
 			m_RenderInfo.Arr_Material.Add(pMaterialInstance);
 			m_RenderInfo.Num_Material = 1;
 		}

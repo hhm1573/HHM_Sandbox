@@ -51,7 +51,7 @@ bool AHHM_TileEntity_ItemContainer::Initialize_TileEntity(AHHM_Tile* _pTile, ALo
 	return true;
 }
 
-bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add(AEntity* _pEntity_Interact, UHHM_ItemData*& _pItemData)
+bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add(AHHM_Entity* _pEntity_Interact, UHHM_ItemData*& _pItemData)
 {
 	if (_pItemData == nullptr) {
 		//Exception input item data is nullptr
@@ -83,7 +83,7 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add(AEntity* _pEntity_Interac
 	return true;
 }
 
-bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add_At(AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical, UHHM_ItemData*& _pItemData)
+bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add_At(AHHM_Entity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical, UHHM_ItemData*& _pItemData)
 {
 	if (_pItemData == nullptr) {
 		//Exception Input item data is nullptr
@@ -111,7 +111,7 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Add_At(AEntity* _pEntity_Inte
 	return true;
 }
 
-bool AHHM_TileEntity_ItemContainer::Inventory_Item_Remove_At(UHHM_ItemData*& _pItemData_Return, AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
+bool AHHM_TileEntity_ItemContainer::Inventory_Item_Remove_At(UHHM_ItemData*& _pItemData_Return, AHHM_Entity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
 {
 	if (_pItemData_Return != nullptr) {
 		//Exception [Notice] recommend to set return item data as nullptr
@@ -133,7 +133,7 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Remove_At(UHHM_ItemData*& _pI
 	return true;
 }
 
-bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete(AEntity* _pEntity_Interact, UHHM_ItemData*& _pItemData_Delete)
+bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete(AHHM_Entity* _pEntity_Interact, UHHM_ItemData*& _pItemData_Delete)
 {
 	if (_pItemData_Delete == nullptr) {
 		//Exception Input item data is nullptr
@@ -148,7 +148,7 @@ bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete(AEntity* _pEntity_Inte
 	return true;
 }
 
-bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete_At(AEntity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
+bool AHHM_TileEntity_ItemContainer::Inventory_Item_Delete_At(AHHM_Entity* _pEntity_Interact, int32 _index_Inventory_Horizontal, int32 _index_Inventory_Vertical)
 {
 	bool IsValid_Index_Inventory = m_Inventory.Check_IsValidIndex(_index_Inventory_Horizontal, _index_Inventory_Vertical);
 	if (IsValid_Index_Inventory == false) {

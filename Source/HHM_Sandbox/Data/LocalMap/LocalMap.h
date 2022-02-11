@@ -13,6 +13,7 @@
 #include "Header/Struct_Navigation.h"
 #include "Data/Item/ItemData/HHM_ItemData.h"
 #include "Header/Enum.h"
+#include "Entity/HHM_Entity.h"
 
 #include "Data/Item/ItemData/HHM_ItemData.h"
 
@@ -92,6 +93,10 @@ private:
 
 #pragma region Method
 
+public:
+	UFUNCTION(BlueprintCallable)
+		TArray<int32>					Get_TileIndex_In_Rectangle(const FVector2D& _point_First, const FVector2D& _point_Second);
+
 #pragma region Initialize related
 
 private:
@@ -153,8 +158,13 @@ public:
 		void	Set_Tile_At_Pos(int32 _index_Horizontal, int32 _index_Vertical, int32 _tile_ID, int32 _tile_SubID);
 	//void	Set_Tile_At_Pos_Temp(int32 _index_Horizontal, int32 _index_Vertical, int32 _tileID);
 
-	bool	Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, class AEntity* _pPlacer, FHHM_TileData _tileData);
-	bool	Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, class AEntity* _pPlacer, int32 _tile_ID, int32 _tile_SubID);
+	void	Remove_Tile(int32 _index_Horizontal, int32 _index_Vertical);
+
+	UFUNCTION(BlueprintCallable, Category = LocalMap)		//"Remove" any tile at target location and try to place target tile at target location
+		bool	Replace_Tile(int32 _index_Horizontal, int32 _index_Vertical, AHHM_Entity* _pPlacer, int32 _tile_ID, int32 _tile_SubID);
+
+	bool	Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, class AHHM_Entity* _pPlacer, FHHM_TileData _tileData);
+	bool	Place_Tile(int32 _index_Horizontal, int32 _index_Vertical, class AHHM_Entity* _pPlacer, int32 _tile_ID, int32 _tile_SubID);
 	
 	//Add damage to target tile. Return true if tile destroyed by damage
 	bool	Damage_Tile(int32 damage, EHHM_DamageType damage_Type, class APawn* attack_Pawn, int32 index_Horizontal, int32 index_Vertical);
@@ -202,10 +212,11 @@ private:
 	//TArray<TSharedPtr<UHHM_ItemData>> m_Container_TileEntity;
 
 public:
-	bool	Get_TileEntity_At(TSharedPtr<AHHM_TileEntity>& _pTileEntity_Return, int32 _index_Horizontal, int32 _index_Vertical);
+	bool	Get_TileEntity_At(AHHM_TileEntity* _pTileEntity_Return, int32 _index_Horizontal, int32 _index_Vertical);
 
 public:
-	bool	Set_TileEntity_At(int32 _index_Horizontal, int32 _index_Vertical, TSharedPtr<AHHM_TileEntity> _pTileEntity);
+	bool	Set_TileEntity_At(int32 _index_Horizontal, int32 _index_Vertical, AHHM_TileEntity* _pTileEntity);
+	void	TileEntity_Remove(int32 _index_Horizontal, int32 _index_Vertical);
 	
 #pragma endregion
 

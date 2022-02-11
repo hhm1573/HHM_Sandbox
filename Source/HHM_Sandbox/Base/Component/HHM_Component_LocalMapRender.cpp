@@ -235,7 +235,7 @@ bool UHHM_Component_LocalMapRender::Initialize_Container_InstancedMesh(void)
 
 			//Get Tile's render info data
 			const FHHM_RenderInfo& TileRenderInfo = Ref_TileContainer[index_Tile].Container_SubTile[index_SubTile]->Get_RenderInfo();
-			if (TileRenderInfo.eRenderType != EHHM_RenderType::RType_Instanced) {
+			if (TileRenderInfo.IsIndependent) {
 				continue;
 			}
 
