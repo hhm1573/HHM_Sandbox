@@ -11,6 +11,9 @@
 #include "Data/Interaction/HHM_Data_Action.h"
 
 #include "Base/Component/Inventory/HHM_Component_Inventory.h"
+#include "Base/Component/InteractionHandler/HHM_Component_InteractionHandler.h"
+
+#include "Act/HHM_Act.h"
 
 #include "HHM_Entity.generated.h"
 
@@ -32,8 +35,18 @@ protected:
 		int32				m_EntityID = -1;
 
 	UPROPERTY()
-		UHHM_Component_Inventory*	m_pComponent_Inventory = nullptr;
+		UHHM_Component_Inventory*			m_pComponent_Inventory = nullptr;
+	UPROPERTY()
+		UHHM_Component_InteractionHandler*	m_pComponent_InteractionHandler = nullptr;
 
+	//UPROPERTY()	//Act를 시작하여 Interact 큐를 진행중인지의 여부.
+	//	bool				m_IsInAction = false;
+	UPROPERTY()
+		UHHM_Act*			m_Act_Performing = nullptr;
+	UPROPERTY()
+		int32				m_ID_PerformingAction = -1;
+	UPROPERTY()
+		TArray<UHHM_Act*>	m_Queue_Act;
 
 
 
@@ -81,12 +94,34 @@ public:
 
 
 
+#pragma region Act
+
 public:
 	//Movement component lock 등, 상호작용이 시작되거나 종료될때 자신의 상태를 변화하기위한 함수.
 	virtual void Interaction_Begin();
 	virtual void Interaction_End();
+	//Called when performing action finished.
 	virtual void Action_End(FHHM_Data_Queue_Interaction& _action);
+	//Canceled는 사실상 필요 없을수도 있을듯. 움직임 제한 등은 Interaction Begin End 에서 이루어지고 Act나 Action은 실행자만이 갖고있기에 피실행자가 Canceled 함수에서 할일은 딱히 없음
+	//실행자 또한 Act가 취소될때 현재 실행중인 Action만 끝내고 Act는 뒷처리 과정으로 이행되고 이는 Tick함수에서 알아서 진행되므로 Action 끝내기 이외의 일이 필요 없는데
+	//Action을 실제로 실행하고 상호작용을 진행하는 것은 Interaction Handler Component 이다. 근데 Act가 취소될때 이미 컴포넌트에 현재 Action에 대한 abort 작업을 진행하기 때문에 실행자 또한 할일이 없다.
 	virtual void Action_Canceled(FHHM_Data_Queue_Interaction& _action);
+
+public://Act Interface
+	//Force to start act. cancel queued acts
+	void Act_Start(UHHM_Act* _pAct);
+	//Cancel current action
+	void Act_Cancel();
+	void Act_Queue_Add(UHHM_Act* _pAct);
+	void Act_Queue_Clear();
+	
+	const UHHM_Act* Get_Act_Performing() const { return m_Act_Performing; }
+
+protected:
+	void Act_Tick(float DeltaTime);
+	void Act_Begin(UHHM_Act* _pAct);
+
+#pragma endregion
 
 
 

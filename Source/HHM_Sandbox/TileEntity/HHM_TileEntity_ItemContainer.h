@@ -25,11 +25,15 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+public:	//BP Functions
+	UFUNCTION(BlueprintCallable)
+		const FHHM_Inventory& Get_Inventory_Const() const;
+
 
 
 protected:
 	//class UHHM_Component_Inventory* m_pComponent_Inventory = nullptr;
-	FHHM_Inventory		m_Inventory;
+	FHHM_Inventory		m_Inventory;	//TileEntity는 Entity와 달리 가방에서 손으로 거치는 과정이 필요 없으므로 Root 인벤토리 등으로 나뉘지 않음. 따라서 계층구조형 인벤토리를 갖는 인벤토리 컴포넌트를 사용하지 않음.
 
 public:
 	virtual bool Initialize_TileEntity(class AHHM_Tile* _pTile, class ALocalMap* _pLocalMap, int32 _index_Horizontal, int32 _index_Vertical) override;

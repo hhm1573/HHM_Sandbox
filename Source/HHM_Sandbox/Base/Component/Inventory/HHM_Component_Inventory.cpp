@@ -158,7 +158,7 @@ bool UHHM_Component_Inventory::Get_InventorySize(FIntPoint& _inventorySize_Retur
 	return true;
 }
 
-const TMap<int32, FHHM_Inventory>& UHHM_Component_Inventory::Get_InventoryContainer(const bool& _isRoot) const
+const TMap<int32, FHHM_Inventory>& UHHM_Component_Inventory::Get_InventoryContainer_Const(const bool& _isRoot) const
 {
 	return _isRoot ? m_Container_Inventory_Root : m_Container_Inventory;
 }

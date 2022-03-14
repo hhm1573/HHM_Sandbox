@@ -23,6 +23,11 @@ void AHHM_TileEntity_ItemContainer::BeginPlay()
 	Super::BeginPlay();
 }
 
+const FHHM_Inventory& AHHM_TileEntity_ItemContainer::Get_Inventory_Const() const
+{
+	return m_Inventory;
+}
+
 bool AHHM_TileEntity_ItemContainer::Initialize_TileEntity(AHHM_Tile* _pTile, ALocalMap* _pLocalMap, int32 _index_Horizontal, int32 _index_Vertical)
 {
 	bool IsSucceed_ParentInit = Super::Initialize_TileEntity(_pTile, _pLocalMap, _index_Horizontal, _index_Vertical);

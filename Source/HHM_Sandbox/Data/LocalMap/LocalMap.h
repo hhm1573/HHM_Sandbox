@@ -96,6 +96,14 @@ private:
 public:
 	UFUNCTION(BlueprintCallable)
 		TArray<int32>					Get_TileIndex_In_Rectangle(const FVector2D& _point_First, const FVector2D& _point_Second);
+	UFUNCTION(BlueprintCallable)
+		TArray<int32>					Select_In_Rectangle(const FVector2D& _point_First, const FVector2D& _point_Second);
+
+	UFUNCTION(BlueprintCallable)
+		bool							Convert_TileIndex_To_Location(FVector& _return_Location, const int32& _index);
+
+
+
 
 #pragma region Initialize related
 
@@ -213,6 +221,10 @@ private:
 
 public:
 	bool	Get_TileEntity_At(AHHM_TileEntity* _pTileEntity_Return, int32 _index_Horizontal, int32 _index_Vertical);
+	UFUNCTION(BlueprintCallable)
+		AHHM_TileEntity* BP_Get_TileEntity_At_IndexLocation(int32 _index_Horizontal, int32 _index_Vertical);
+	UFUNCTION(BlueprintCallable)
+		AHHM_TileEntity* BP_Get_TileEntity_At_Index(int32 _index);
 
 public:
 	bool	Set_TileEntity_At(int32 _index_Horizontal, int32 _index_Vertical, AHHM_TileEntity* _pTileEntity);

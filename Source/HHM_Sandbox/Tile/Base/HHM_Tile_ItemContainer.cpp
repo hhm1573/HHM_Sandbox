@@ -48,6 +48,10 @@ bool AHHM_Tile_ItemContainer::On_Placed(ALocalMap* _pLocalMap, FHHM_TileData& _t
 		//Exception creating tileentity failed
 		return false;
 	}
+
+	
+
+	pTileEntity_Create->Initialize_TileEntity(this, _pLocalMap, _tileInfo.Index_Horizontal, _tileInfo.Index_Vertical);
 	
 	bool IsSucceed_SetTileEntity = _pLocalMap->Set_TileEntity_At(_tileInfo.Index_Horizontal, _tileInfo.Index_Vertical, pTileEntity_Create);
 	if (IsSucceed_SetTileEntity == false) {

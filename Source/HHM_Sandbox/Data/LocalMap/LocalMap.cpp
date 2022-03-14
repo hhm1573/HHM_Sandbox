@@ -120,6 +120,60 @@ TArray<int32> ALocalMap::Get_TileIndex_In_Rectangle(const FVector2D& _point_Firs
 	return Container_Return;
 }
 
+TArray<int32> ALocalMap::Select_In_Rectangle(const FVector2D& _point_First, const FVector2D& _point_Second)
+{
+	//Get All The Indexes
+	TArray<int32> IndexContainer_InRectangle = TArray<int32>();
+	IndexContainer_InRectangle.Empty();
+	IndexContainer_InRectangle = Get_TileIndex_In_Rectangle(_point_First, _point_Second);
+
+
+
+	//Exclude all the air tiles
+	// HHM Note : 추후 타일구조가 복잡해지거나 (한 타일 인덱스 내에 여러 가구 레이어, 전선 배관 레이어 등등)
+	// 타일 선택 과정이 생각보다 단조로워져 검사가 짧다거나 하면 공백타일 제거부분을 빼버리는게 더 나을수도 있음.
+	TArray<int32> IndexContainer_ExcludedAirTile;
+	IndexContainer_ExcludedAirTile.Empty();
+	int32 Num_Container_Include_AirTiles = IndexContainer_InRectangle.Num();
+	for (int32 index = 0; index < Num_Container_Include_AirTiles; ++index) {
+		if (m_MapData.Container_TileData[IndexContainer_InRectangle[index]].ID != 0) {
+			IndexContainer_ExcludedAirTile.Add(IndexContainer_InRectangle[index]);
+		}
+	}
+
+
+
+	//Filtering tiles in order. Finish the filtering process if appropriate tile found at that step
+	TArray<int32> IndexContainer_Return;
+	IndexContainer_Return.Empty();
+
+	int32 Num_Container_ExcludedAirTile = IndexContainer_ExcludedAirTile.Num();
+	bool Finish_Selecting = false;
+
+	//filtering tile entities
+	for (int32 index = 0; index < Num_Container_ExcludedAirTile; ++index) {
+		if (m_MapData.Container_TileEntity[IndexContainer_ExcludedAirTile[index]] != nullptr) {
+			IndexContainer_Return.Add(IndexContainer_ExcludedAirTile[index]);
+			Finish_Selecting = true;
+		}
+	}
+	if (Finish_Selecting == true) {
+		return IndexContainer_Return;
+	}
+
+
+
+	return IndexContainer_Return;
+}
+
+bool ALocalMap::Convert_TileIndex_To_Location(FVector& _return_Location, const int32& _index)
+{
+	FVector Vec_Return = FVector(-1.0f);
+	const bool IsSucceed_Convert = AHHM_Manager_Math_Grid::Convert_Index_To_Translation(Vec_Return, _index, m_MapInfo);
+	_return_Location = Vec_Return;
+	return IsSucceed_Convert;
+}
+
 
 
 #pragma region Initialize related
@@ -1072,6 +1126,23 @@ bool ALocalMap::Get_TileEntity_At(AHHM_TileEntity* _pTileEntity_Return, int32 _i
 
 	_pTileEntity_Return = m_MapData.Container_TileEntity[Index_Target];
 	return true;
+}
+
+AHHM_TileEntity* ALocalMap::BP_Get_TileEntity_At_IndexLocation(int32 _index_Horizontal, int32 _index_Vertical)
+{
+	if (_index_Horizontal < 0 || _index_Horizontal >= m_MapInfo.MapSize_Horizontal
+		|| _index_Vertical < 0 || _index_Vertical >= m_MapInfo.MapSize_Vertical) {
+		//Exception
+		return nullptr;
+	}
+
+	int32 Index = _index_Horizontal + (_index_Vertical * m_MapInfo.MapSize_Horizontal);
+	return m_MapData.Container_TileEntity[Index];
+}
+
+AHHM_TileEntity* ALocalMap::BP_Get_TileEntity_At_Index(int32 _index)
+{
+	return m_MapData.Container_TileEntity[_index];
 }
 
 bool ALocalMap::Set_TileEntity_At(int32 _index_Horizontal, int32 _index_Vertical, AHHM_TileEntity* _pTileEntity)

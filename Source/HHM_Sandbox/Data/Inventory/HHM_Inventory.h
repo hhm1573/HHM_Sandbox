@@ -20,7 +20,7 @@ public:
 	FHHM_Inventory();
 
 protected:
-	UPROPERTY()	//Collective of datas about inventory.
+	UPROPERTY(BlueprintReadOnly)	//Collective of datas about inventory.
 		FHHM_Data_Inventory								m_Data_Inventory;
 
 	UPROPERTY()

@@ -9,16 +9,21 @@ UHHM_Act::UHHM_Act() {
 
 }
 
-bool UHHM_Act::Begin_Act(FHHM_Data_Action& _data_Action_Return)
+bool UHHM_Act::Begin_Act()
 {
 	//Exception This function should not be called.
 	return false;
 }
 
-void UHHM_Act::Performed_Action(const bool& _isActEnd_Return, FHHM_Data_Action& _data_Action_Return)
+void UHHM_Act::Performed_Action(const bool& _isActEnd_Return)
 {
 	//Exception This function should not be called.
 	//this function is pure function.
+}
+
+void UHHM_Act::On_Cancel()
+{
+	m_Canceled = true;
 }
 
 void UHHM_Act::Set_Target(AHHM_Entity* _pInteractor, AHHM_Entity* _pTarget_Entity, FVector _targetLocation)

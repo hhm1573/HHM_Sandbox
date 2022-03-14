@@ -16,6 +16,8 @@
 /**
  * Contains all the base datas of registered interactions
  * (Note : Register process were hard-coded.)
+ *
+ * Act Class will get needed interaction data from this manager.
  */
 UCLASS()
 class HHM_SANDBOX_API AHHM_Manager_Interaction : public AHHM_Manager

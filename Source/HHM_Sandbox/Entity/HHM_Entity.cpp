@@ -60,6 +60,13 @@ AHHM_Entity::AHHM_Entity()
 		//	}
 		//}
 	}
+
+	if (m_pComponent_InteractionHandler == nullptr) {
+		m_pComponent_InteractionHandler = CreateDefaultSubobject<UHHM_Component_InteractionHandler>(TEXT("Component_InteractionHandler"));
+		if (m_pComponent_InteractionHandler == nullptr) {
+			//Exception
+		}
+	}
 }
 
 // Called when the game starts or when spawned
@@ -147,7 +154,7 @@ const TMap<int32, FHHM_Inventory>& AHHM_Entity::Get_InventoryContainer(bool _isR
 		return m_pComponent_Inventory->Get_InventoryContainer(_isRoot);
 	}
 	return TMap<int32, FHHM_Inventory>();*/
-	return m_pComponent_Inventory->Get_InventoryContainer(_isRoot);
+	return m_pComponent_Inventory->Get_InventoryContainer_Const(_isRoot);
 }
 
 bool AHHM_Entity::Get_InventorySize(FIntPoint& _size_Return, bool _isRoot, int32 _inventoryID)
@@ -233,6 +240,10 @@ void AHHM_Entity::DeRegister_Entity(void) {
 
 
 
+#pragma region Act
+
+
+
 void AHHM_Entity::Interaction_Begin()
 {
 }
@@ -243,11 +254,109 @@ void AHHM_Entity::Interaction_End()
 
 void AHHM_Entity::Action_End(FHHM_Data_Queue_Interaction& _action)
 {
+	bool IsActEnd = false;
+	m_Act_Performing->Performed_Action(IsActEnd);
+	if (IsActEnd == true) {
+		m_Act_Performing = nullptr;
+	}
 }
 
 void AHHM_Entity::Action_Canceled(FHHM_Data_Queue_Interaction& _action)
 {
 }
+
+
+
+void AHHM_Entity::Act_Start(UHHM_Act* _pAct)
+{
+	if (_pAct == nullptr) {
+		//Exception
+		return;
+	}
+
+	Act_Queue_Clear();
+	Act_Cancel();
+	Act_Queue_Add(_pAct);
+}
+
+void AHHM_Entity::Act_Cancel()
+{
+	if (m_Act_Performing == nullptr) {
+		return;
+	}
+
+	m_pComponent_InteractionHandler->Action_Cancel(m_ID_PerformingAction);
+	m_Act_Performing->On_Cancel();
+}
+
+void AHHM_Entity::Act_Queue_Add(UHHM_Act* _pAct)
+{
+	if (_pAct == nullptr) {
+		//Exception
+		return;
+	}
+
+	m_Queue_Act.Add(_pAct);
+}
+
+void AHHM_Entity::Act_Queue_Clear()
+{
+	m_Queue_Act.Empty();
+}
+
+
+
+void AHHM_Entity::Act_Tick(float DeltaTime)
+{
+	//실행중인 act가 없을경우 큐 체크
+	if (m_Act_Performing == nullptr) {
+		int32 Num_Act_Queued = m_Queue_Act.Num();
+		if (Num_Act_Queued > 0) {
+			m_Act_Performing = m_Queue_Act[0];
+			m_Queue_Act.RemoveAt(0);
+		}
+		else {
+			//There is no queued act.
+			return;
+		}
+	}
+
+
+
+	//act 타겟 위치로 가서 상호작용핸들러 작동
+}
+
+void AHHM_Entity::Act_Begin(UHHM_Act* _pAct)
+{
+	if (_pAct == nullptr) {
+		//Exception
+		return;
+	}
+
+	bool IsSucceed_BeginAct = _pAct->Begin_Act();
+	if (IsSucceed_BeginAct == false) {
+		//Exception
+		return;
+	}
+
+	m_Act_Performing = _pAct;
+
+	const bool IsSucceed_BeginAct = m_Act_Performing->Begin_Act();
+	if (IsSucceed_BeginAct == false) {
+		//Exception
+		m_Act_Performing = nullptr;
+		return;
+	}
+
+	//bool IsActionFocused = false;
+	//float EstimatedWaitTime = -1.0f;
+	//int32 IDRegistered = -1;
+	//m_pComponent_InteractionHandler->Action_Add(IsActionFocused, EstimatedWaitTime, IDRegistered, m_Act_Performing->Get_Action().);
+}
+
+
+
+#pragma endregion
 
 
 

@@ -19,7 +19,7 @@ UHHM_Act_Debug_InteractTile::UHHM_Act_Debug_InteractTile() {
 
 
 
-bool UHHM_Act_Debug_InteractTile::Begin_Act(FHHM_Data_Action& _data_Action_Return)
+bool UHHM_Act_Debug_InteractTile::Begin_Act()
 {
 	UWorld* pWorld = nullptr;														//Act에 Get Manager 함수 만들어서 해당부분 축소. 타일위치 구하는 부분도 Act로 이동.
 	pWorld = GetWorld();
@@ -91,7 +91,7 @@ bool UHHM_Act_Debug_InteractTile::Begin_Act(FHHM_Data_Action& _data_Action_Retur
 	Action.m_Location_Target = TileLocation;
 	Action.m_AcceptableRadius = 10.0f;
 
-	_data_Action_Return = Action;
+	m_CurrentAction = Action;
 
 	return true;
 }

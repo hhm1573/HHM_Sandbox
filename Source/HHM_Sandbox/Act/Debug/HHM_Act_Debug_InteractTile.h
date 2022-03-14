@@ -20,6 +20,6 @@ public:
 
 
 public:
-	virtual bool Begin_Act(FHHM_Data_Action& _data_Action_Return) override;
+	virtual bool Begin_Act() override;
 	
 };

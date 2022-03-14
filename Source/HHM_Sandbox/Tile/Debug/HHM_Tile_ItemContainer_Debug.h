@@ -18,4 +18,8 @@ public:
 	AHHM_Tile_ItemContainer_Debug();
 
 
+
+public:
+	virtual bool On_Placed(class ALocalMap* _pLocalMap, FHHM_TileData& _tileInfo, class AHHM_Entity* _pEntity) override;
+
 };
