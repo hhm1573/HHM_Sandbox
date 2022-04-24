@@ -31,6 +31,10 @@
 
 #include "Manager/Navigation/NavLink/HHM_NavLinkProxy.h"
 
+//Interact
+#include "Data/Interaction/HHM_Data_Interact.h"
+#include "Tile/Base/HHM_Tile_Interactable.h"
+
 
 
 // Sets default values
@@ -166,12 +170,44 @@ TArray<int32> ALocalMap::Select_In_Rectangle(const FVector2D& _point_First, cons
 	return IndexContainer_Return;
 }
 
-bool ALocalMap::Convert_TileIndex_To_Location(FVector& _return_Location, const int32& _index)
+bool ALocalMap::Convert_Location_To_TileIndex(int32& _return_Index, const FVector& _location)
+{
+	int32 Index_Return = -1;
+	const bool IsSucceed_Convert = AHHM_Manager_Math_Grid::Convert_Translation_To_Index(Index_Return, _location, m_MapInfo);
+	_return_Index = Index_Return;
+	return IsSucceed_Convert;
+}
+
+bool ALocalMap::Convert_Location_To_TileIndexLocation(FVector2D& _indexLocation_Return, const FVector& _location)
+{
+	FVector2D IndexLocation_Return = FVector2D(-1.0f);
+	const bool IsSucceed_Convert = AHHM_Manager_Math_Grid::Convert_Translation_To_IndexLocation(IndexLocation_Return, _location, m_MapInfo);
+	_indexLocation_Return = IndexLocation_Return;
+	return IsSucceed_Convert;
+}
+
+bool ALocalMap::Convert_TileIndex_To_Location(FVector& _return_Location, const int32& _index, const bool _returnCenteredLocation)
 {
 	FVector Vec_Return = FVector(-1.0f);
-	const bool IsSucceed_Convert = AHHM_Manager_Math_Grid::Convert_Index_To_Translation(Vec_Return, _index, m_MapInfo);
+	const bool IsSucceed_Convert = AHHM_Manager_Math_Grid::Convert_Index_To_Translation(Vec_Return, _index, m_MapInfo, _returnCenteredLocation);
 	_return_Location = Vec_Return;
 	return IsSucceed_Convert;
+}
+
+bool ALocalMap::Convert_TileIndexLocation_To_Location(FVector& _return_Location, const FVector2D& _indexLocation, const bool _returnCenteredLocation)
+{
+	FVector Vec_Return = FVector(-1.0f);
+	const bool IsSucceed_Convert = AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(Vec_Return, _indexLocation, m_MapInfo, _returnCenteredLocation);
+	_return_Location = Vec_Return;
+	return IsSucceed_Convert;
+}
+
+bool ALocalMap::Convert_TileIndexLocation_To_Index(int32& _return_Index, const FVector2D& _indexLocation)
+{
+	int32 Index_Return = AHHM_Manager_Math_Grid::Index_Combine(_indexLocation.X, _indexLocation.Y, m_MapInfo);
+	bool IsValidIndex = Check_IsValidIndex(Index_Return);
+	_return_Index = Index_Return;
+	return IsValidIndex;
 }
 
 
@@ -435,6 +471,21 @@ const FHHM_TileData& ALocalMap::Get_TileInfo_Const(int32 _index) const
 	return m_MapData.Container_TileData[_index];
 }
 
+FHHM_TileData* ALocalMap::Get_TileData_At(int32 _index_Horizontal, int32 _index_Vertical)
+{
+	const bool IsValidPos = Check_IsValidPos(_index_Horizontal, _index_Vertical);
+	if (IsValidPos == false) {
+		//Exception
+		return nullptr;
+	}
+
+	int32 Index_Target = AHHM_Manager_Math_Grid::Index_Combine(_index_Horizontal, _index_Vertical, m_MapInfo);
+	FHHM_TileData* pTileData = nullptr;
+	pTileData = &(m_MapData.Container_TileData[Index_Target]);
+
+	return pTileData;
+}
+
 
 
 #pragma region Interact with map
@@ -654,6 +705,38 @@ bool ALocalMap::Damage_Tile(int32 damage, EHHM_DamageType damage_Type, class APa
 
 	m_MapData.Container_TileData[index_Tile].HP = TileHP_After;
 	return false;
+}
+
+void ALocalMap::Interact_Tile(int32 _index_Horizontal, int32 _index_Vertical, AHHM_Entity* _pInteractor, FHHM_Data_Interact* _pInteractData)
+{
+	int32 Index_Tile = AHHM_Manager_Math_Grid::Index_Combine(_index_Horizontal, _index_Vertical, m_MapInfo);
+
+	Interact_Tile(Index_Tile, _pInteractor, _pInteractData);
+}
+
+void ALocalMap::Interact_Tile(int32 _index, AHHM_Entity* _pInteractor, FHHM_Data_Interact* _pInteractData)
+{
+	bool IsValidIndex = Check_IsValidIndex(_index);
+	if (IsValidIndex == false) {
+		//Exception
+		return;
+	}
+
+	AHHM_Tile* pTile_Raw = nullptr;
+	pTile_Raw = m_MapData.Container_TileData[_index].Tile;
+	if (pTile_Raw == nullptr) {
+		//Exception
+		return;
+	}
+
+	AHHM_Tile_Interactable* pTile = nullptr;
+	pTile = Cast<AHHM_Tile_Interactable>(pTile_Raw);
+	if (pTile == nullptr) {
+		//Exception
+		return;
+	}
+
+	pTile->On_Interact(this, m_MapData.Container_TileData[_index], _pInteractor, _pInteractData);
 }
 
 

@@ -6,7 +6,7 @@
 
 //Work Note : 맵 위치 제거 후 좌표 반환하게끔
 
-bool AHHM_Manager_Math_Grid::Convert_Index_To_Translation(FVector& _vec_Translation_Return, int32 _index, const FHHM_MapInfo& _mapInfo) 
+bool AHHM_Manager_Math_Grid::Convert_Index_To_Translation(FVector& _vec_Translation_Return, int32 _index, const FHHM_MapInfo& _mapInfo, bool _returnCentered) 
 {
 	if (_mapInfo.MapSize_Horizontal <= 0) {
 		//Exception
@@ -22,12 +22,19 @@ bool AHHM_Manager_Math_Grid::Convert_Index_To_Translation(FVector& _vec_Translat
 
 
 
-	_vec_Translation_Return = Vec_Translation_Applied_MapOffset;
+	if (_returnCentered == true) {
+		float HalfedTileSize = HHM_TILE_SIZE * 0.5f;
+		FVector Vec_Translation_Centered = Vec_Translation_Applied_MapOffset + FVector(HalfedTileSize, 0.0f, HalfedTileSize);
+		_vec_Translation_Return = Vec_Translation_Centered;
+	}
+	else {
+		_vec_Translation_Return = Vec_Translation_Applied_MapOffset;
+	}
 
 	return true;
 }
 
-bool AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(FVector& _vec_Return, const FVector2D& _vec_IndexLocation, const FHHM_MapInfo& _mapInfo)
+bool AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(FVector& _vec_Return, const FVector2D& _vec_IndexLocation, const FHHM_MapInfo& _mapInfo, bool _returnCentered)
 {
 	//HHM Note : 입력된 인덱스 위치값이 맵정보에 입력된 값의 범위 안에 있는지에 대한 검사및 예외처리부분이 필요없다 생각하여 작성되어있지 않습니다. 추후 필요해지게 된다면 추가할 예정입니다.
 	FVector Vec_Translation = FVector(_vec_IndexLocation.X * HHM_TILE_SIZE, _vec_IndexLocation.Y, _vec_IndexLocation.Y * HHM_TILE_SIZE);
@@ -35,7 +42,15 @@ bool AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(FVector& _vec_
 	//Apply LocalMap Offset Location
 	FVector Vec_Translation_Applied_MapOffset = Vec_Translation + _mapInfo.Location;
 
-	_vec_Return = Vec_Translation_Applied_MapOffset;
+	if (_returnCentered == true) {
+		float HalvedTileSize = HHM_TILE_SIZE * 0.5f;
+		FVector Vec_Translation_Centered = Vec_Translation_Applied_MapOffset + FVector(HalvedTileSize, 0.0f, HalvedTileSize);
+		_vec_Return = Vec_Translation_Centered;
+	}
+	else {
+		_vec_Return = Vec_Translation_Applied_MapOffset;
+	}
+
 	return true;
 }
 

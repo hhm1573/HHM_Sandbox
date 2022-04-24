@@ -8,7 +8,7 @@
 
 
 
-USTRUCT()
+USTRUCT(Blueprintable)
 struct FHHM_Data_Action
 {
 	GENERATED_USTRUCT_BODY();
@@ -16,13 +16,16 @@ struct FHHM_Data_Action
 
 
 public:
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 		FHHM_Data_Queue_Interaction	m_Queue_Interaction;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 		FVector					m_Location_Target = FVector::ZeroVector;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 		float					m_AcceptableRadius = 0.0f;
+
+	UPROPERTY()	//Interaction Handler Component에 등록된 ID.
+		int32					m_InteractionID = -1;
 
 
 

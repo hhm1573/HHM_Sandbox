@@ -8,7 +8,7 @@
 
 
 
-USTRUCT()
+USTRUCT(Blueprintable)
 struct FHHM_Data_Queue_Interaction
 {
 	GENERATED_USTRUCT_BODY();
@@ -18,7 +18,7 @@ struct FHHM_Data_Queue_Interaction
 public:
 	UPROPERTY()
 		TArray<FHHM_Data_Interaction>	m_Queue_Interaction;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 		// 상대 InteractionHandler 에 등록된, 이 Action Data와 대응하는 ID.
 		// 이 Action이 상대 Action queue에 등록된 ID를 나타냄.
 		int32							m_ID_Target = -1;
@@ -27,7 +27,7 @@ public:
 	UPROPERTY()
 		AActor*							m_pInteractor = nullptr;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 		//Name of Action. (same name as HHM_Data_Action has)
 		FString							m_Name;
 

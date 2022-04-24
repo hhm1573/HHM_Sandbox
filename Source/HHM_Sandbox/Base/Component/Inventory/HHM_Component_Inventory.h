@@ -10,6 +10,8 @@
 #include "Data/Inventory/Base/InventorySlot/HHM_Data_Inventory_Slot.h"
 
 #include "Data/Inventory/HHM_Inventory.h"
+#include "Data/Inventory/HHM_Inventory_List.h"
+#include "Data/Inventory/HHM_Inventory_Grid.h"
 
 #include "HHM_Component_Inventory.generated.h"
 
@@ -56,38 +58,54 @@ protected:
 	//UPROPERTY()
 	//	int32									m_InventorySize_Vertical = 0;
 	UPROPERTY()
-		TMap<int32, FHHM_Inventory>				m_Container_Inventory_Root;
+		FHHM_Inventory_List						m_Inventory_Root;
 	UPROPERTY()
-		TMap<int32, FHHM_Inventory>				m_Container_Inventory;
+		TMap<int32, FHHM_Inventory_Grid>		m_Container_Inventory;
 
 
 
 public:
-	int32		Inventory_Add(const bool& _isRoot, const FHHM_Data_Inventory& _data_Inventory);
+	int32		Inventory_Add(const FHHM_Data_Inventory& _data_Inventory);
+
+
+
+public:
+	void					Root_Set_Size(int32 _size);
+
+	TArray<UHHM_ItemData*>	Root_Get_ItemList();
+	UHHM_ItemData*			Root_Get_ItemDataPtr(const int32& _index);
+
+	bool					Root_IsFull() const;
+	int32					Root_Get_ItemNum() const;
+
+	EHHM_InventoryReturn	Root_Item_Insert(int32& _inventoryItemIndex_Return, UHHM_ItemData* _pItemData_Insert);
+	EHHM_InventoryReturn	Root_Item_Pop_At(UHHM_ItemData*& _pItemData_Return, int32 _inventoryItemIndex_Pop);
+	EHHM_InventoryReturn	Root_Item_Remove(UHHM_ItemData* _pItemData_Remove);
+	EHHM_InventoryReturn	Root_Item_Remove_At(const int32& _inventoryItemIndex_Remove);
 	
 
 
 public:
-	UHHM_ItemData*							Get_ItemDataPtr(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
+	UHHM_ItemData*							Get_ItemDataPtr(const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
 
 	//TMap<int32, FHHM_Data_Inventory_Item>&	Get_ItemDataContainer_Ref(const bool& _isRoot, const int32& _inventoryID);
 
-	bool									Get_InventorySize(FIntPoint& _inventorySize_Return, const bool& _isRoot, const int32& _inventoryID);
+	bool									Get_InventorySize(FIntPoint& _inventorySize_Return, const int32& _inventoryID);
 
-	const TMap<int32, FHHM_Inventory>&		Get_InventoryContainer_Const(const bool& _isRoot) const;
+	const TMap<int32, FHHM_Inventory_Grid>&	Get_InventoryContainer_Const() const;
 
 
 
 public:
-	bool	Check_IsValidIndex(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
+	bool	Check_IsValidIndex(const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
 
-	bool	Check_IsValidInventoryID(const bool& _isRoot, const int32& _inventoryID);
+	bool	Check_IsValidInventoryID(const int32& _inventoryID);
 
-	bool	Check_IsItemSwappable(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Swap);
+	bool	Check_IsItemSwappable(const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Swap);
 
-	bool	Check_IsItemInsertable(const bool& _isRoot, const int32& _inventoryID, UHHM_ItemData*& _pItemData_Insert);
+	bool	Check_IsItemInsertable(const int32& _inventoryID, UHHM_ItemData*& _pItemData_Insert);
 
-	bool	Check_IsItemInsertableAt(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, UHHM_ItemData*& _pItemData_Insert);
+	bool	Check_IsItemInsertableAt(const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, UHHM_ItemData*& _pItemData_Insert);
 
 
 	
@@ -96,17 +114,17 @@ public:
 
 
 	//Insert item at target inventory's target slot
-	EHHM_InventoryReturn	Item_Insert_At(int32& _inventoryItemID_Return, UHHM_ItemData*& _pItemData_Insert, const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
+	EHHM_InventoryReturn	Item_Insert_At(int32& _inventoryItemID_Return, UHHM_ItemData*& _pItemData_Insert, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
 	
 	//Insert item at target inventory
-	EHHM_InventoryReturn	Item_Insert_AtInventory(int32& _inventoryItemID_Return, UHHM_ItemData*& _pItemData_Insert, const bool& _isRoot, const int32& _inventoryID);
+	EHHM_InventoryReturn	Item_Insert_AtInventory(int32& _inventoryItemID_Return, UHHM_ItemData*& _pItemData_Insert, const int32& _inventoryID);
 
 	//Insert item at any inventory
-	EHHM_InventoryReturn	Item_Insert(int32& _inventoryItemID_Return, int32& _inventoryID_Return, UHHM_ItemData*& _pItemData_Insert, const bool& _isRoot);
+	EHHM_InventoryReturn	Item_Insert(int32& _inventoryItemID_Return, int32& _inventoryID_Return, UHHM_ItemData*& _pItemData_Insert);
 
 
 
-	EHHM_InventoryReturn	Item_Pop_At(UHHM_ItemData*& _pItemData_Return, const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
+	EHHM_InventoryReturn	Item_Pop_At(UHHM_ItemData*& _pItemData_Return, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
 
 	//EHHM_InventoryReturn	Item_Remove(UHHM_ItemData*& _pItemData_Remove, const bool& _isRoot, const int32& _inventoryID);
 
@@ -119,10 +137,10 @@ public:
 	
 
 protected:
-	int32					Get_AvailableInventoryID(const bool& _isRoot);
+	int32					Get_AvailableInventoryID();
 
 	// 아이템 삽입가능 공간 체크
-	bool					Check_IsRoomFree(const bool& _isRoot, const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical);
+	bool					Check_IsRoomFree(const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical);
 	//// Find available slot for item at target inventory
 	//EHHM_InventoryReturn	Find_FreeRoom_AtInventory(int32& _index_Return, const bool& _isRoot, const int32& _inventoryID, const int32& _size_Horizontal, const int32& _size_Vertical);
 	//// Find available slot for item at any inventory

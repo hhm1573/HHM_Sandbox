@@ -100,7 +100,15 @@ public:
 		TArray<int32>					Select_In_Rectangle(const FVector2D& _point_First, const FVector2D& _point_Second);
 
 	UFUNCTION(BlueprintCallable)
-		bool							Convert_TileIndex_To_Location(FVector& _return_Location, const int32& _index);
+		bool							Convert_Location_To_TileIndex(int32& _return_Index, const FVector& _location);
+	UFUNCTION(BlueprintCallable)
+		bool							Convert_Location_To_TileIndexLocation(FVector2D& _indexLocation_Return, const FVector& _location);
+	UFUNCTION(BlueprintCallable)
+		bool							Convert_TileIndex_To_Location(FVector& _return_Location, const int32& _index, const bool _returnCenteredLocation);
+	UFUNCTION(BlueprintCallable)
+		bool							Convert_TileIndexLocation_To_Location(FVector& _return_Location, const FVector2D& _indexLocation, const bool _returnCenteredLocation);
+	UFUNCTION(BlueprintCallable)
+		bool							Convert_TileIndexLocation_To_Index(int32& _return_Index, const FVector2D& _indexLocation);
 
 
 
@@ -146,10 +154,13 @@ public:
 
 	const FHHM_LocalMap_MapData&	Get_MapData(void) const { return m_MapData; }
 	FHHM_LocalMap_MapData&			Get_MapData_Ref(void) { return m_MapData; }
+
 	UFUNCTION(BlueprintCallable)
 		const FHHM_TileData&		Get_TileInfo(int32 index_Horizontal, int32 index_Vertical) const;
 	UFUNCTION(BlueprintCallable)
 		const FHHM_TileData&		Get_TileInfo_Const(int32 _index) const;
+
+	FHHM_TileData*					Get_TileData_At(int32 _index_Horizontal, int32 _index_Vertical);
 
 public:
 	//void	Set_MapData(const TArray<FHHM_TileData>& mapData) { m_Arr_MapData = mapData; }
@@ -176,6 +187,10 @@ public:
 	
 	//Add damage to target tile. Return true if tile destroyed by damage
 	bool	Damage_Tile(int32 damage, EHHM_DamageType damage_Type, class APawn* attack_Pawn, int32 index_Horizontal, int32 index_Vertical);
+
+	//Interface function. called from Interaction manager.
+	void	Interact_Tile(int32 _index_Horizontal, int32 _index_Vertical, class AHHM_Entity* _pInteractor, struct FHHM_Data_Interact* _pInteractData);
+	void	Interact_Tile(int32 _index, class AHHM_Entity* _pInteractor, struct FHHM_Data_Interact* _pInteractData);
 
 #pragma endregion
 

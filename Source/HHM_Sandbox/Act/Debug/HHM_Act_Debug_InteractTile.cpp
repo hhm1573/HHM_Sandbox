@@ -3,13 +3,10 @@
 
 #include "HHM_Act_Debug_InteractTile.h"
 
-#include "Engine/World.h"
-#include "Base/GameMode/HHM_GameMode_LocalMap.h"
-#include "Manager/Interaction/HHM_Manager_Interaction.h"
+#include "Engine/World.h"//지워도됨
+#include "Base/GameMode/HHM_GameMode_LocalMap.h"	//지워도됨
 
-#include "Data/LocalMap/LocalMap.h"
 #include "Entity/HHM_Entity.h"
-#include "Manager/Math/Grid/HHM_Manager_Math_Grid.h"
 
 
 
@@ -71,24 +68,25 @@ bool UHHM_Act_Debug_InteractTile::Begin_Act()
 
 
 
-	ALocalMap* pLocalMap = m_pInteractor->Get_LocalMap();
-	if (pLocalMap == nullptr) {
-		//Exception cant get local map
-		return false;
-	}
-	FHHM_MapInfo MapInfo = pLocalMap->Get_MapInfo_ConstRef();
-	FVector TileLocation = FVector(-1.0f);
-	bool IsSucceed_GetTileLocation = AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(TileLocation, FVector2D(m_Target_Location.X, m_Target_Location.Z), MapInfo);
-	if (IsSucceed_GetTileLocation == false) {
-		//Exception converting tile location failed
-		return false;
-	}
+	// HHM Note : 현재 path finding 작업은 타일위치를 기준으로 받기 때문에 월드좌표로 변환할 필요가 없음. 추후 unreal의 navmesh를 이용하게 되었을 경우에는 월드좌표로 변환할 필요가 있을수도 있음.
+	//ALocalMap* pLocalMap = m_pInteractor->Get_LocalMap();
+	//if (pLocalMap == nullptr) {
+	//	//Exception cant get local map
+	//	return false;
+	//}
+	//FHHM_MapInfo MapInfo = pLocalMap->Get_MapInfo_ConstRef();
+	//FVector TileLocation = FVector(-1.0f);
+	//bool IsSucceed_GetTileLocation = AHHM_Manager_Math_Grid::Convert_IndexLocation_To_Translation(TileLocation, FVector2D(m_Target_Location.X, m_Target_Location.Z), MapInfo);
+	//if (IsSucceed_GetTileLocation == false) {
+	//	//Exception converting tile location failed
+	//	return false;
+	//}
 
 
 
 	FHHM_Data_Action Action;
 	Action.m_Queue_Interaction = InteractionQueue;
-	Action.m_Location_Target = TileLocation;
+	Action.m_Location_Target = FVector(m_Target_Location.X, 0.0f, m_Target_Location.Z);
 	Action.m_AcceptableRadius = 10.0f;
 
 	m_CurrentAction = Action;

@@ -5,6 +5,7 @@
 
 #include "Manager/Interaction/HHM_Manager_Interaction.h"
 #include "Entity/HHM_Entity.h"
+#include "Entity/Walkable/HHM_Entity_Walkable.h"
 
 
 
@@ -573,8 +574,8 @@ void UHHM_Component_InteractionHandler::Action_End(const int32& _id_Action)
 		return;
 	}
 
-	AHHM_Entity* pOwner = nullptr;
-	pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+	AHHM_Entity_Walkable* pOwner = nullptr;
+	pOwner = Cast<AHHM_Entity_Walkable>(pOwner_Raw);
 	if (pOwner == nullptr) {
 		//Exception cant cast owner to hhm entity
 		return;
@@ -594,8 +595,8 @@ void UHHM_Component_InteractionHandler::Action_Canceled(const int32& _id_Action)
 		return;
 	}
 
-	AHHM_Entity* pOwner = nullptr;
-	pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+	AHHM_Entity_Walkable* pOwner = nullptr;
+	pOwner = Cast<AHHM_Entity_Walkable>(pOwner_Raw);
 	if (pOwner == nullptr) {
 		//Exception cant cast owner to hhm entity
 		return;

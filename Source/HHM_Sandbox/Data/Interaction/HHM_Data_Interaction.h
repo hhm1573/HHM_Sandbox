@@ -4,6 +4,7 @@
 
 //#include "Base/Component/InteractionHandler/HHM_Component_InteractionHandler.h"
 #include "HHM_Data_Interaction_Base.h"
+#include "Data/Interaction/HHM_Data_Interact.h"
 
 #include "HHM_Data_Interaction.generated.h"
 
@@ -44,6 +45,10 @@ public:
 		AActor*		m_Target_Interaction_Actor = nullptr;
 	UPROPERTY()
 		class UHHM_Component_InteractionHandler* m_Target_Interaction_Handler = nullptr;
+
+	UPROPERTY()
+		//상호작용에 필요한 데이터 저장용.
+		FHHM_Data_Interact	m_Data_Interact = FHHM_Data_Interact();
 
 
 

@@ -18,8 +18,9 @@ class HHM_SANDBOX_API AHHM_Manager_Math_Grid : public AHHM_Manager
 	GENERATED_BODY()
 
 public:
-	static bool		Convert_Index_To_Translation(FVector& _vec_Translation_Return, int32 _index, const FHHM_MapInfo& _mapInfo);	//Return position is not a center position but start position (Left bottom corner)
-	static bool		Convert_IndexLocation_To_Translation(FVector& _vec_Translation_Return, const FVector2D& _vec_IndexLocation, const FHHM_MapInfo& _mapInfo);
+	//Return position is not a center position but start position (Left bottom corner). Set _ReturnCentered true to get centered location
+	static bool		Convert_Index_To_Translation(FVector& _vec_Translation_Return, int32 _index, const FHHM_MapInfo& _mapInfo, bool _returnCentered = false);
+	static bool		Convert_IndexLocation_To_Translation(FVector& _vec_Translation_Return, const FVector2D& _vec_IndexLocation, const FHHM_MapInfo& _mapInfo, bool _returnCentered = false);
 	static bool		Convert_Translation_To_Index(int32& _index_Return, const FVector& _vec_Translation, const FHHM_MapInfo& _mapInfo);
 	static bool		Convert_Translation_To_IndexLocation(FVector2D& _vec_IndexLocation_Return, const FVector& _translation, const FHHM_MapInfo& _mapInfo);
 

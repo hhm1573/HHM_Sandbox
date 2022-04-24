@@ -195,7 +195,7 @@ bool UHHM_Component_Movement::MoveToLocation(int32 _index_Horizontal, int32 _ind
 	return true;
 }
 
-EHHM_AI_PathState UHHM_Component_Movement::AI_MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical)
+EHHM_AI_PathState UHHM_Component_Movement::AI_MoveToIndexLocation(int32 _index_Horizontal, int32 _index_Vertical, float _acceptableDistance)
 {
 	FVector2D Vec_Location_Start = Get_IndexLocation();
 	FVector2D Vec_Location_End = FVector2D(_index_Horizontal, _index_Vertical);
@@ -278,6 +278,107 @@ EHHM_AI_PathState UHHM_Component_Movement::AI_MoveToLocation(int32 _index_Horizo
 		AI_Reset_MoveTarget();
 		m_LastTargetLocation = Vec_Location_End;
 		m_LastPathState = EHHM_AI_PathState::PathState_Begin;
+		m_AcceptableDistance = _acceptableDistance;
+		//return EHHM_AI_PathState::PathState_Begin;
+
+		//Calculate MoveTarget
+		bool IsSucceed_CalculateTargetLocation = UHHM_Component_Movement::Calculate_MoveTarget_Location();
+		if (IsSucceed_CalculateTargetLocation) {
+			return EHHM_AI_PathState::PathState_Begin;
+		}
+		else {
+			m_FollowingPath.Empty();
+		}
+	}
+
+	//Can not find any path to target location
+	return EHHM_AI_PathState::PathState_NoPath;
+}
+
+EHHM_AI_PathState UHHM_Component_Movement::AI_MoveToLocation(FVector2D _vecLocation, float _acceptableDistance)
+{
+	FVector2D Vec_Location_Start = Get_IndexLocation();
+	FVector2D Vec_Location_End = _vecLocation;
+
+	////Is this move already performed?
+	//if (Vec_Location_Start == Vec_Location_End) {
+	//	return EHHM_AI_PathState::PathState_Success;
+	//}
+
+	//if target location is same as last target, return last target's state
+	if (m_LastTargetLocation == Vec_Location_End) {
+		return m_LastPathState;
+	}
+
+
+
+	//Get Navigation Manager For PathFinding
+	UWorld* pWorld = nullptr;
+	pWorld = GetWorld();
+	if (pWorld == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+	AGameModeBase* pGameMode_Raw = nullptr;
+	pGameMode_Raw = pWorld->GetAuthGameMode();
+	if (pGameMode_Raw == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+	AHHM_GameMode_LocalMap* pGameMode = nullptr;
+	pGameMode = Cast<AHHM_GameMode_LocalMap>(pGameMode_Raw);
+	if (pGameMode == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+	AHHM_Manager_Navigation* pManager_Navigation = nullptr;
+	pManager_Navigation = pGameMode->Get_Manager_Navigation();
+	if (pManager_Navigation == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+
+
+	//Get LocalMap and MapInfo for PathFinding
+	AActor* pOwner_Raw = nullptr;
+	pOwner_Raw = GetOwner();
+	if (pOwner_Raw == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+	AHHM_Entity* pOwner = nullptr;
+	pOwner = Cast<AHHM_Entity>(pOwner_Raw);
+	if (pOwner == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+	const ALocalMap* pLocalMap_const = nullptr;
+	pLocalMap_const = pOwner->Get_LocalMap_Const();
+	if (pLocalMap_const == nullptr) {
+		//Exception
+		return EHHM_AI_PathState::PathState_Errored;
+	}
+
+
+
+	//Build Path Params
+	FHHM_Parameter_PathFind PathFind_Params = FHHM_Parameter_PathFind(m_EntitySize_Horizontal, m_EntitySize_Vertical, m_MovementData.Jump_Vertical_MaxHeight, m_MovementData.DownJump_MaxHeight, m_MovementData.Jump_Horizontal_MaxLength);
+
+	TArray<FHHM_PathNodeData> Path_Find = pManager_Navigation->Search_Path(pLocalMap_const, Vec_Location_Start, Vec_Location_End, PathFind_Params);
+
+	int32 Num_Path = Path_Find.Num();
+	if (Num_Path > 0) {
+		m_FollowingPath = Path_Find;
+		AI_Reset_MoveTarget();
+		m_LastTargetLocation = Vec_Location_End;
+		m_LastPathState = EHHM_AI_PathState::PathState_Begin;
+		m_AcceptableDistance = _acceptableDistance;
 		//return EHHM_AI_PathState::PathState_Begin;
 
 		//Calculate MoveTarget
@@ -765,7 +866,7 @@ void UHHM_Component_Movement::FollowPath(float DeltaTime) {
 	Vec_CurrentToTarget.Y = 0.0f;
 	float	Distance_Target = Vec_CurrentToTarget.Size();
 	//HHM Note : Change this Value later ---- ---- ---- ----
-	float	Acceptable_Distance = 0.1f;
+	float	Acceptable_Distance = m_AcceptableDistance;
 
 	//Return if entity is already at target point
 	if (Distance_Target <= Acceptable_Distance) {

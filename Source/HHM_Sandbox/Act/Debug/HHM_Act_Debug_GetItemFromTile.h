@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Act/HHM_Act.h"
-#include "HHM_Act_Debug_InteractTile.generated.h"
+#include "HHM_Act_Debug_GetItemFromTile.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HHM_SANDBOX_API UHHM_Act_Debug_InteractTile : public UHHM_Act
+class HHM_SANDBOX_API UHHM_Act_Debug_GetItemFromTile : public UHHM_Act
 {
 	GENERATED_BODY()
 
 public:
-	UHHM_Act_Debug_InteractTile();
+	UHHM_Act_Debug_GetItemFromTile();
 
 
 

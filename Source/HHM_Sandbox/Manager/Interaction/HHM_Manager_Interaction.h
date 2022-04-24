@@ -31,6 +31,8 @@ public:
 
 public:
 	UPROPERTY()
+		//HHM Note : Interaction ID와 Interaction Type의 구분은 Interaction ID가 좀더 세분화 된 것이라고 보면 된다.
+		//풀숲과 상호작용을 하여 나무열매를 따는것과 제작대와 상호작용을 하여 제작을 하는것은 둘다 SelfToTile Interaction 이지만 각자 걸리는 시간 등이 다르기 때문에 ID로 추가 구분이 되는것.
 		TMap<int32, FHHM_Data_Interaction_Base>		m_Container_InteractionBaseData;
 
 
@@ -55,4 +57,10 @@ private:
 	//Interact interface
 public:
 	static void Execute_Interact(FHHM_Data_Interaction& _data_Interaction, UHHM_Component_InteractionHandler* _pInteractionHandler_Executer);
+
+
+
+private:
+	static void Interact_EntityToTile(FHHM_Data_Interaction& _data_Interaction, UHHM_Component_InteractionHandler* _pInteractionHandler_Executer);
+	static void Interact_GetItemFromTile(FHHM_Data_Interaction& _data_Interaction, UHHM_Component_InteractionHandler* _pInteractionHandler_Executer);
 };

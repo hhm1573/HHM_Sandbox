@@ -94,6 +94,8 @@ protected:
 		FVector2D				m_LastTargetLocation = FVector2D::ZeroVector;
 	UPROPERTY()
 		EHHM_AI_PathState		m_LastPathState = EHHM_AI_PathState::PathState_End;
+	UPROPERTY()
+		float					m_AcceptableDistance = 0.1f;
 
 
 
@@ -123,7 +125,9 @@ public:
 	UFUNCTION()
 	bool			MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical);
 	UFUNCTION(BlueprintCallable, Category = "HHM_AI")
-		EHHM_AI_PathState	AI_MoveToLocation(int32 _index_Horizontal, int32 _index_Vertical);
+		EHHM_AI_PathState	AI_MoveToIndexLocation(int32 _index_Horizontal, int32 _index_Vertical, float _acceptableDistance = 0.1f);
+	UFUNCTION(BlueprintCallable, Category = "HHM_AI")
+		EHHM_AI_PathState	AI_MoveToLocation(FVector2D _vecLocation, float _acceptableDistance = 0.1f);
 	UFUNCTION(BlueprintCallable, Category = "HHM_AI")	//Reset Last MoveTarget. so that ai can order the move again.
 		void				AI_Reset_MoveTarget();
 
