@@ -21,5 +21,8 @@ enum class EHHM_InteractionType : uint8
 	Type_Item_Give_To_Tile			UMETA(DisplayName = "Type_GiveItemToTile"),
 	Type_Talk_SelfToTarget			UMETA(DisplayName = "Type_TalkTo"),
 	Type_Talk_TargetToSelf			UMETA(DisplayName = "Type_TalkFrom"),
+
+	Type_Debug_Item_Get_From_Tile	UMETA(DisplayName = "Type_Debug_GetItemFromTile"),
+
 	Type_End						UMETA(DisplayName = "Type_End")
 };

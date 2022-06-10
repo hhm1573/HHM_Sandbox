@@ -70,7 +70,7 @@ void AHHM_Manager_Interaction::Register_AllInteractionBaseData()
 
 	m_Container_InteractionBaseData.Add(HHM_INTERACTION_ID_DEBUG_GET_ITEM_FROM_TILE, FHHM_Data_Interaction_Base());
 	m_Container_InteractionBaseData[HHM_INTERACTION_ID_DEBUG_GET_ITEM_FROM_TILE].Set_BaseData(HHM_INTERACTION_ID_DEBUG_GET_ITEM_FROM_TILE, HHM_INTERACTION_NAME_DEBUG_GET_ITEM_FROM_TILE
-		, EHHM_InteractionType::Type_Item_Get_From_Tile, 1.0f);
+		, EHHM_InteractionType::Type_Debug_Item_Get_From_Tile, 1.0f);
 }
 
 void AHHM_Manager_Interaction::Execute_Interact(FHHM_Data_Interaction& _data_Interaction, UHHM_Component_InteractionHandler* _pInteractionHandler_Executer)
@@ -80,6 +80,9 @@ void AHHM_Manager_Interaction::Execute_Interact(FHHM_Data_Interaction& _data_Int
 	switch (InteractionType) {
 	case EHHM_InteractionType::Type_Interaction_SelfToTile:
 		Interact_EntityToTile(_data_Interaction, _pInteractionHandler_Executer);
+		break;
+	case EHHM_InteractionType::Type_Debug_Item_Get_From_Tile:
+		Interact_Debug_GetItemFromTile(_data_Interaction, _pInteractionHandler_Executer);
 		break;
 	default:
 		//Exception
@@ -131,7 +134,7 @@ void AHHM_Manager_Interaction::Interact_EntityToTile(FHHM_Data_Interaction& _dat
 	pLocalMap->Interact_Tile(TileIndex, pEntity_Interactor, &_data_Interaction.m_Data_Interact);
 }
 
-void AHHM_Manager_Interaction::Interact_GetItemFromTile(FHHM_Data_Interaction& _data_Interaction, UHHM_Component_InteractionHandler* _pInteractionHandler_Executer)
+void AHHM_Manager_Interaction::Interact_Debug_GetItemFromTile(FHHM_Data_Interaction& _data_Interaction, UHHM_Component_InteractionHandler* _pInteractionHandler_Executer)
 {
 	// HHM Note : Root 인벤토리는 List형 인벤토리로 설정해두고 Root 인벤토리에 아이템이 일정 갯수가 넘어갈경우 포화상태가 되어 root 인벤토리 정리를 1순위 작업으로 하게끔 하기.
 	// 포화상태가 아닐경우 하던일을 모두 마치고 다른 일을 시작하기 전이나 일이없을때 주섬주섬 정리함.
@@ -228,7 +231,7 @@ void AHHM_Manager_Interaction::Interact_GetItemFromTile(FHHM_Data_Interaction& _
 		return;
 	}
 
-	bool IsItemInsertable = pComponent_Inventory->Check_IsItemInsertable(false, 0, ItemDataContainer_Ref[0].pItemData);
+	bool IsItemInsertable = pComponent_Inventory->Check_IsItemInsertable(0, ItemDataContainer_Ref[0].pItemData);
 	if (IsItemInsertable == false) {
 		return;
 	}
@@ -245,7 +248,7 @@ void AHHM_Manager_Interaction::Interact_GetItemFromTile(FHHM_Data_Interaction& _
 
 	int32 InventoryID = 0;
 	int32 InventoryItemID = 0;
-	EHHM_InventoryReturn Insert_Return = pComponent_Inventory->Item_Insert(InventoryID, InventoryItemID, pItemData_Move, false);
+	EHHM_InventoryReturn Insert_Return = pComponent_Inventory->Item_Insert(InventoryID, InventoryItemID, pItemData_Move);
 	if (Insert_Return != EHHM_InventoryReturn::Return_Succeed) {
 		//Exception
 		return;

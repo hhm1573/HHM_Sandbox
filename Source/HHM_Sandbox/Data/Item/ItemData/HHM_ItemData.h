@@ -19,7 +19,7 @@
  * 부모의 포인터로 자식을 보관할수 있게 포인터 사용을 위주로 하고, 이 과정에서 객체의 메모리관리등을 원활히 하고자 (Unreal 의 garbage collect 기능을 사용하고자)
  * 구조체가 아닌 UObject 자식형으로 구현하였다.
  */
-UCLASS(Abstract)
+UCLASS(Abstract, BlueprintType, Blueprintable)
 class HHM_SANDBOX_API UHHM_ItemData : public UObject
 {
 	GENERATED_BODY()

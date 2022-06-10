@@ -157,10 +157,10 @@ const TMap<int32, FHHM_Inventory_Grid>& AHHM_Entity::Get_InventoryContainer(bool
 	return m_pComponent_Inventory->Get_InventoryContainer_Const();
 }
 
-bool AHHM_Entity::Get_InventorySize(FIntPoint& _size_Return, bool _isRoot, int32 _inventoryID)
+bool AHHM_Entity::Get_InventorySize(FIntPoint& _size_Return, int32 _inventoryID)
 {
 	if (m_pComponent_Inventory) {
-		return m_pComponent_Inventory->Get_InventorySize(_size_Return, _isRoot, _inventoryID);
+		return m_pComponent_Inventory->Get_InventorySize(_size_Return, _inventoryID);
 	}
 
 	return false;

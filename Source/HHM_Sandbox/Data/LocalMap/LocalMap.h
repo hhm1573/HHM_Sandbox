@@ -235,7 +235,7 @@ private:
 	//TArray<TSharedPtr<UHHM_ItemData>> m_Container_TileEntity;
 
 public:
-	bool	Get_TileEntity_At(AHHM_TileEntity* _pTileEntity_Return, int32 _index_Horizontal, int32 _index_Vertical);
+	bool	Get_TileEntity_At(AHHM_TileEntity*& _pTileEntity_Return, int32 _index_Horizontal, int32 _index_Vertical);
 	UFUNCTION(BlueprintCallable)
 		AHHM_TileEntity* BP_Get_TileEntity_At_IndexLocation(int32 _index_Horizontal, int32 _index_Vertical);
 	UFUNCTION(BlueprintCallable)

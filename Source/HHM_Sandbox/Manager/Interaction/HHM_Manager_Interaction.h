@@ -62,5 +62,6 @@ public:
 
 private:
 	static void Interact_EntityToTile(FHHM_Data_Interaction& _data_Interaction, UHHM_Component_InteractionHandler* _pInteractionHandler_Executer);
-	static void Interact_GetItemFromTile(FHHM_Data_Interaction& _data_Interaction, UHHM_Component_InteractionHandler* _pInteractionHandler_Executer);
+
+	static void Interact_Debug_GetItemFromTile(FHHM_Data_Interaction& _data_Interaction, UHHM_Component_InteractionHandler* _pInteractionHandler_Executer);
 };

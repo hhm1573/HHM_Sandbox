@@ -1192,7 +1192,7 @@ void ALocalMap::Translate_TileInfo_To_MovementData(const FHHM_TileData& tileInfo
 
 #pragma region TileEntity
 
-bool ALocalMap::Get_TileEntity_At(AHHM_TileEntity* _pTileEntity_Return, int32 _index_Horizontal, int32 _index_Vertical)
+bool ALocalMap::Get_TileEntity_At(AHHM_TileEntity*& _pTileEntity_Return, int32 _index_Horizontal, int32 _index_Vertical)
 {
 	bool IsValid_Index = Check_IsValidPos(_index_Horizontal, _index_Vertical);
 	if (IsValid_Index == false) {

@@ -23,7 +23,7 @@ void AHHM_TileEntity_ItemContainer::BeginPlay()
 	Super::BeginPlay();
 }
 
-const FHHM_Inventory& AHHM_TileEntity_ItemContainer::Get_Inventory_Const() const
+const FHHM_Inventory_Grid& AHHM_TileEntity_ItemContainer::Get_Inventory_Const() const
 {
 	return m_Inventory;
 }

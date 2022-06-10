@@ -404,7 +404,33 @@ EHHM_InventoryReturn FHHM_Inventory_Grid::Item_Pop_At(UHHM_ItemData*& _pItemData
 //Note : 딱히 필요 없을 것 같아서 구현 안해놓았음. 추후 기능이 필요해지면 구현. 외부에서 아이템 데이터를 가진상태로 아이템을 지우게 할일은 별로 없을듯.
 EHHM_InventoryReturn FHHM_Inventory_Grid::Item_Remove(UHHM_ItemData*& _pItemData_Remove)
 {
-	return EHHM_InventoryReturn();
+	if (_pItemData_Remove == nullptr) {
+		//Exception
+		return EHHM_InventoryReturn::Return_NoItem;
+	}
+
+	//Find item
+	bool bItemFound = false;
+	int32 FindKey = -1;
+	for (auto& _pair : m_Container_ItemData) {
+		if (_pair.Value.pItemData == _pItemData_Remove) {
+			//Item Found
+			bItemFound = true;
+			FindKey = _pair.Key;
+			break;
+		}
+	}
+
+	if (bItemFound == false) {	//Can Not Find Item
+		return EHHM_InventoryReturn::Return_NoItem;
+	}
+
+
+
+	//Remove ItemData
+	Set_RoomFree(FindKey);
+	m_Container_ItemData.Remove(FindKey);
+	return EHHM_InventoryReturn::Return_Succeed;
 }
 
 

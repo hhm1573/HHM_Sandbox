@@ -65,7 +65,7 @@ public:
 	UFUNCTION(BlueprintCallable/*, meta=(AdvancedDisplay="_isRoot")*/)
 		const TMap<int32, FHHM_Inventory_Grid>& Get_InventoryContainer(bool _isRoot);
 	UFUNCTION(BlueprintCallable)
-		bool Get_InventorySize(FIntPoint& _size_Return, bool _isRoot, int32 _inventoryID);
+		bool Get_InventorySize(FIntPoint& _size_Return, int32 _inventoryID);
 
 
 
