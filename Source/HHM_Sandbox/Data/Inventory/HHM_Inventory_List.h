@@ -9,13 +9,13 @@
 
 
 
-USTRUCT()
-struct FHHM_Inventory_List : public FHHM_Inventory
+UCLASS()
+class UHHM_Inventory_List : public UHHM_Inventory
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 public:
-	FHHM_Inventory_List();
+	UHHM_Inventory_List();
 
 private:
 	UPROPERTY()		//아이템 데이터를 ID와 함께 map에 저장함.
@@ -23,15 +23,39 @@ private:
 	UPROPERTY()		//아이템의 ID를 배열에 저장하여 리스트 순서가 꼬이지 않게 함.
 		TArray<int32>					m_Container_ItemDataIndex;
 
-	UPROPERTY()
-		int32							m_InventorySize = 0;
+
+
+public:
+	UFUNCTION(BlueprintCallable)
+		bool	BP_Initialize_Inventory(FString _name_Inventory, float _time_Interact, int32 _size_Inventory);
+	UFUNCTION(BlueprintCallable)
+		bool	BP_Set_InventorySize(int32 _size);
+
+	UFUNCTION(BlueprintCallable)
+		int32						BP_Get_InventorySize();
+	UFUNCTION(BlueprintCallable)
+		TArray<UHHM_ItemData*>		BP_Get_ItemList();
+	UFUNCTION(Blueprintcallable, Category = HHM_Inventory_List)
+		int32						BP_Get_NumItem();
+
+	UFUNCTION(BlueprintCallable)
+		EHHM_InventoryReturn	BP_Item_Insert(int32& _index_Return, UHHM_ItemData* _pItemData);
+	UFUNCTION(BlueprintCallable)
+		EHHM_InventoryReturn	BP_Item_Pop_At(UHHM_ItemData*& _pItemData_Return, int32 _index);
+	UFUNCTION(BlueprintCallable)
+		EHHM_InventoryReturn	BP_Item_Remove(UHHM_ItemData* _pItemData);
+		
+	UFUNCTION(BlueprintCallable)
+		void					BP_Clear_Inventory();
 
 	
 
 public:
-	void	Set_InventorySize(int32 _size);
+	bool	Initialize_Inventory(FString _name_Inventory, float _time_Interact, int32 _size_Inventory);
+	bool	Set_InventorySize(int32 _size);
 
 public:
+	int32								Get_InventorySize() const;
 	bool								IsInventoryFull() const;
 	int32								Get_ItemNum() const;
 	UHHM_ItemData*						Get_Item(int32 _index);

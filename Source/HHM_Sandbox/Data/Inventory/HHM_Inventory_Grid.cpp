@@ -8,16 +8,17 @@ constexpr int32 INVENTORY_ITEM_HARD_LIMIT = 1000;
 
 
 
-FHHM_Inventory_Grid::FHHM_Inventory_Grid() {
+UHHM_Inventory_Grid::UHHM_Inventory_Grid() {
 	m_Container_ItemData.Empty();
 	m_InventorySlotData.Empty();
 }
 
 
 
-bool FHHM_Inventory_Grid::Initialize_Inventory(const FHHM_Data_Inventory& _data_Inventory)
+bool UHHM_Inventory_Grid::Initialize_Inventory(const FHHM_Data_Inventory& _data_Inventory)
 {
 	if (_data_Inventory.m_Size_Horizontal <= 0 || _data_Inventory.m_Size_Vertical <= 0) {
+		//Exception
 		//HHM Exception : Unavailable inventory size
 		return false;
 	}
@@ -42,12 +43,50 @@ bool FHHM_Inventory_Grid::Initialize_Inventory(const FHHM_Data_Inventory& _data_
 	return true;
 }
 
+bool UHHM_Inventory_Grid::Initialize_Inventory(FString _name_Inventory, float _time_Interact, int32 _size_Horizontal, int32 _size_Vertical)
+{
+	if (_size_Horizontal <= 0 || _size_Vertical <= 0) {
+		//Exception
+		//HHM Exception : Unavailable inventory size
+		return false;
+	}
+
+	//Initialize Column
+	//// Note : 이니셜라이즈된 InventorySlotRow 데이터를 m_InventorySlotData.Init 에 인자로 넣어 처리할수도 있긴 하지만, 아무래도 내부에 리스트가 들어가는 만큼 같은 주소를 참조하는 리스트가
+	//// 있을수도 있겠다는 생각에 일일이 하나하나 초기화하고 이니셜라이즈 하는 방법으로 진행했다. 언리얼에서 만든만큼 그런걱정은 안해도 되겠지만 혹시 모르니깐
+	m_InventorySlotData.Init(FHHM_Data_Inventory_Slot_Row(), _size_Vertical);
+
+	//Initialize Row
+	FHHM_Data_Inventory_Slot Data_InventorySlot_ToAdd = FHHM_Data_Inventory_Slot();
+	Data_InventorySlot_ToAdd.Reset();
+
+	for (int32 _index_Row = 0; _index_Row < _size_Vertical; ++_index_Row) {
+		m_InventorySlotData[_index_Row].SlotDataRow.Empty();
+		m_InventorySlotData[_index_Row].SlotDataRow.Init(Data_InventorySlot_ToAdd, _size_Horizontal);
+	}
+
+	//Set Member Variables
+	m_Data_Inventory.Initialize(_name_Inventory, _time_Interact, _size_Horizontal, _size_Vertical);
+
+	return true;
+}
+
+
+
+TMap<int32, FHHM_Data_Inventory_Item>& UHHM_Inventory_Grid::BP_Get_ItemDataContainer_Ref()
+{
+	return m_Container_ItemData;
+}
+
+
+
+
 //TMap<int32, FHHM_Data_Inventory_Item>& FHHM_Inventory::BP_Get_Container_ItemData()
 //{
 //	return m_Container_ItemData;
 //}
 
-FIntPoint FHHM_Inventory_Grid::Get_InventorySize() const
+FIntPoint UHHM_Inventory_Grid::Get_InventorySize() const
 {
 	FIntPoint InventorySize_Return = FIntPoint();
 	InventorySize_Return.X = m_Data_Inventory.m_Size_Horizontal;
@@ -56,7 +95,7 @@ FIntPoint FHHM_Inventory_Grid::Get_InventorySize() const
 	return InventorySize_Return;
 }
 
-EHHM_InventoryReturn FHHM_Inventory_Grid::Get_ItemDataPtr_AtSlot(UHHM_ItemData*& _pItemData_Return, uint32 _index_Horizontal, uint32 _index_Vertical)
+EHHM_InventoryReturn UHHM_Inventory_Grid::Get_ItemDataPtr_AtSlot(UHHM_ItemData*& _pItemData_Return, uint32 _index_Horizontal, uint32 _index_Vertical)
 {
 	//Check is input index valid
 	bool IsAvailable_Index = Check_IsValidIndex(_index_Horizontal, _index_Vertical);
@@ -85,20 +124,20 @@ EHHM_InventoryReturn FHHM_Inventory_Grid::Get_ItemDataPtr_AtSlot(UHHM_ItemData*&
 	return EHHM_InventoryReturn::Return_Succeed;
 }
 
-TMap<int32, FHHM_Data_Inventory_Item>& FHHM_Inventory_Grid::Get_ItemDataContainer_Ref()
+TMap<int32, FHHM_Data_Inventory_Item>& UHHM_Inventory_Grid::Get_ItemDataContainer_Ref()
 {
 	return m_Container_ItemData;
 }
 
 
 
-bool FHHM_Inventory_Grid::Check_IsValidIndex(const int32& _index_Horizontal, const int32& _index_Vertical) const
+bool UHHM_Inventory_Grid::Check_IsValidIndex(const int32& _index_Horizontal, const int32& _index_Vertical) const
 {
 	return _index_Horizontal < 0 || _index_Horizontal >= m_Data_Inventory.m_Size_Horizontal
 		|| _index_Vertical < 0 || _index_Vertical >= m_Data_Inventory.m_Size_Vertical ? false : true;
 }
 
-bool FHHM_Inventory_Grid::Check_IsItemSwappable(const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Swap) const
+bool UHHM_Inventory_Grid::Check_IsItemSwappable(const int32& _index_Horizontal, const int32& _index_Vertical, const UHHM_ItemData*& _pItemData_Swap) const
 {
 	//Valid Check
 	//Input ItemData Check
@@ -213,7 +252,7 @@ bool FHHM_Inventory_Grid::Check_IsItemSwappable(const int32& _index_Horizontal, 
 	return true;
 }
 
-bool FHHM_Inventory_Grid::Check_IsItemInsertable(UHHM_ItemData*& _pItemData) const
+bool UHHM_Inventory_Grid::Check_IsItemInsertable(UHHM_ItemData*& _pItemData) const
 {
 	if (_pItemData == nullptr) {
 		//Exception ItemData is nullptr
@@ -235,7 +274,7 @@ bool FHHM_Inventory_Grid::Check_IsItemInsertable(UHHM_ItemData*& _pItemData) con
 	return true;
 }
 
-bool FHHM_Inventory_Grid::Check_IsItemInsertable_At(const int32& _index_Horizontal, const int32& _index_Vertical, UHHM_ItemData*& _pItemData_Insert) const
+bool UHHM_Inventory_Grid::Check_IsItemInsertable_At(const int32& _index_Horizontal, const int32& _index_Vertical, UHHM_ItemData*& _pItemData_Insert) const
 {
 	//Valid check
 	if (_index_Horizontal < 0 || _index_Vertical < 0) {
@@ -265,7 +304,7 @@ bool FHHM_Inventory_Grid::Check_IsItemInsertable_At(const int32& _index_Horizont
 
 
 
-EHHM_InventoryReturn FHHM_Inventory_Grid::Item_Insert(int32& _InventoryItemID_Return, UHHM_ItemData*& _pItemData)
+EHHM_InventoryReturn UHHM_Inventory_Grid::Item_Insert(int32& _InventoryItemID_Return, UHHM_ItemData*& _pItemData)
 {
 	//Valid check
 	if (_pItemData == nullptr) {
@@ -307,7 +346,7 @@ EHHM_InventoryReturn FHHM_Inventory_Grid::Item_Insert(int32& _InventoryItemID_Re
 	//그냥 내버려 두기로 하였다.
 }
 
-EHHM_InventoryReturn FHHM_Inventory_Grid::Item_Insert_At(int32& _InventoryItemID_Return, UHHM_ItemData*& _pItemData, const int32& _index_Horizontal, const int32& _index_Vertical)
+EHHM_InventoryReturn UHHM_Inventory_Grid::Item_Insert_At(int32& _InventoryItemID_Return, UHHM_ItemData*& _pItemData, const int32& _index_Horizontal, const int32& _index_Vertical)
 {
 	//Valid Check
 	if (_pItemData == nullptr) {
@@ -364,7 +403,7 @@ EHHM_InventoryReturn FHHM_Inventory_Grid::Item_Insert_At(int32& _InventoryItemID
 
 // HHM Note : [HHM To Do] 나중에 로깅과정을 넣게되었을 때 아이템 데이터에 문제있는 부분에서는 해당 데이터를 지워버리게끔 수정하기.
 
-EHHM_InventoryReturn FHHM_Inventory_Grid::Item_Pop_At(UHHM_ItemData*& _pItemData_Return, const int32& _index_Horizontal, const int32& _index_Vertical)
+EHHM_InventoryReturn UHHM_Inventory_Grid::Item_Pop_At(UHHM_ItemData*& _pItemData_Return, const int32& _index_Horizontal, const int32& _index_Vertical)
 {
 	//Valid check
 	bool IsValidIndex = Check_IsValidIndex(_index_Horizontal, _index_Vertical);
@@ -402,7 +441,7 @@ EHHM_InventoryReturn FHHM_Inventory_Grid::Item_Pop_At(UHHM_ItemData*& _pItemData
 }
 
 //Note : 딱히 필요 없을 것 같아서 구현 안해놓았음. 추후 기능이 필요해지면 구현. 외부에서 아이템 데이터를 가진상태로 아이템을 지우게 할일은 별로 없을듯.
-EHHM_InventoryReturn FHHM_Inventory_Grid::Item_Remove(UHHM_ItemData*& _pItemData_Remove)
+EHHM_InventoryReturn UHHM_Inventory_Grid::Item_Remove(UHHM_ItemData*& _pItemData_Remove)
 {
 	if (_pItemData_Remove == nullptr) {
 		//Exception
@@ -435,7 +474,7 @@ EHHM_InventoryReturn FHHM_Inventory_Grid::Item_Remove(UHHM_ItemData*& _pItemData
 
 
 
-void FHHM_Inventory_Grid::Clear_Inventory()
+void UHHM_Inventory_Grid::Clear_Inventory()
 {
 	m_Container_ItemData.Empty();
 
@@ -448,7 +487,7 @@ void FHHM_Inventory_Grid::Clear_Inventory()
 
 
 
-FIntPoint FHHM_Inventory_Grid::Convert_IndexToIndexPoint(const int32& _index) const
+FIntPoint UHHM_Inventory_Grid::Convert_IndexToIndexPoint(const int32& _index) const
 {
 	if (m_Data_Inventory.m_Size_Horizontal <= 0) {
 		//Exception inventory size is not set
@@ -462,7 +501,7 @@ FIntPoint FHHM_Inventory_Grid::Convert_IndexToIndexPoint(const int32& _index) co
 	return IndexPoint_Return;
 }
 
-int32 FHHM_Inventory_Grid::Convert_IndexPointToIndex(const FIntPoint& _indexPoint) const
+int32 UHHM_Inventory_Grid::Convert_IndexPointToIndex(const FIntPoint& _indexPoint) const
 {
 	if (m_Data_Inventory.m_Size_Horizontal <= 0 || m_Data_Inventory.m_Size_Vertical <= 0) {
 		//Exception Inventory Size is not set properly
@@ -473,7 +512,7 @@ int32 FHHM_Inventory_Grid::Convert_IndexPointToIndex(const FIntPoint& _indexPoin
 	return Index_Return;
 }
 
-bool FHHM_Inventory_Grid::Check_IsRoomFree(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical) const
+bool UHHM_Inventory_Grid::Check_IsRoomFree(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical) const
 {
 	//Index Valid check
 	bool IsValid_Index = Check_IsValidIndex(_index_Horizontal, _index_Vertical);
@@ -512,7 +551,7 @@ bool FHHM_Inventory_Grid::Check_IsRoomFree(const int32& _index_Horizontal, const
 	return true;
 }
 
-int32 FHHM_Inventory_Grid::Find_FreeRoom(const int32& _size_Horizontal, const int32& _size_Vertical) const
+int32 UHHM_Inventory_Grid::Find_FreeRoom(const int32& _size_Horizontal, const int32& _size_Vertical) const
 {
 	//valid check input value
 	if (_size_Horizontal <= 0 || _size_Vertical <= 0) {
@@ -600,7 +639,7 @@ int32 FHHM_Inventory_Grid::Find_FreeRoom(const int32& _size_Horizontal, const in
 	return Index_Return;
 }
 
-int32 FHHM_Inventory_Grid::Find_ValidInventoryItemID() const
+int32 UHHM_Inventory_Grid::Find_ValidInventoryItemID() const
 {
 	for (int32 index_Search = 0; index_Search < INVENTORY_ITEM_HARD_LIMIT; ++index_Search) {
 		bool IsOccupied_ID = m_Container_ItemData.Contains(index_Search);
@@ -612,7 +651,7 @@ int32 FHHM_Inventory_Grid::Find_ValidInventoryItemID() const
 	return -1;
 }
 
-EHHM_InventoryReturn FHHM_Inventory_Grid::Find_SourceIndex(FIntPoint& _indexPoint_Return, const int32 _index_InventoryItemID)
+EHHM_InventoryReturn UHHM_Inventory_Grid::Find_SourceIndex(FIntPoint& _indexPoint_Return, const int32 _index_InventoryItemID)
 {
 	//Valid check
 	if (_index_InventoryItemID < 0) {
@@ -652,7 +691,7 @@ EHHM_InventoryReturn FHHM_Inventory_Grid::Find_SourceIndex(FIntPoint& _indexPoin
 	return EHHM_InventoryReturn::Return_Error;
 }
 
-bool FHHM_Inventory_Grid::Set_RoomOccupied(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical, const int32& _inventoryItemID, FHHM_Data_Inventory_Item* _pInventoryItemData)
+bool UHHM_Inventory_Grid::Set_RoomOccupied(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical, const int32& _inventoryItemID, FHHM_Data_Inventory_Item* _pInventoryItemData)
 {
 	//Valid check
 	if (_index_Horizontal < 0 || _index_Vertical < 0) {
@@ -726,7 +765,7 @@ bool FHHM_Inventory_Grid::Set_RoomOccupied(const int32& _index_Horizontal, const
 
 }
 
-void FHHM_Inventory_Grid::Set_RoomFree(const int32& _inventoryItemID)
+void UHHM_Inventory_Grid::Set_RoomFree(const int32& _inventoryItemID)
 {
 	//Valid check
 	if (_inventoryItemID < 0) {
@@ -768,7 +807,7 @@ void FHHM_Inventory_Grid::Set_RoomFree(const int32& _inventoryItemID)
 
 }
 
-void FHHM_Inventory_Grid::Set_RoomFree_At(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical, const bool& _bForceFree)
+void UHHM_Inventory_Grid::Set_RoomFree_At(const int32& _index_Horizontal, const int32& _index_Vertical, const int32& _size_Horizontal, const int32& _size_Vertical, const bool& _bForceFree)
 {
 	//if ForceFree is set as true, do valid check on every index and set free if valid.
 	//so it might take much more resource than Non-ForceFree

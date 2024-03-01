@@ -3,6 +3,8 @@
 
 #include "HHM_Component_Inventory.h"
 
+#include "Engine/World.h"
+
 #include "Item/Base/HHM_Item.h"
 
 
@@ -29,8 +31,12 @@ void UHHM_Component_Inventory::BeginPlay()
 
 	// ...
 
-	m_Inventory_Root.Set_InventorySize(10);
-	
+	if (m_pInventory_Root == nullptr) {
+		m_pInventory_Root = NewObject<UHHM_Inventory_List>(this);
+		m_pInventory_Root->Set_InventorySize(10);
+	}
+
+	//m_Inventory_Root.Set_InventorySize(10);
 }
 
 
@@ -68,8 +74,9 @@ int32 UHHM_Component_Inventory::Inventory_Add(const FHHM_Data_Inventory& _data_I
 		return -1;
 	}
 
-	m_Container_Inventory.Add(InventoryID_Found, FHHM_Inventory_Grid());
-	bool IsSucceed_Initialize = m_Container_Inventory[InventoryID_Found].Initialize_Inventory(_data_Inventory);
+	UHHM_Inventory_Grid* pInventory_New = NewObject<UHHM_Inventory_Grid>(this);
+	m_Container_Inventory.Add(InventoryID_Found, pInventory_New);
+	bool IsSucceed_Initialize = m_Container_Inventory[InventoryID_Found]->Initialize_Inventory(_data_Inventory);
 	if (IsSucceed_Initialize == false) {
 		//Exception Inventory Initialize failed
 		m_Container_Inventory.Remove(InventoryID_Found);
@@ -85,28 +92,28 @@ int32 UHHM_Component_Inventory::Inventory_Add(const FHHM_Data_Inventory& _data_I
 
 void UHHM_Component_Inventory::Root_Set_Size(int32 _size)
 {
-	m_Inventory_Root.Set_InventorySize(_size);
+	m_pInventory_Root->Set_InventorySize(_size);
 }
 
 TArray<UHHM_ItemData*> UHHM_Component_Inventory::Root_Get_ItemList()
 {
-	return m_Inventory_Root.Get_ItemList_Const();
+	return m_pInventory_Root->Get_ItemList_Const();
 }
 
 UHHM_ItemData* UHHM_Component_Inventory::Root_Get_ItemDataPtr(const int32& _index)
 {
-	UHHM_ItemData* pItemData_Found = m_Inventory_Root.Get_Item(_index);
+	UHHM_ItemData* pItemData_Found = m_pInventory_Root->Get_Item(_index);
 	return pItemData_Found;
 }
 
 bool UHHM_Component_Inventory::Root_IsFull() const
 {
-	return m_Inventory_Root.IsInventoryFull();
+	return m_pInventory_Root->IsInventoryFull();
 }
 
 int32 UHHM_Component_Inventory::Root_Get_ItemNum() const
 {
-	return m_Inventory_Root.Get_ItemNum();
+	return m_pInventory_Root->Get_ItemNum();
 }
 
 EHHM_InventoryReturn UHHM_Component_Inventory::Root_Item_Insert(int32& _inventoryItemIndex_Return, UHHM_ItemData* _pItemData_Insert)
@@ -116,12 +123,12 @@ EHHM_InventoryReturn UHHM_Component_Inventory::Root_Item_Insert(int32& _inventor
 		return EHHM_InventoryReturn::Return_NoItem;
 	}
 
-	return m_Inventory_Root.Item_Insert(_inventoryItemIndex_Return, _pItemData_Insert);
+	return m_pInventory_Root->Item_Insert(_inventoryItemIndex_Return, _pItemData_Insert);
 }
 
 EHHM_InventoryReturn UHHM_Component_Inventory::Root_Item_Pop_At(UHHM_ItemData*& _pItemData_Return, int32 _inventoryItemIndex_Pop)
 {
-	return m_Inventory_Root.Item_Pop_At(_pItemData_Return, _inventoryItemIndex_Pop);
+	return m_pInventory_Root->Item_Pop_At(_pItemData_Return, _inventoryItemIndex_Pop);
 }
 
 EHHM_InventoryReturn UHHM_Component_Inventory::Root_Item_Remove(UHHM_ItemData* _pItemData_Remove)
@@ -131,13 +138,13 @@ EHHM_InventoryReturn UHHM_Component_Inventory::Root_Item_Remove(UHHM_ItemData* _
 		return EHHM_InventoryReturn::Return_NoItem;
 	}
 
-	return m_Inventory_Root.Item_Remove(_pItemData_Remove);
+	return m_pInventory_Root->Item_Remove(_pItemData_Remove);
 }
 
 EHHM_InventoryReturn UHHM_Component_Inventory::Root_Item_Remove_At(const int32& _inventoryItemIndex_Remove)
 {
 	UHHM_ItemData* pItemData = nullptr;
-	return m_Inventory_Root.Item_Pop_At(pItemData, _inventoryItemIndex_Remove);
+	return m_pInventory_Root->Item_Pop_At(pItemData, _inventoryItemIndex_Remove);
 }
 
 
@@ -153,7 +160,7 @@ UHHM_ItemData* UHHM_Component_Inventory::Get_ItemDataPtr(const int32& _inventory
 
 
 	UHHM_ItemData* pItemData_Return = nullptr;
-	EHHM_InventoryReturn InventoryReturn = m_Container_Inventory[_inventoryID].Get_ItemDataPtr_AtSlot(pItemData_Return, _index_Horizontal, _index_Vertical);
+	EHHM_InventoryReturn InventoryReturn = m_Container_Inventory[_inventoryID]->Get_ItemDataPtr_AtSlot(pItemData_Return, _index_Horizontal, _index_Vertical);
 	if (InventoryReturn != EHHM_InventoryReturn::Return_Succeed) {
 		//Exception Get ItemData failed
 		return nullptr;
@@ -180,6 +187,19 @@ UHHM_ItemData* UHHM_Component_Inventory::Get_ItemDataPtr(const int32& _inventory
 //	}
 //}
 
+int32 UHHM_Component_Inventory::Get_RootInventory_Size()
+{
+	if (m_pInventory_Root != nullptr) {
+		return m_pInventory_Root->Get_InventorySize();
+	}
+	return -1;
+}
+
+UHHM_Inventory_List* UHHM_Component_Inventory::Get_RootInventory()
+{
+	return m_pInventory_Root;
+}
+
 bool UHHM_Component_Inventory::Get_InventorySize(FIntPoint& _inventorySize_Return, const int32& _inventoryID)
 {
 	bool IsValid_InventoryID = Check_IsValidInventoryID(_inventoryID);
@@ -188,14 +208,14 @@ bool UHHM_Component_Inventory::Get_InventorySize(FIntPoint& _inventorySize_Retur
 		return false;
 	}
 
-	FIntPoint InventorySize_Return = m_Container_Inventory[_inventoryID].Get_InventorySize();
+	FIntPoint InventorySize_Return = m_Container_Inventory[_inventoryID]->Get_InventorySize();
 
 	_inventorySize_Return = InventorySize_Return;
 
 	return true;
 }
 
-const TMap<int32, FHHM_Inventory_Grid>& UHHM_Component_Inventory::Get_InventoryContainer_Const() const
+TMap<int32, UHHM_Inventory_Grid*>& UHHM_Component_Inventory::Get_InventoryContainer()
 {
 	return m_Container_Inventory;
 }
@@ -209,7 +229,7 @@ bool UHHM_Component_Inventory::Check_IsValidIndex(const int32& _inventoryID, con
 		return false;
 	}
 
-	FIntPoint InventorySize = m_Container_Inventory[_inventoryID].Get_InventorySize();
+	FIntPoint InventorySize = m_Container_Inventory[_inventoryID]->Get_InventorySize();
 
 	return _index_Horizontal < 0 || _index_Horizontal >= InventorySize.X
 		|| _index_Vertical < 0 || _index_Vertical >= InventorySize.Y ? false : true;
@@ -228,7 +248,7 @@ bool UHHM_Component_Inventory::Check_IsItemSwappable(const int32& _inventoryID, 
 		return false;
 	}
 
-	bool IsSwappable = m_Container_Inventory[_inventoryID].Check_IsItemSwappable(_index_Horizontal, _index_Vertical, _pItemData_Swap);
+	bool IsSwappable = m_Container_Inventory[_inventoryID]->Check_IsItemSwappable(_index_Horizontal, _index_Vertical, _pItemData_Swap);
 	return IsSwappable;
 }
 
@@ -240,7 +260,7 @@ bool UHHM_Component_Inventory::Check_IsItemInsertable(const int32& _inventoryID,
 		return false;
 	}
 
-	bool IsInsertable = m_Container_Inventory[_inventoryID].Check_IsItemInsertable(_pItemData);
+	bool IsInsertable = m_Container_Inventory[_inventoryID]->Check_IsItemInsertable(_pItemData);
 	return IsInsertable;
 }
 
@@ -258,7 +278,7 @@ bool UHHM_Component_Inventory::Check_IsItemInsertableAt(const int32& _inventoryI
 		return false;
 	}
 
-	bool IsInsertable = m_Container_Inventory[_inventoryID].Check_IsItemInsertable_At(_index_Horizontal, _index_Vertical, _pItemData_Insert);
+	bool IsInsertable = m_Container_Inventory[_inventoryID]->Check_IsItemInsertable_At(_index_Horizontal, _index_Vertical, _pItemData_Insert);
 	return IsInsertable;
 }
 
@@ -281,7 +301,7 @@ EHHM_InventoryReturn UHHM_Component_Inventory::Item_Insert_At(int32& _inventoryI
 	
 
 	int32 InventoryItemID_Return = -1;
-	EHHM_InventoryReturn InventoryReturn = m_Container_Inventory[_inventoryID].Item_Insert_At(InventoryItemID_Return, _pItemData_Insert, _index_Horizontal, _index_Vertical);
+	EHHM_InventoryReturn InventoryReturn = m_Container_Inventory[_inventoryID]->Item_Insert_At(InventoryItemID_Return, _pItemData_Insert, _index_Horizontal, _index_Vertical);
 	if (InventoryReturn != EHHM_InventoryReturn::Return_Succeed) {
 		//Exception Item insertion at target slot failed
 		return InventoryReturn;
@@ -307,7 +327,7 @@ EHHM_InventoryReturn UHHM_Component_Inventory::Item_Insert_AtInventory(int32& _i
 
 
 	int32 InventoryItemID_Return = -1;
-	EHHM_InventoryReturn InventoryReturn = m_Container_Inventory[_inventoryID].Item_Insert(InventoryItemID_Return, _pItemData_Insert);
+	EHHM_InventoryReturn InventoryReturn = m_Container_Inventory[_inventoryID]->Item_Insert(InventoryItemID_Return, _pItemData_Insert);
 	if (InventoryReturn != EHHM_InventoryReturn::Return_Succeed) {
 		//Exception item insertion at target inventory failed
 		return InventoryReturn;
@@ -331,9 +351,9 @@ EHHM_InventoryReturn UHHM_Component_Inventory::Item_Insert(int32& _inventoryItem
 	EHHM_InventoryReturn InventoryReturn = EHHM_InventoryReturn::Return_End;
 
 	for (auto& pair : m_Container_Inventory) {
-		bool IsInsertable = pair.Value.Check_IsItemInsertable(_pItemData_Insert);
+		bool IsInsertable = pair.Value->Check_IsItemInsertable(_pItemData_Insert);
 		if (IsInsertable == true) {
-			InventoryReturn = pair.Value.Item_Insert(InventoryItemID_Return, _pItemData_Insert);
+			InventoryReturn = pair.Value->Item_Insert(InventoryItemID_Return, _pItemData_Insert);
 			if (InventoryReturn != EHHM_InventoryReturn::Return_Succeed) {
 				//Exception Insert item failed
 				return InventoryReturn;
@@ -360,7 +380,7 @@ EHHM_InventoryReturn UHHM_Component_Inventory::Item_Pop_At(UHHM_ItemData*& _pIte
 
 
 	UHHM_ItemData* pItemData_Return = nullptr;
-	EHHM_InventoryReturn InventoryReturn = m_Container_Inventory[_inventoryID].Item_Pop_At(pItemData_Return, _index_Horizontal, _index_Vertical);
+	EHHM_InventoryReturn InventoryReturn = m_Container_Inventory[_inventoryID]->Item_Pop_At(pItemData_Return, _index_Horizontal, _index_Vertical);
 	if (InventoryReturn != EHHM_InventoryReturn::Return_Succeed) {
 		//Exception pop item from target inventory failed
 		return InventoryReturn;
@@ -396,7 +416,7 @@ bool UHHM_Component_Inventory::Check_IsRoomFree(const int32& _inventoryID, const
 
 	
 
-	bool IsRoomFree = m_Container_Inventory[_inventoryID].Check_IsRoomFree(_index_Horizontal, _index_Vertical, _size_Horizontal, _size_Vertical);
+	bool IsRoomFree = m_Container_Inventory[_inventoryID]->Check_IsRoomFree(_index_Horizontal, _index_Vertical, _size_Horizontal, _size_Vertical);
 	return IsRoomFree;
 }
 

@@ -16,8 +16,6 @@
 
 #include "Manager/Math/Grid/HHM_Manager_Math_Grid.h"
 
-
-
 UHHM_Component_Movement::UHHM_Component_Movement() {
 
 }

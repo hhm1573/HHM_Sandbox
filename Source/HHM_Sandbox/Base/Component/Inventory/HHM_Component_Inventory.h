@@ -18,7 +18,7 @@
 
 
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHHM_Delegate_InventoryUpdate, const TMap<int32, FHHM_InventoryItemData>&, ItemContainer);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHHM_Delegate_InventoryUpdate, int32, Container_ItemData);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHHM_Delegate_InventoryUpdate, int32, Container_ItemData);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HHM_SANDBOX_API UHHM_Component_Inventory : public UActorComponent
@@ -37,8 +37,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(BlueprintAssignable, Category = "HHM_Event")
-		FHHM_Delegate_InventoryUpdate OnInventoryUpdate;		
+	/*UPROPERTY(BlueprintAssignable, Category = "HHM_Event")
+		FHHM_Delegate_InventoryUpdate OnInventoryUpdate;*/		
 	//Inventory UI 등에서 매 틱마다 인벤토리를 업데이트 하지 않고 Inventory Component가 직접 이벤트를 Broadcast 할 때 신호를 받고 업데이트 할 수 있게끔 해놓은 작업인듯 싶음.
 	//아이템 슬롯마다 모두 업데이트를 호출하니 매 슬롯마다 아이템 그림을 지워야 할지 추가해야할지 알아보는 대신
 	//슬롯 데이터에 Master / Source 여부를 저장하고 UI에서 해당 칸의 점유가 해제되었을때 기존에 아이템의 시작위치였으면 그림을 지우고 시작위치가 아니였으면 데이터만 업데이트 하는식으로 하면될듯.
@@ -58,9 +58,9 @@ protected:
 	//UPROPERTY()
 	//	int32									m_InventorySize_Vertical = 0;
 	UPROPERTY()
-		FHHM_Inventory_List						m_Inventory_Root;
+		UHHM_Inventory_List*					m_pInventory_Root = nullptr;
 	UPROPERTY()
-		TMap<int32, FHHM_Inventory_Grid>		m_Container_Inventory;
+		TMap<int32, UHHM_Inventory_Grid*>		m_Container_Inventory;
 
 
 
@@ -86,13 +86,20 @@ public:
 
 
 public:
-	UHHM_ItemData*							Get_ItemDataPtr(const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
+	UHHM_ItemData*								Get_ItemDataPtr(const int32& _inventoryID, const int32& _index_Horizontal, const int32& _index_Vertical);
 
 	//TMap<int32, FHHM_Data_Inventory_Item>&	Get_ItemDataContainer_Ref(const bool& _isRoot, const int32& _inventoryID);
 
-	bool									Get_InventorySize(FIntPoint& _inventorySize_Return, const int32& _inventoryID);
+	UFUNCTION(BlueprintCallable, Category = HHM_Inventory)
+		int32									Get_RootInventory_Size();
+	UFUNCTION(BlueprintCallable, Category = HHM_Inventory)
+		UHHM_Inventory_List*					Get_RootInventory();
 
-	const TMap<int32, FHHM_Inventory_Grid>&	Get_InventoryContainer_Const() const;
+	UFUNCTION(BlueprintCallable, Category = HHM_Inventory)
+		bool									Get_InventorySize(FIntPoint& _inventorySize_Return, const int32& _inventoryID);
+
+	UFUNCTION(BlueprintCallable, Category = HHM_Inventory)
+		TMap<int32, UHHM_Inventory_Grid*>&		Get_InventoryContainer();
 
 
 

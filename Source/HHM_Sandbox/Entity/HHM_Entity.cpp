@@ -29,8 +29,8 @@ AHHM_Entity::AHHM_Entity()
 	if (m_pComponent_Inventory == nullptr) {
 		m_pComponent_Inventory = CreateDefaultSubobject<UHHM_Component_Inventory>(TEXT("Component_Inventory"));
 
-		FHHM_Data_Inventory InventoryData_Debug = FHHM_Data_Inventory(8, 8, TEXT("DebugInventory"), 1.0f);
-		m_pComponent_Inventory->Inventory_Add(InventoryData_Debug);
+		/*FHHM_Data_Inventory InventoryData_Debug = FHHM_Data_Inventory(8, 8, TEXT("DebugInventory"), 1.0f);
+		m_pComponent_Inventory->Inventory_Add(InventoryData_Debug);*/
 
 		//UWorld* pWorld = nullptr;	//HHM Note : 인벤토리 UI와 컨테이너 타일 엔티티와의 상호작용 테스트를 위한 코드부분. 추후 테스트가 끝나면 삭제.
 		//pWorld = GetWorld();
@@ -92,6 +92,13 @@ void AHHM_Entity::BeginPlay()
 			return;
 		}
 	}
+
+
+
+	//Initialize
+	FHHM_Data_Inventory InventoryData_Debug = FHHM_Data_Inventory();
+	InventoryData_Debug.Initialize(TEXT("DebugInventory"), 1.0f, 8, 8);
+	m_pComponent_Inventory->Inventory_Add(InventoryData_Debug);
 	
 	
 
@@ -148,14 +155,14 @@ void AHHM_Entity::BeginDestroy() {
 
 
 
-const TMap<int32, FHHM_Inventory_Grid>& AHHM_Entity::Get_InventoryContainer(bool _isRoot)
-{
-	/*if (m_pComponent_Inventory) {
-		return m_pComponent_Inventory->Get_InventoryContainer(_isRoot);
-	}
-	return TMap<int32, FHHM_Inventory>();*/
-	return m_pComponent_Inventory->Get_InventoryContainer_Const();
-}
+//const TMap<int32, UHHM_Inventory_Grid*>& AHHM_Entity::Get_InventoryContainer(bool _isRoot)
+//{
+//	/*if (m_pComponent_Inventory) {
+//		return m_pComponent_Inventory->Get_InventoryContainer(_isRoot);
+//	}
+//	return TMap<int32, FHHM_Inventory>();*/
+//	return m_pComponent_Inventory->Get_InventoryContainer_Const();
+//}
 
 bool AHHM_Entity::Get_InventorySize(FIntPoint& _size_Return, int32 _inventoryID)
 {

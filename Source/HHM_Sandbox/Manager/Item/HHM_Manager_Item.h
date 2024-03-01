@@ -38,6 +38,12 @@ private:
 
 
 public:
+	UFUNCTION(BlueprintCallable)
+		class UHHM_ItemData*		BP_Create_Default_ItemData_By_ID(int32 _id, int32 _subID = 0);
+
+
+
+public:
 	const class UHHM_Item*			Get_Item_By_Name(FString _name) const;
 	const class UHHM_ItemData*		Get_ItemData_By_ID(int32 _id, int32 _subID = 0) const;
 

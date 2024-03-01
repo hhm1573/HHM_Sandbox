@@ -57,13 +57,14 @@ public:
 
 
 public:
-	UHHM_Component_Inventory* Get_Component_Inventory() { return m_pComponent_Inventory; }
+	UFUNCTION(BlueprintCallable)
+		UHHM_Component_Inventory* Get_Component_Inventory() { return m_pComponent_Inventory; }
 
 
 
 public:
-	UFUNCTION(BlueprintCallable/*, meta=(AdvancedDisplay="_isRoot")*/)
-		const TMap<int32, FHHM_Inventory_Grid>& Get_InventoryContainer(bool _isRoot);
+	//UFUNCTION(BlueprintCallable/*, meta=(AdvancedDisplay="_isRoot")*/)
+	//	const TMap<int32, UHHM_Inventory_Grid*>& Get_InventoryContainer();
 	UFUNCTION(BlueprintCallable)
 		bool Get_InventorySize(FIntPoint& _size_Return, int32 _inventoryID);
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
 
 #include "Base/HHM_Data_Inventory.h"
 #include "Base/Item/HHM_Data_Inventory_Item.h"
@@ -11,22 +12,34 @@
 
 
 
-USTRUCT(Blueprintable)
-struct FHHM_Inventory
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHHM_Delegate_InventoryUpdate, UHHM_Inventory*, Inventory);
+
+UCLASS(Blueprintable)
+class HHM_SANDBOX_API UHHM_Inventory : public UObject
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 public:
-	FHHM_Inventory();
+	UHHM_Inventory();
+
+public:
+	UPROPERTY(BlueprintAssignable, Category = "HHM_Event")
+		FHHM_Delegate_InventoryUpdate OnInventoryUpdate;
 
 protected:
-	UPROPERTY(BlueprintReadOnly)	//Collective of datas about inventory.
-		FHHM_Data_Inventory								m_Data_Inventory;
+	UPROPERTY()	//Collective of datas about inventory.
+		FHHM_Data_Inventory								m_Data_Inventory = FHHM_Data_Inventory();
 
 
 
 public:
-	virtual bool	Initialize_Inventory(const FHHM_Data_Inventory& _data_Inventory);
+	UFUNCTION(BlueprintCallable)
+		FHHM_Data_Inventory	BP_Get_InventoryData();
+
+
+
+//public:
+//	virtual bool	Initialize_Inventory(const FHHM_Data_Inventory& _data_Inventory);
 
 //public:
 //	UFUNCTION(BlueprintCallable)

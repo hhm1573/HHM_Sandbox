@@ -2,11 +2,11 @@
 
 
 
-FHHM_Inventory::FHHM_Inventory() {
+UHHM_Inventory::UHHM_Inventory() {
 
 }
 
-bool FHHM_Inventory::Initialize_Inventory(const FHHM_Data_Inventory& _data_Inventory)
+FHHM_Data_Inventory UHHM_Inventory::BP_Get_InventoryData()
 {
-	return false;
+	return m_Data_Inventory;
 }

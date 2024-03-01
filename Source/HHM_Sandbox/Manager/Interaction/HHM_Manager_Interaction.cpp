@@ -208,7 +208,7 @@ void AHHM_Manager_Interaction::Interact_Debug_GetItemFromTile(FHHM_Data_Interact
 
 
 	// Check If Tile Has Item.
-	FHHM_Inventory_Grid* pInventory = pTileEntity->Get_Inventory_Debug();
+	UHHM_Inventory_Grid* pInventory = pTileEntity->Get_Inventory_Debug();
 	if (pInventory == nullptr) {
 		//Exception
 		return;

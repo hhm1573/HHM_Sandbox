@@ -31,6 +31,15 @@ void AHHM_Manager_Item::BeginPlay()
 	Register_All_ItemData();
 }
 
+
+
+UHHM_ItemData* AHHM_Manager_Item::BP_Create_Default_ItemData_By_ID(int32 _id, int32 _subID)
+{
+	return Create_Default_ItemData_By_ID(_id, _subID);
+}
+
+
+
 const UHHM_Item* AHHM_Manager_Item::Get_Item_By_Name(FString _name) const
 {
 	bool IsRegisteredName = m_Container_Item.Contains(_name);
